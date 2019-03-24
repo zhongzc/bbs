@@ -54,7 +54,8 @@ class TokenGeneratorImpl implements TokenGenerator {
     private static final String STRING =
             "ABCDEFGHIJKLMNOPQRSTUVWXYZ" +
             "abcdedfhijklmnopqrstuvwxyz" +
-            "/*-.,;:'\"\\|[]{}()!@#$%^&`~=_0123456789";
+            "0123456789" +
+            "/*-.,;:'\"\\|[]{}()<>?!@#$%^&`~=_";
 
     private static String randomString(int count) {
         StringBuilder builder = new StringBuilder();
