@@ -26,5 +26,7 @@ public interface AuthenticatorRepository {
 
     void deleteUserToken(UserToken token);
 
+    void deleteUserTokenByUsername(String username);
+
     void deleteResetToken(ResetToken token);
 }

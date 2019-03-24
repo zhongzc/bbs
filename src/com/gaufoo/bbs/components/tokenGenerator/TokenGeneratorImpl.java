@@ -51,7 +51,9 @@ class TokenGeneratorImpl implements TokenGenerator {
         repository.delete(token);
     }
 
-    private static final String STRING = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdedfhijklmnopqrstuvwxyz" +
+    private static final String STRING =
+            "ABCDEFGHIJKLMNOPQRSTUVWXYZ" +
+            "abcdedfhijklmnopqrstuvwxyz" +
             "/*-.,;:'\"\\|[]{}()!@#$%^&`~=_0123456789";
 
     private static String randomString(int count) {

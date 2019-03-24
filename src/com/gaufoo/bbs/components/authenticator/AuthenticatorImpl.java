@@ -89,5 +89,7 @@ class AuthenticatorImpl implements Authenticator {
         if (!passwordValidator.validate(newPassword)) throw new PasswordInvalid("密码不合法");
 
         if (!repository.setPassword(username, newPassword)) throw new CommonException("重置无效");
+        repository.deleteResetToken(resetToken);
+        repository.deleteUserTokenByUsername(username);
     }
 }

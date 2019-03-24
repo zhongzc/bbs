@@ -76,6 +76,18 @@ public class AuthenticatorMemoryRepository implements AuthenticatorRepository {
     }
 
     @Override
+    public void deleteUserTokenByUsername(String username) {
+        Tuple<String, Permission> t = usernameToPwdPermission.get(username);
+        if (t == null) return;
+
+        String userId = t.y.getUserId();
+
+        userTokenToPermission.entrySet().removeIf(e ->
+            e.getValue().getUserId().equals(userId)
+        );
+    }
+
+    @Override
     public void deleteResetToken(ResetToken token) {
         resetTokenToUsername.remove(token);
     }

@@ -35,6 +35,9 @@ public class Main {
         ResetToken rtoken = authenticator.reqResetPassword("gaufoo@123.com");
         authenticator.resetPassword(rtoken, "123456Abc");
 
+        // 改密码后，原登录信息无效
+        // System.out.println(authenticator.getLoggedUser(token).getUserId());
+
         UserToken token2 = authenticator.login("gaufoo@123.com", "123456Abc");
 
         System.out.println(token2.getValue());
