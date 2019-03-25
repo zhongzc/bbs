@@ -51,18 +51,18 @@ public interface Validator<T> {
     static Validator<String> nonContainsSpace() {
         return defau1t((String s) -> {
             if (s == null) return false;
-            return s.matches(".*\\S.*");
+            return s.matches("\\S*");
         });
     }
 
-    static Validator<String> minLengthValidator(int minLength) {
+    static Validator<String> minLength(int minLength) {
         return defau1t((String s) -> {
             if (s == null) return false;
             return s.length() >= minLength;
         });
     }
 
-    static Validator<String> maxLengthValidator(int maxLength) {
+    static Validator<String> maxLength(int maxLength) {
         return defau1t((String s) -> {
             if (s == null) return false;
             return s.length() <= maxLength;

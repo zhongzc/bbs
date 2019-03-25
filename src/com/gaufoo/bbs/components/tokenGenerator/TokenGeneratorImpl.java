@@ -7,6 +7,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.Instant;
 import java.util.Random;
+import java.util.stream.IntStream;
 
 class TokenGeneratorImpl implements TokenGenerator {
 
@@ -61,10 +62,10 @@ class TokenGeneratorImpl implements TokenGenerator {
         StringBuilder builder = new StringBuilder();
         int length = STRING.length();
         Random random = new Random();
-        while (count-- != 0) {
+        IntStream.range(0, count).forEach(i -> {
             int index = random.nextInt(length);
             builder.append(STRING.charAt(index));
-        }
+        });
         return builder.toString();
     }
 
