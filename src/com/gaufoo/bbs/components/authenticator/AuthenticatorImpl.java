@@ -50,7 +50,7 @@ class AuthenticatorImpl implements Authenticator {
 
     @Override
     public Permission getLoggedUser(UserToken userToken) throws AuthenticatorException {
-        if (tokenGenerator.isExpired(userToken.getValue())) {
+        if (tokenGenerator.isExpired(userToken.value)) {
             repository.deleteUserToken(userToken);
             throw new ExpireException("登录已过期");
         }
@@ -62,7 +62,7 @@ class AuthenticatorImpl implements Authenticator {
 
     @Override
     public void logout(UserToken userToken) {
-        tokenGenerator.expire(userToken.getValue());
+        tokenGenerator.expire(userToken.value);
         repository.deleteUserToken(userToken);
     }
 
@@ -81,7 +81,7 @@ class AuthenticatorImpl implements Authenticator {
 
     @Override
     public void resetPassword(ResetToken resetToken, String newPassword) throws AuthenticatorException {
-        if (tokenGenerator.isExpired(resetToken.getValue())) {
+        if (tokenGenerator.isExpired(resetToken.value)) {
             repository.deleteResetToken(resetToken);
             throw new ExpireException("操作已超时");
         }
@@ -117,7 +117,7 @@ class AuthenticatorImpl implements Authenticator {
                 Authenticator.permission("001", Authenticator.Role.USER));
         // 登录
         UserToken token = authenticator.login("gaufoo@123.com", "Abc123456");
-        System.out.println(token.getValue());   // 获得token
+        System.out.println(token.value);   // 获得token
         System.out.println(authenticator.getLoggedUser(token).getUserId()); // 从token获得id
         // 修改密码
         ResetToken rtoken = authenticator.reqResetPassword("gaufoo@123.com");
@@ -128,7 +128,7 @@ class AuthenticatorImpl implements Authenticator {
 
         // 重新登录
         UserToken token2 = authenticator.login("gaufoo@123.com", "123456Abc");
-        System.out.println(token2.getValue());
+        System.out.println(token2.value);
         System.out.println(authenticator.getLoggedUser(token2).getUserId());
         // 取消登录
         authenticator.logout(token2);
