@@ -6,4 +6,8 @@ public class FoundId {
     public FoundId(String value) {
         this.value = value;
     }
+
+    public static FoundId of(String value) {
+        return new FoundId(value);
+    }
 }
