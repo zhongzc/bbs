@@ -1,6 +1,6 @@
 package com.gaufoo.bbs.components.lostfound.common;
 
-public class FoundId {
+final public class FoundId {
     public final String value;
 
     private FoundId(String value) {

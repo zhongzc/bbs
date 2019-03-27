@@ -3,70 +3,66 @@ package com.gaufoo.bbs.components.lostfound.common;
 import java.time.Instant;
 import java.util.Objects;
 
-public class FoundInfo {
+final public class FoundInfo {
     public final String publisher;
     public final String objName;
     public final Instant foundTime;
     public final String position;
     public final String description;
-    public final byte[] image;
+    public final String imageURI;
     public final String contact;
     public final String claimant;
 
-    private FoundInfo(String publisher, String objName, Instant foundTime, String position, String description, byte[] image, String contact, String claimant) {
+    private FoundInfo(String publisher, String objName, Instant foundTime, String position, String description, String imageURI, String contact, String claimant) {
         this.publisher = publisher;
         this.objName = objName;
         this.foundTime = foundTime;
         this.position = position;
         this.description = description;
-        this.image = image;
+        this.imageURI = imageURI;
         this.contact = contact;
         this.claimant = claimant;
     }
 
-    public static FoundInfo of(String publisher, String objName, Instant foundTime, String position, String description, byte[] image, String contact, String claimant) {
-        return new FoundInfo(publisher, objName, foundTime, position, description, image, contact, claimant);
-    }
-
-    public static FoundInfo of(String publisher, String objName, Instant foundTime, String position, String description, byte[] image, String contact) {
-        return new FoundInfo(publisher, objName, foundTime, position, description, image, contact, null);
+    public static FoundInfo of(String publisher, String objName, Instant foundTime, String position, String description, String imageURI, String contact, String claimant) {
+        return new FoundInfo(publisher, objName, foundTime, position, description, imageURI, contact, claimant);
     }
 
     public FoundInfo modPublisher(String publisher) {
-        return new FoundInfo(publisher, this.objName, this.foundTime, this.position, this.description, this.image, this.contact, this.claimant);
+        return new FoundInfo(publisher, this.objName, this.foundTime, this.position, this.description, this.imageURI, this.contact, this.claimant);
     }
 
     public FoundInfo modObjName(String objName) {
-        return new FoundInfo(this.publisher, objName, this.foundTime, this.position, this.description, this.image, this.contact, this.claimant);
+        return new FoundInfo(this.publisher, objName, this.foundTime, this.position, this.description, this.imageURI, this.contact, this.claimant);
     }
 
     public FoundInfo modFoundTime(Instant foundTime) {
-        return new FoundInfo(this.publisher, this.objName, foundTime, this.position, this.description, this.image, this.contact, this.claimant);
+        return new FoundInfo(this.publisher, this.objName, foundTime, this.position, this.description, this.imageURI, this.contact, this.claimant);
     }
 
     public FoundInfo modPosition(String position) {
-        return new FoundInfo(this.publisher, this.objName, this.foundTime, position, this.description, this.image, this.contact, this.claimant);
+        return new FoundInfo(this.publisher, this.objName, this.foundTime, position, this.description, this.imageURI, this.contact, this.claimant);
     }
 
     public FoundInfo modDescription(String description) {
-        return new FoundInfo(this.publisher, this.objName, this.foundTime, this.position, description, this.image, this.contact, this.claimant);
+        return new FoundInfo(this.publisher, this.objName, this.foundTime, this.position, description, this.imageURI, this.contact, this.claimant);
     }
 
-    public FoundInfo modImage(byte[] image) {
-        return new FoundInfo(this.publisher, this.objName, this.foundTime, this.position, this.description, image, this.contact, this.claimant);
+    public FoundInfo modImageURI(String imageURI) {
+        return new FoundInfo(this.publisher, this.objName, this.foundTime, this.position, this.description, imageURI, this.contact, this.claimant);
     }
 
     public FoundInfo modContact(String contact) {
-        return new FoundInfo(this.publisher, this.objName, this.foundTime, this.position, this.description, this.image, contact, this.claimant);
+        return new FoundInfo(this.publisher, this.objName, this.foundTime, this.position, this.description, this.imageURI, contact, this.claimant);
     }
 
     public FoundInfo modClaimant(String claimant) {
-        return new FoundInfo(this.publisher, this.objName, this.foundTime, this.position, this.description, this.image, this.contact, claimant);
+        return new FoundInfo(this.publisher, this.objName, this.foundTime, this.position, this.description, this.imageURI, this.contact, claimant);
     }
 
     @Override
     public String toString() {
-        return "FoundInfo" + "(" + "'" + this.publisher + "'" + ", " + "'" + this.objName + "'" + ", " + this.foundTime + ", " + "'" + this.position + "'" + ", " + "'" + this.description + "'" + ", " + this.image + ", " + "'" + this.contact + "'" + ", " + "'" + this.claimant + "'" + ')';
+        return "FoundInfo" + "(" + "'" + this.publisher + "'" + ", " + "'" + this.objName + "'" + ", " + this.foundTime + ", " + "'" + this.position + "'" + ", " + "'" + this.description + "'" + ", " + "'" + this.imageURI + "'" + ", " + "'" + this.contact + "'" + ", " + "'" + this.claimant + "'" + ')';
     }
 
     @Override
@@ -79,13 +75,13 @@ public class FoundInfo {
                 Objects.equals(foundTime, other.foundTime) &&
                 Objects.equals(position, other.position) &&
                 Objects.equals(description, other.description) &&
-                Objects.equals(image, other.image) &&
+                Objects.equals(imageURI, other.imageURI) &&
                 Objects.equals(contact, other.contact) &&
                 Objects.equals(claimant, other.claimant);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(publisher, objName, foundTime, position, description, image, contact, claimant);
+        return Objects.hash(publisher, objName, foundTime, position, description, imageURI, contact, claimant);
     }
 }

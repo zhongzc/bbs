@@ -5,17 +5,17 @@ import com.gaufoo.bbs.components.lostfound.common.*;
 import java.util.stream.Stream;
 
 public interface LostFoundRepository {
-    boolean saveLost(LostId id, LostInfo info);
+    boolean saveLost(LostId id, LostInternal info);
 
-    boolean saveFound(FoundId id, FoundInfo info);
+    boolean saveFound(FoundId id, FoundInternal info);
 
-    boolean updateLost(LostId id, LostInfo info);
+    boolean updateLost(LostId id, LostInternal info);
 
-    boolean updateFound(FoundId id, FoundInfo info);
+    boolean updateFound(FoundId id, FoundInternal info);
 
-    LostInfo getLostInfo(LostId id);
+    LostInternal getLostInfo(LostId id);
 
-    FoundInfo getFoundInfo(FoundId id);
+    FoundInternal getFoundInfo(FoundId id);
 
     Stream<LostId> getAllLosts();
 

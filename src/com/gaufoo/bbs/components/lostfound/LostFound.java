@@ -1,5 +1,6 @@
 package com.gaufoo.bbs.components.lostfound;
 
+import com.gaufoo.bbs.components.fileBuilder.FileBuilder;
 import com.gaufoo.bbs.components.idGenerator.IdGenerator;
 import com.gaufoo.bbs.components.lostfound.common.*;
 
@@ -8,17 +9,17 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 public interface LostFound {
-    LostId pubLost(LostInfo lostInfo);
+    Optional<LostId> pubLost(LostInput lostInput);
 
-    FoundId pubFound(FoundInfo foundInfo);
+    Optional<FoundId> pubFound(FoundInput foundInput);
 
     Optional<LostInfo> lostInfo(LostId lostId);
 
     Optional<FoundInfo> foundInfo(FoundId foundId);
 
-    boolean changeLostInfo(LostId lostId, LostInfo lostInfo);
-
-    boolean changeFoundInfo(FoundId foundId, FoundInfo foundInfo);
+//    boolean changeLostInfo(LostId lostId, LostInput lostInput);
+//
+//    boolean changeFoundInfo(FoundId foundId, FoundInput foundInput);
 
     Stream<LostId> allLosts();
 
@@ -69,8 +70,9 @@ public interface LostFound {
     void removeFound(FoundId foundId);
 
     static LostFound defau1t(LostFoundRepository repository,
+                             FileBuilder fileBuilder,
                              IdGenerator idGenerator,
                              IdGenerator foundIds) {
-        return new LostFoundImpl(repository, idGenerator, foundIds);
+        return new LostFoundImpl(repository, fileBuilder, idGenerator, foundIds);
     }
 }
