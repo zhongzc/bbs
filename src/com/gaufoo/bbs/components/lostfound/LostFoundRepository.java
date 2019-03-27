@@ -13,7 +13,6 @@ public interface LostFoundRepository {
 
     boolean updateFound(FoundId id, FoundInfo info);
 
-
     LostInfo getLostInfo(LostId id);
 
     FoundInfo getFoundInfo(FoundId id);

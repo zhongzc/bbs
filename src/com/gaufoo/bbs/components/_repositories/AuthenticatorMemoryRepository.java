@@ -9,8 +9,8 @@ import java.util.Map;
 
 public class AuthenticatorMemoryRepository implements AuthenticatorRepository {
     private final Map<String, Tuple<String, Permission>> usernameToPwdPermission = new Hashtable<>();
-    private final Map<UserToken, Permission> userTokenToPermission = new Hashtable<>();
-    private final Map<ResetToken, String> resetTokenToUsername = new Hashtable<>();
+    private final Map<String, Permission> userTokenToPermission = new Hashtable<>();
+    private final Map<String, String> resetTokenToUsername = new Hashtable<>();
 
     private AuthenticatorMemoryRepository() { }
 
@@ -27,13 +27,13 @@ public class AuthenticatorMemoryRepository implements AuthenticatorRepository {
 
     @Override
     public boolean saveUserToken(UserToken token, Permission permission) {
-        userTokenToPermission.put(token, permission);
+        userTokenToPermission.put(token.value, permission);
         return true;
     }
 
     @Override
     public boolean saveResetToken(ResetToken token, String username) {
-        resetTokenToUsername.put(token, username);
+        resetTokenToUsername.put(token.value, username);
         return true;
     }
 
@@ -62,17 +62,17 @@ public class AuthenticatorMemoryRepository implements AuthenticatorRepository {
 
     @Override
     public Permission getPermissionByToken(UserToken token) {
-        return userTokenToPermission.get(token);
+        return userTokenToPermission.get(token.value);
     }
 
     @Override
     public String getUsernameByResetToken(ResetToken token) {
-        return resetTokenToUsername.get(token);
+        return resetTokenToUsername.get(token.value);
     }
 
     @Override
     public void deleteUserToken(UserToken token) {
-        userTokenToPermission.remove(token);
+        userTokenToPermission.remove(token.value);
     }
 
     @Override
@@ -89,7 +89,7 @@ public class AuthenticatorMemoryRepository implements AuthenticatorRepository {
 
     @Override
     public void deleteResetToken(ResetToken token) {
-        resetTokenToUsername.remove(token);
+        resetTokenToUsername.remove(token.value);
     }
 
     private static AuthenticatorMemoryRepository instance = new AuthenticatorMemoryRepository();
