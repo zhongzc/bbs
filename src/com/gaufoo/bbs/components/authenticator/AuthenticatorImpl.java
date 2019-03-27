@@ -39,9 +39,9 @@ class AuthenticatorImpl implements Authenticator {
         if (!repository.getPassword(username).equals(password)) throw new PasswordInvalid("密码错误");
 
         Permission permission = repository.getPermissionByUsername(username);
-        String userId = permission.getUserId();
+        String userId = permission.userId;
         String token = tokenGenerator.genToken(userId, Instant.now().plus(Duration.ofDays(30)));
-        UserToken userToken = Authenticator.userToken(token);
+        UserToken userToken = UserToken.of(token);
 
         if  (!repository.saveUserToken(userToken, permission)) throw new CommonException("登录失败");
 
@@ -71,7 +71,7 @@ class AuthenticatorImpl implements Authenticator {
         if (!repository.contains(username)) throw new UsernameInvalid("用户名不存在");
 
         String token = tokenGenerator.genToken(username, Instant.now().plus(Duration.ofHours(1)));
-        ResetToken resetToken = Authenticator.resetToken(token);
+        ResetToken resetToken = ResetToken.of(token);
         if (!repository.saveResetToken(resetToken, username)) {
             throw new CommonException("请求重设密码失败");
         }
@@ -114,11 +114,11 @@ class AuthenticatorImpl implements Authenticator {
 
         // 注册
         authenticator.signUp("gaufoo@123.com", "Abc123456",
-                Authenticator.permission("001", Authenticator.Role.USER));
+                Permission.of("001", Authenticator.Role.USER));
         // 登录
         UserToken token = authenticator.login("gaufoo@123.com", "Abc123456");
         System.out.println(token.value);   // 获得token
-        System.out.println(authenticator.getLoggedUser(token).getUserId()); // 从token获得id
+        System.out.println(authenticator.getLoggedUser(token).userId); // 从token获得id
         // 修改密码
         ResetToken rtoken = authenticator.reqResetPassword("gaufoo@123.com");
         authenticator.resetPassword(rtoken, "123456Abc");
@@ -129,7 +129,7 @@ class AuthenticatorImpl implements Authenticator {
         // 重新登录
         UserToken token2 = authenticator.login("gaufoo@123.com", "123456Abc");
         System.out.println(token2.value);
-        System.out.println(authenticator.getLoggedUser(token2).getUserId());
+        System.out.println(authenticator.getLoggedUser(token2).userId);
         // 取消登录
         authenticator.logout(token2);
 

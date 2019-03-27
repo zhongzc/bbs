@@ -75,6 +75,20 @@ public class LostFoundImpl implements LostFound {
     }
 
     @Override
+    public boolean claimLost(LostId lostId, String claimant) {
+        Optional<LostInfo> info = lostInfo(lostId);
+        if (!info.isPresent() || info.get().claimant != null) return false;
+        else return repository.updateLost(lostId, info.get().modClaimant(claimant));
+    }
+
+    @Override
+    public boolean claimFound(FoundId foundId, String claimant) {
+        Optional<FoundInfo> info = foundInfo(foundId);
+        if (!info.isPresent() || info.get().claimant != null) return false;
+        else return repository.updateFound(foundId, info.get().modClaimant(claimant));
+    }
+
+    @Override
     public void removeLost(LostId lostId) {
         repository.deleteLost(lostId);
     }

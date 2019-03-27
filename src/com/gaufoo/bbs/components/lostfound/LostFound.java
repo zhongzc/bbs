@@ -24,24 +24,18 @@ public interface LostFound {
 
     Stream<FoundId> allFounds();
 
-    default boolean claimLost(LostId lostId, String claimant) {
-        Optional<LostInfo> info = lostInfo(lostId);
-        return info.map(i -> i.claim(claimant)).orElse(false);
-    }
+    boolean claimLost(LostId lostId, String claimant);
 
-    default boolean claimFound(FoundId foundId, String claimant) {
-        Optional<FoundInfo> info = foundInfo(foundId);
-        return info.map(i -> i.claim(claimant)).orElse(false);
-    }
+    boolean claimFound(FoundId foundId, String claimant);
 
     default Stream<LostId> allUnclaimedLosts() {
         return allLosts()
-                .filter(l -> lostInfo(l).filter(i -> !i.getClaimant().isPresent()).isPresent());
+                .filter(l -> lostInfo(l).filter(i -> i.claimant == null).isPresent());
     }
 
     default Stream<FoundId> allUnclaimedFounds() {
         return allFounds()
-                .filter(f -> foundInfo(f).filter(i -> !i.getClaimant().isPresent()).isPresent());
+                .filter(f -> foundInfo(f).filter(i -> i.claimant == null).isPresent());
     }
 
     default Stream<LostId> searchLostByName(String objName) {

@@ -21,27 +21,10 @@ public interface Authenticator {
 
     void resetPassword(ResetToken resetToken, String newPassword) throws AuthenticatorException;
 
-
-    /**
-     * 一系列小对象的构造函数
-     */
-    static Permission permission(String userId, Role role) {
-        return new Permission(userId, role);
-    }
-
-    static UserToken userToken(String value) {
-        return new UserToken(value);
-    }
-
-    static ResetToken resetToken(String value) {
-        return new ResetToken(value);
-    }
-
     enum Role {
         USER,
         ADMIN,
     }
-
 
     /**
      * 默认实现

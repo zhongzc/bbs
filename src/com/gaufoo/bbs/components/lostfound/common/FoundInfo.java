@@ -1,7 +1,7 @@
 package com.gaufoo.bbs.components.lostfound.common;
 
 import java.time.Instant;
-import java.util.Optional;
+import java.util.Objects;
 
 public class FoundInfo {
     public final String publisher;
@@ -9,30 +9,83 @@ public class FoundInfo {
     public final Instant foundTime;
     public final String position;
     public final String description;
-    public final String imageURI;
+    public final byte[] image;
     public final String contact;
-    private String claimant = null;
+    public final String claimant;
 
-    public FoundInfo(String publisher, String objName, Instant foundTime,
-                     String position, String description, String imageURI,
-                     String contact) {
+    private FoundInfo(String publisher, String objName, Instant foundTime, String position, String description, byte[] image, String contact, String claimant) {
         this.publisher = publisher;
         this.objName = objName;
         this.foundTime = foundTime;
         this.position = position;
         this.description = description;
-        this.imageURI = imageURI;
+        this.image = image;
         this.contact = contact;
+        this.claimant = claimant;
     }
 
-    public boolean claim(String c) {
-        if (claimant != null) return false;
-
-        claimant = c;
-        return true;
+    public static FoundInfo of(String publisher, String objName, Instant foundTime, String position, String description, byte[] image, String contact, String claimant) {
+        return new FoundInfo(publisher, objName, foundTime, position, description, image, contact, claimant);
     }
 
-    public Optional<String> getClaimant() {
-        return Optional.ofNullable(claimant);
+    public static FoundInfo of(String publisher, String objName, Instant foundTime, String position, String description, byte[] image, String contact) {
+        return new FoundInfo(publisher, objName, foundTime, position, description, image, contact, null);
+    }
+
+    public FoundInfo modPublisher(String publisher) {
+        return new FoundInfo(publisher, this.objName, this.foundTime, this.position, this.description, this.image, this.contact, this.claimant);
+    }
+
+    public FoundInfo modObjName(String objName) {
+        return new FoundInfo(this.publisher, objName, this.foundTime, this.position, this.description, this.image, this.contact, this.claimant);
+    }
+
+    public FoundInfo modFoundTime(Instant foundTime) {
+        return new FoundInfo(this.publisher, this.objName, foundTime, this.position, this.description, this.image, this.contact, this.claimant);
+    }
+
+    public FoundInfo modPosition(String position) {
+        return new FoundInfo(this.publisher, this.objName, this.foundTime, position, this.description, this.image, this.contact, this.claimant);
+    }
+
+    public FoundInfo modDescription(String description) {
+        return new FoundInfo(this.publisher, this.objName, this.foundTime, this.position, description, this.image, this.contact, this.claimant);
+    }
+
+    public FoundInfo modImage(byte[] image) {
+        return new FoundInfo(this.publisher, this.objName, this.foundTime, this.position, this.description, image, this.contact, this.claimant);
+    }
+
+    public FoundInfo modContact(String contact) {
+        return new FoundInfo(this.publisher, this.objName, this.foundTime, this.position, this.description, this.image, contact, this.claimant);
+    }
+
+    public FoundInfo modClaimant(String claimant) {
+        return new FoundInfo(this.publisher, this.objName, this.foundTime, this.position, this.description, this.image, this.contact, claimant);
+    }
+
+    @Override
+    public String toString() {
+        return "FoundInfo" + "(" + "'" + this.publisher + "'" + ", " + "'" + this.objName + "'" + ", " + this.foundTime + ", " + "'" + this.position + "'" + ", " + "'" + this.description + "'" + ", " + this.image + ", " + "'" + this.contact + "'" + ", " + "'" + this.claimant + "'" + ')';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        FoundInfo other = (FoundInfo) o;
+        return Objects.equals(publisher, other.publisher) &&
+                Objects.equals(objName, other.objName) &&
+                Objects.equals(foundTime, other.foundTime) &&
+                Objects.equals(position, other.position) &&
+                Objects.equals(description, other.description) &&
+                Objects.equals(image, other.image) &&
+                Objects.equals(contact, other.contact) &&
+                Objects.equals(claimant, other.claimant);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(publisher, objName, foundTime, position, description, image, contact, claimant);
     }
 }

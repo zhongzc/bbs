@@ -80,10 +80,10 @@ public class AuthenticatorMemoryRepository implements AuthenticatorRepository {
         Tuple<String, Permission> t = usernameToPwdPermission.get(username);
         if (t == null) return;
 
-        String userId = t.y.getUserId();
+        String userId = t.y.userId;
 
         userTokenToPermission.entrySet().removeIf(e ->
-            e.getValue().getUserId().equals(userId)
+            e.getValue().userId.equals(userId)
         );
     }
 
