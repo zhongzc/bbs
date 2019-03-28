@@ -2,7 +2,7 @@ package com.gaufoo.bbs.components.scutMajor.common;
 
 import java.util.Objects;
 
-public class MajorCode {
+final public class MajorCode {
     public final String value;
 
     private MajorCode(String value) {

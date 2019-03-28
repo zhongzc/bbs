@@ -1,32 +1,32 @@
-package com.gaufoo.bbs.components.like.common;
+package com.gaufoo.bbs.components.user.common;
 
 import java.util.Objects;
 
-final public class LikeId {
+final public class UserId {
     public final String value;
 
-    private LikeId(String value) {
+    private UserId(String value) {
         this.value = value;
     }
 
-    public static LikeId of(String value) {
-        return new LikeId(value);
+    public static UserId of(String value) {
+        return new UserId(value);
     }
 
-    public LikeId modValue(String value) {
-        return new LikeId(value);
+    public UserId modValue(String value) {
+        return new UserId(value);
     }
 
     @Override
     public String toString() {
-        return "LikeId" + "(" + "'" + this.value + "'" + ')';
+        return "UserId" + "(" + "'" + this.value + "'" + ')';
     }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        LikeId other = (LikeId) o;
+        UserId other = (UserId) o;
         return Objects.equals(value, other.value);
     }
 

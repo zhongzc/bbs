@@ -2,7 +2,7 @@ package com.gaufoo.bbs.components.authenticator.common;
 
 import java.util.Objects;
 
-public class UserToken {
+final public class UserToken {
     public final String value;
 
     private UserToken(String value) {

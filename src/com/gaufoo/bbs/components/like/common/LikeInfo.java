@@ -3,9 +3,8 @@ package com.gaufoo.bbs.components.like.common;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Stream;
 
-public class LikeInfo {
+final public class LikeInfo {
     public final String obj;
     public final List<String> liker;
     public final List<String> disliker;

@@ -2,7 +2,7 @@ package com.gaufoo.bbs.components.scutMajor.common;
 
 import java.util.Objects;
 
-public class MajorValue {
+final public class MajorValue {
     public final School school;
     public final Major major;
 

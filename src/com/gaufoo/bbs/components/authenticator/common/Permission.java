@@ -4,7 +4,7 @@ import com.gaufoo.bbs.components.authenticator.Authenticator;
 
 import java.util.Objects;
 
-public class Permission {
+final public class Permission {
     public final String userId;
     public final Authenticator.Role role;
 

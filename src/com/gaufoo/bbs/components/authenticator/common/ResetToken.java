@@ -2,7 +2,7 @@ package com.gaufoo.bbs.components.authenticator.common;
 
 import java.util.Objects;
 
-public class ResetToken {
+final public class ResetToken {
     public final String value;
 
     private ResetToken(String value) {
