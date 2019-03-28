@@ -8,7 +8,12 @@ import java.util.Hashtable;
 import java.util.Map;
 
 public class FileBuilderMemoryRepository implements FileBuilderRepository {
+    private final String repositoryName;
     private final Map<String, Tuple<byte[], String>> map = new Hashtable<>();
+
+    public FileBuilderMemoryRepository(String repositoryName) {
+        this.repositoryName = repositoryName;
+    }
 
     @Override
     public boolean saveFile(FileId fileId, byte[] file, String filename) {
@@ -35,9 +40,7 @@ public class FileBuilderMemoryRepository implements FileBuilderRepository {
         map.remove(id.value);
     }
 
-    private static FileBuilderRepository instance = new FileBuilderMemoryRepository();
-
-    public static FileBuilderRepository get() {
-        return instance;
+    public static FileBuilderRepository get(String repositoryName) {
+        return new FileBuilderMemoryRepository(repositoryName);
     }
 }

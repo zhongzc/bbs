@@ -6,10 +6,12 @@ import com.gaufoo.bbs.components.idGenerator.IdGenerator;
 import java.util.Optional;
 
 public class FileBuilderImpl implements FileBuilder {
+    private final String componentName;
     private final FileBuilderRepository repository;
     private final IdGenerator idGenerator;
 
-    FileBuilderImpl(FileBuilderRepository repository, IdGenerator idGenerator) {
+    FileBuilderImpl(String componentName, FileBuilderRepository repository, IdGenerator idGenerator) {
+        this.componentName = componentName;
         this.repository = repository;
         this.idGenerator = idGenerator;
     }
@@ -36,5 +38,10 @@ public class FileBuilderImpl implements FileBuilder {
     @Override
     public void Remove(FileId id) {
         repository.delete(id);
+    }
+
+    @Override
+    public String getName() {
+        return this.componentName;
     }
 }

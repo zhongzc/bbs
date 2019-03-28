@@ -99,6 +99,8 @@ public interface LostFound {
 
     void removeFound(FoundId foundId);
 
+    String getName();
+
     static LostFound defau1t(String componentName, LostFoundRepository repository, IdGenerator idGenerator, IdGenerator foundIds) {
         return new LostFoundImpl(componentName, repository, idGenerator, foundIds);
     }

@@ -205,9 +205,14 @@ public class LostFoundImpl implements LostFound {
         repository.deleteFound(foundId);
     }
 
+    @Override
+    public String getName() {
+        return this.componentName;
+    }
+
     public static void main(String[] args) {
         LostFoundRepository repository = LostFoundMemoryRepository.get("lostfoundRep");
-        LostFound lostFound = LostFound.defau1t("lostfoundCom", repository, IdGenerator.seqInteger(), IdGenerator.seqInteger());
+        LostFound lostFound = LostFound.defau1t("lostfoundCom", repository, IdGenerator.seqInteger(""), IdGenerator.seqInteger(""));
         Optional<LostId> id = lostFound.pubLost(LostInfo.of("aaa", "bbb", Instant.now(), "ccc", "ddd", "fff", "eee"));
         System.out.println(id);
         System.out.println(lostFound.lostInfo(id.get()));

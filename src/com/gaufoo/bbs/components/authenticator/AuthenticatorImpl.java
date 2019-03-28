@@ -10,15 +10,18 @@ import com.gaufoo.bbs.components.validator.Validator;
 import java.time.*;
 
 class AuthenticatorImpl implements Authenticator {
+    private final String componentName;
     private final AuthenticatorRepository repository;
     private final Validator<String> usernameValidator;
     private final Validator<String> passwordValidator;
     private final TokenGenerator tokenGenerator;
 
-    AuthenticatorImpl(AuthenticatorRepository repository,
+    AuthenticatorImpl(String componentName,
+                      AuthenticatorRepository repository,
                       Validator<String> usernameValidator,
                       Validator<String> passwordValidator,
                       TokenGenerator tokenGenerator) {
+        this.componentName = componentName;
         this.repository = repository;
         this.usernameValidator = usernameValidator;
         this.passwordValidator = passwordValidator;
@@ -95,6 +98,11 @@ class AuthenticatorImpl implements Authenticator {
         repository.deleteUserTokenByUsername(username);
     }
 
+    @Override
+    public String getName() {
+        return this.componentName;
+    }
+
     public static void main(String[] args) throws AuthenticatorException {
         // 用户名和密码合法性验证器
         Validator<String> usernameV = Validator.email();
@@ -105,10 +113,11 @@ class AuthenticatorImpl implements Authenticator {
                 .compose(Validator.minLength(8))
                 .compose(Validator.nonContainsSpace());
         // token生成器
-        TokenGenerator tokenGenerator = TokenGenerator.defau1t(TokenGeneratorMemoryRepository.get());
+        TokenGenerator tokenGenerator = TokenGenerator.defau1t("", TokenGeneratorMemoryRepository.get(""));
         // 认证器
         Authenticator authenticator = Authenticator.defau1t(
-                AuthenticatorMemoryRepository.get(),
+                "",
+                AuthenticatorMemoryRepository.get(""),
                 usernameV, passwordV, tokenGenerator
         );
 

@@ -21,6 +21,8 @@ public interface Authenticator {
 
     void resetPassword(ResetToken resetToken, String newPassword) throws AuthenticatorException;
 
+    String getName();
+
     enum Role {
         USER,
         ADMIN,
@@ -29,10 +31,11 @@ public interface Authenticator {
     /**
      * 默认实现
      */
-    static Authenticator defau1t(AuthenticatorRepository repository,
+    static Authenticator defau1t(String componentName,
+                                 AuthenticatorRepository repository,
                                  Validator<String> usernameValidator,
                                  Validator<String> passwordValidator,
                                  TokenGenerator tokenGenerator) {
-        return new AuthenticatorImpl(repository, usernameValidator, passwordValidator, tokenGenerator);
+        return new AuthenticatorImpl(componentName, repository, usernameValidator, passwordValidator, tokenGenerator);
     }
 }

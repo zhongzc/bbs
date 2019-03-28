@@ -14,7 +14,9 @@ public interface FileBuilder {
 
     void Remove(FileId id);
 
-    static FileBuilder defau1t(FileBuilderRepository repository, IdGenerator idGenerator) {
-        return new FileBuilderImpl(repository, idGenerator);
+    String getName();
+
+    static FileBuilder defau1t(String componentName, FileBuilderRepository repository, IdGenerator idGenerator) {
+        return new FileBuilderImpl(componentName, repository, idGenerator);
     }
 }

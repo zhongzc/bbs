@@ -10,10 +10,11 @@ import java.util.Random;
 import java.util.stream.IntStream;
 
 class TokenGeneratorImpl implements TokenGenerator {
-
+    private final String componentName;
     private final TokenGeneratorRepository repository;
 
-    TokenGeneratorImpl(TokenGeneratorRepository repository) {
+    TokenGeneratorImpl(String componentName, TokenGeneratorRepository repository) {
+        this.componentName = componentName;
         this.repository = repository;
     }
 
@@ -52,6 +53,11 @@ class TokenGeneratorImpl implements TokenGenerator {
         repository.delete(token);
     }
 
+    @Override
+    public String getName() {
+        return this.componentName;
+    }
+
     private static final String STRING =
             "ABCDEFGHIJKLMNOPQRSTUVWXYZ" +
             "abcdedfhijklmnopqrstuvwxyz" +
@@ -70,7 +76,7 @@ class TokenGeneratorImpl implements TokenGenerator {
     }
 
     public static void main(String[] args) {
-        TokenGenerator generator = TokenGenerator.defau1t(TokenGeneratorMemoryRepository.get());
+        TokenGenerator generator = TokenGenerator.defau1t("", TokenGeneratorMemoryRepository.get(""));
         System.out.println(generator.genToken("123", Instant.now().plusSeconds(8000)));
     }
 }

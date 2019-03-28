@@ -8,11 +8,14 @@ import java.util.Hashtable;
 import java.util.Map;
 
 public class AuthenticatorMemoryRepository implements AuthenticatorRepository {
+    private final String repositoryName;
     private final Map<String, Tuple<String, Permission>> usernameToPwdPermission = new Hashtable<>();
     private final Map<String, Permission> userTokenToPermission = new Hashtable<>();
     private final Map<String, String> resetTokenToUsername = new Hashtable<>();
 
-    private AuthenticatorMemoryRepository() { }
+    private AuthenticatorMemoryRepository(String repositoryName) {
+        this.repositoryName = repositoryName;
+    }
 
     @Override
     public boolean contains(String username) {
@@ -92,9 +95,7 @@ public class AuthenticatorMemoryRepository implements AuthenticatorRepository {
         resetTokenToUsername.remove(token.value);
     }
 
-    private static AuthenticatorMemoryRepository instance = new AuthenticatorMemoryRepository();
-
-    public static AuthenticatorRepository get() {
-        return instance;
+    public static AuthenticatorRepository get(String repositoryName) {
+        return new AuthenticatorMemoryRepository(repositoryName);
     }
 }

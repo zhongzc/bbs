@@ -9,7 +9,9 @@ public interface TokenGenerator {
 
     void expire(String token);
 
-    static TokenGenerator defau1t(TokenGeneratorRepository repository) {
-        return new TokenGeneratorImpl(repository);
+    String getName();
+
+    static TokenGenerator defau1t(String componentName, TokenGeneratorRepository repository) {
+        return new TokenGeneratorImpl(componentName, repository);
     }
 }

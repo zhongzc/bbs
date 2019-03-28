@@ -3,15 +3,9 @@ package com.gaufoo.bbs.components.idGenerator;
 public interface IdGenerator {
     String generateId();
 
-    static IdGenerator seqInteger() {
-        return new SeqInteger();
-    }
+    String getName();
 
-    public static void main(String[] args) {
-        IdGenerator g = seqInteger();
-        System.out.println(g.generateId());
-        System.out.println(g.generateId());
-        System.out.println(g.generateId());
-        System.out.println(g.generateId());
+    static IdGenerator seqInteger(String componentName) {
+        return new SeqInteger(componentName);
     }
 }

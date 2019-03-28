@@ -7,9 +7,12 @@ import java.util.Hashtable;
 import java.util.Map;
 
 public class TokenGeneratorMemoryRepository implements TokenGeneratorRepository {
+    private final String repositoryName;
     private final Map<String, Instant> map = new Hashtable<>();
 
-    private TokenGeneratorMemoryRepository() {}
+    private TokenGeneratorMemoryRepository(String repositoryName) {
+        this.repositoryName = repositoryName;
+    }
 
     @Override
     public void saveToken(String token, Instant expireTime) {
@@ -27,9 +30,7 @@ public class TokenGeneratorMemoryRepository implements TokenGeneratorRepository 
         if (token != null) map.remove(token);
     }
 
-    private static TokenGeneratorMemoryRepository instance = new TokenGeneratorMemoryRepository();
-
-    public static TokenGeneratorRepository get() {
-        return instance;
+    public static TokenGeneratorRepository get(String repositoryName) {
+        return new TokenGeneratorMemoryRepository(repositoryName);
     }
 }
