@@ -95,6 +95,11 @@ public class AuthenticatorMemoryRepository implements AuthenticatorRepository {
         resetTokenToUsername.remove(token.value);
     }
 
+    @Override
+    public String getRepositoryName() {
+        return this.repositoryName;
+    }
+
     public static AuthenticatorRepository get(String repositoryName) {
         return new AuthenticatorMemoryRepository(repositoryName);
     }

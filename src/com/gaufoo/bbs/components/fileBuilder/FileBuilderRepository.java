@@ -10,4 +10,6 @@ public interface FileBuilderRepository {
     String getURI(FileId fileId);
 
     void delete(FileId id);
+
+    String getRepositoryName();
 }

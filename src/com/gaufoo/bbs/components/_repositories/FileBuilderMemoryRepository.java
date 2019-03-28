@@ -40,6 +40,11 @@ public class FileBuilderMemoryRepository implements FileBuilderRepository {
         map.remove(id.value);
     }
 
+    @Override
+    public String getRepositoryName() {
+        return this.repositoryName;
+    }
+
     public static FileBuilderRepository get(String repositoryName) {
         return new FileBuilderMemoryRepository(repositoryName);
     }

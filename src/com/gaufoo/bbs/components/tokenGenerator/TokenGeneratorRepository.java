@@ -8,5 +8,7 @@ public interface TokenGeneratorRepository {
     Instant getExpireTime(String token);
 
     void delete(String token);
+
+    String getRepositoryName();
 }
 

@@ -74,6 +74,11 @@ public class LostFoundMemoryRepository implements LostFoundRepository {
         founds.remove(id.value);
     }
 
+    @Override
+    public String getRepositoryName() {
+        return this.repositoryName;
+    }
+
     public static LostFoundRepository get(String repositoryName) {
         return new LostFoundMemoryRepository(repositoryName);
     }

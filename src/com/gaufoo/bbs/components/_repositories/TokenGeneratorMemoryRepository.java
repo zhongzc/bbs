@@ -30,6 +30,11 @@ public class TokenGeneratorMemoryRepository implements TokenGeneratorRepository 
         if (token != null) map.remove(token);
     }
 
+    @Override
+    public String getRepositoryName() {
+        return this.repositoryName;
+    }
+
     public static TokenGeneratorRepository get(String repositoryName) {
         return new TokenGeneratorMemoryRepository(repositoryName);
     }

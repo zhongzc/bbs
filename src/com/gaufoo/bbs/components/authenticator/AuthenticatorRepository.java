@@ -29,4 +29,6 @@ public interface AuthenticatorRepository {
     void deleteUserTokenByUsername(String username);
 
     void deleteResetToken(ResetToken token);
+
+    String getRepositoryName();
 }
