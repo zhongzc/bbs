@@ -60,39 +60,39 @@ public interface LostFound {
     boolean claimFound(FoundId foundId, String claimant);
 
     default Stream<LostId> allUnclaimedLosts() {
-        return allLosts()
-                .filter(l -> lostInfo(l).filter(i -> i.claimant == null).isPresent());
+        return allLosts().filter(l ->
+                lostInfo(l).map(i -> i.claimant == null).orElse(false));
     }
 
     default Stream<FoundId> allUnclaimedFounds() {
-        return allFounds()
-                .filter(f -> foundInfo(f).filter(i -> i.claimant == null).isPresent());
+        return allFounds().filter(f ->
+                foundInfo(f).map(i -> i.claimant == null).orElse(false));
     }
 
     default Stream<LostId> searchLostByName(String objName) {
-        return allLosts()
-                .filter(l -> lostInfo(l).filter(i -> i.objName.matches(".*" + objName + ".*")).isPresent());
+        return allLosts().filter(l ->
+                lostInfo(l).map(i -> i.objName.matches(".*" + objName + ".*")).orElse(false));
     }
 
     default Stream<FoundId> searchFoundByName(String objName) {
-        return allFounds()
-                .filter(f -> foundInfo(f).filter(i -> i.objName.matches(".*" + objName + ".*")).isPresent());
+        return allFounds().filter(f ->
+                foundInfo(f).map(i -> i.objName.matches(".*" + objName + ".*")).orElse(false));
     }
 
     default Stream<LostId> searchLostByTime(Instant begin, Instant end) {
         return allLosts()
-                .filter(lostId -> lostInfo(lostId).filter(l -> {
+                .filter(lostId -> lostInfo(lostId).map(l -> {
                     Instant lostTime = l.lostTime;
                     return !begin.isAfter(lostTime) && !lostTime.isAfter(end);
-                }).isPresent());
+                }).orElse(false));
     }
 
     default Stream<FoundId> searchFoundByTime(Instant begin, Instant end) {
         return allFounds()
-                .filter(foundId -> foundInfo(foundId).filter(f -> {
+                .filter(foundId -> foundInfo(foundId).map(f -> {
                     Instant foundTime = f.foundTime;
                     return !begin.isAfter(foundTime) && !foundTime.isAfter(end);
-                }).isPresent());
+                }).orElse(false));
     }
 
     void removeLost(LostId lostId);

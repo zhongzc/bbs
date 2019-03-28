@@ -12,8 +12,9 @@ final public class LostInfo {
     public final String imageIdentifier;
     public final String contact;
     public final String claimant;
+    public final Instant createTime;
 
-    private LostInfo(String publisher, String objName, Instant lostTime, String position, String description, String imageIdentifier, String contact, String claimant) {
+    private LostInfo(String publisher, String objName, Instant lostTime, String position, String description, String imageIdentifier, String contact, String claimant, Instant createTime) {
         this.publisher = publisher;
         this.objName = objName;
         this.lostTime = lostTime;
@@ -22,51 +23,57 @@ final public class LostInfo {
         this.imageIdentifier = imageIdentifier;
         this.contact = contact;
         this.claimant = claimant;
+        this.createTime = createTime;
     }
 
-    public static LostInfo of(String publisher, String objName, Instant lostTime, String position, String description, String imageIdentifier, String contact, String claimant) {
-        return new LostInfo(publisher, objName, lostTime, position, description, imageIdentifier, contact, claimant);
+    public static LostInfo of(String publisher, String objName, Instant lostTime, String position, String description, String imageIdentifier, String contact, String claimant, Instant createTime) {
+        return new LostInfo(publisher, objName, lostTime, position, description, imageIdentifier, contact, claimant, createTime);
     }
 
     public static LostInfo of(String publisher, String objName, Instant lostTime, String position, String description, String imageIdentifier, String contact) {
-        return new LostInfo(publisher, objName, lostTime, position, description, imageIdentifier, contact, null);
+        return new LostInfo(publisher, objName, lostTime, position, description, imageIdentifier, contact, null, Instant.now());
     }
 
     public LostInfo modPublisher(String publisher) {
-        return new LostInfo(publisher, this.objName, this.lostTime, this.position, this.description, this.imageIdentifier, this.contact, this.claimant);
+        return new LostInfo(publisher, this.objName, this.lostTime, this.position, this.description, this.imageIdentifier, this.contact, this.claimant, this.createTime);
     }
 
     public LostInfo modObjName(String objName) {
-        return new LostInfo(this.publisher, objName, this.lostTime, this.position, this.description, this.imageIdentifier, this.contact, this.claimant);
+        return new LostInfo(this.publisher, objName, this.lostTime, this.position, this.description, this.imageIdentifier, this.contact, this.claimant, this.createTime);
     }
 
     public LostInfo modLostTime(Instant lostTime) {
-        return new LostInfo(this.publisher, this.objName, lostTime, this.position, this.description, this.imageIdentifier, this.contact, this.claimant);
+        return new LostInfo(this.publisher, this.objName, lostTime, this.position, this.description, this.imageIdentifier, this.contact, this.claimant, this.createTime);
     }
 
     public LostInfo modPosition(String position) {
-        return new LostInfo(this.publisher, this.objName, this.lostTime, position, this.description, this.imageIdentifier, this.contact, this.claimant);
+        return new LostInfo(this.publisher, this.objName, this.lostTime, position, this.description, this.imageIdentifier, this.contact, this.claimant, this.createTime);
     }
 
     public LostInfo modDescription(String description) {
-        return new LostInfo(this.publisher, this.objName, this.lostTime, this.position, description, this.imageIdentifier, this.contact, this.claimant);
+        return new LostInfo(this.publisher, this.objName, this.lostTime, this.position, description, this.imageIdentifier, this.contact, this.claimant, this.createTime);
     }
 
     public LostInfo modImageIdentifier(String imageIdentifier) {
-        return new LostInfo(this.publisher, this.objName, this.lostTime, this.position, this.description, imageIdentifier, this.contact, this.claimant);
+        return new LostInfo(this.publisher, this.objName, this.lostTime, this.position, this.description, imageIdentifier, this.contact, this.claimant, this.createTime);
     }
 
     public LostInfo modContact(String contact) {
-        return new LostInfo(this.publisher, this.objName, this.lostTime, this.position, this.description, this.imageIdentifier, contact, this.claimant);
+        return new LostInfo(this.publisher, this.objName, this.lostTime, this.position, this.description, this.imageIdentifier, contact, this.claimant, this.createTime);
     }
 
     public LostInfo modClaimant(String claimant) {
-        return new LostInfo(this.publisher, this.objName, this.lostTime, this.position, this.description, this.imageIdentifier, this.contact, claimant);
+        return new LostInfo(this.publisher, this.objName, this.lostTime, this.position, this.description, this.imageIdentifier, this.contact, claimant, this.createTime);
+    }
+
+    public LostInfo modeCreateTime(Instant createTime) {
+        return new LostInfo(this.publisher, this.objName, this.lostTime, this.position, this.description, this.imageIdentifier, this.contact, this.claimant, createTime);
+
     }
 
     @Override
     public String toString() {
-        return "LostInfo" + "(" + "'" + this.publisher + "'" + ", " + "'" + this.objName + "'" + ", " + this.lostTime + ", " + "'" + this.position + "'" + ", " + "'" + this.description + "'" + ", " + "'" + this.imageIdentifier + "'" + ", " + "'" + this.contact + "'" + ", " + "'" + this.claimant + "'" + ')';
+        return "LostInfo" + "(" + "'" + this.publisher + "'" + ", " + "'" + this.objName + "'" + ", " + this.lostTime + ", " + "'" + this.position + "'" + ", " + "'" + this.description + "'" + ", " + "'" + this.imageIdentifier + "'" + ", " + "'" + this.contact + "'" + ", " + this.createTime + ')';
     }
 
     @Override

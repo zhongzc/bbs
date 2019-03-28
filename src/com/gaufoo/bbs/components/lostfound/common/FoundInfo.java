@@ -12,8 +12,9 @@ final public class FoundInfo {
     public final String imageIdentifier;
     public final String contact;
     public final String claimant;
+    public final Instant createTime;
 
-    private FoundInfo(String publisher, String objName, Instant foundTime, String position, String description, String imageIdentifier, String contact, String claimant) {
+    private FoundInfo(String publisher, String objName, Instant foundTime, String position, String description, String imageIdentifier, String contact, String claimant, Instant createTime) {
         this.publisher = publisher;
         this.objName = objName;
         this.foundTime = foundTime;
@@ -22,47 +23,57 @@ final public class FoundInfo {
         this.imageIdentifier = imageIdentifier;
         this.contact = contact;
         this.claimant = claimant;
+        this.createTime = createTime;
     }
 
-    public static FoundInfo of(String publisher, String objName, Instant foundTime, String position, String description, String imageURI, String contact, String claimant) {
-        return new FoundInfo(publisher, objName, foundTime, position, description, imageURI, contact, claimant);
+    public static FoundInfo of(String publisher, String objName, Instant foundTime, String position, String description, String imageURI, String contact, String claimant, Instant createTime) {
+        return new FoundInfo(publisher, objName, foundTime, position, description, imageURI, contact, claimant, createTime);
+    }
+
+    public static FoundInfo of(String publisher, String objName, Instant foundTime, String position, String description, String imageURI, String contact) {
+        return new FoundInfo(publisher, objName, foundTime, position, description, imageURI, contact, null, Instant.now());
     }
 
     public FoundInfo modPublisher(String publisher) {
-        return new FoundInfo(publisher, this.objName, this.foundTime, this.position, this.description, this.imageIdentifier, this.contact, this.claimant);
+        return new FoundInfo(publisher, this.objName, this.foundTime, this.position, this.description, this.imageIdentifier, this.contact, this.claimant, this.createTime);
     }
 
     public FoundInfo modObjName(String objName) {
-        return new FoundInfo(this.publisher, objName, this.foundTime, this.position, this.description, this.imageIdentifier, this.contact, this.claimant);
+        return new FoundInfo(this.publisher, objName, this.foundTime, this.position, this.description, this.imageIdentifier, this.contact, this.claimant, this.createTime);
     }
 
     public FoundInfo modFoundTime(Instant foundTime) {
-        return new FoundInfo(this.publisher, this.objName, foundTime, this.position, this.description, this.imageIdentifier, this.contact, this.claimant);
+        return new FoundInfo(this.publisher, this.objName, foundTime, this.position, this.description, this.imageIdentifier, this.contact, this.claimant, this.createTime);
     }
 
     public FoundInfo modPosition(String position) {
-        return new FoundInfo(this.publisher, this.objName, this.foundTime, position, this.description, this.imageIdentifier, this.contact, this.claimant);
+        return new FoundInfo(this.publisher, this.objName, this.foundTime, position, this.description, this.imageIdentifier, this.contact, this.claimant, this.createTime);
     }
 
     public FoundInfo modDescription(String description) {
-        return new FoundInfo(this.publisher, this.objName, this.foundTime, this.position, description, this.imageIdentifier, this.contact, this.claimant);
+        return new FoundInfo(this.publisher, this.objName, this.foundTime, this.position, description, this.imageIdentifier, this.contact, this.claimant, this.createTime);
     }
 
     public FoundInfo modImageIdentifier(String imageIdentifier) {
-        return new FoundInfo(this.publisher, this.objName, this.foundTime, this.position, this.description, imageIdentifier, this.contact, this.claimant);
+        return new FoundInfo(this.publisher, this.objName, this.foundTime, this.position, this.description, imageIdentifier, this.contact, this.claimant, this.createTime);
     }
 
     public FoundInfo modContact(String contact) {
-        return new FoundInfo(this.publisher, this.objName, this.foundTime, this.position, this.description, this.imageIdentifier, contact, this.claimant);
+        return new FoundInfo(this.publisher, this.objName, this.foundTime, this.position, this.description, this.imageIdentifier, contact, this.claimant, this.createTime);
     }
 
     public FoundInfo modClaimant(String claimant) {
-        return new FoundInfo(this.publisher, this.objName, this.foundTime, this.position, this.description, this.imageIdentifier, this.contact, claimant);
+        return new FoundInfo(this.publisher, this.objName, this.foundTime, this.position, this.description, this.imageIdentifier, this.contact, claimant, this.createTime);
+    }
+
+    public FoundInfo modCreateTime(Instant createTime) {
+        return new FoundInfo(this.publisher, this.objName, this.foundTime, this.position, this.description, this.imageIdentifier, this.contact, this.claimant, createTime);
+
     }
 
     @Override
     public String toString() {
-        return "FoundInfo" + "(" + "'" + this.publisher + "'" + ", " + "'" + this.objName + "'" + ", " + this.foundTime + ", " + "'" + this.position + "'" + ", " + "'" + this.description + "'" + ", " + "'" + this.imageIdentifier + "'" + ", " + "'" + this.contact + "'" + ", " + "'" + this.claimant + "'" + ')';
+        return "FoundInfo" + "(" + "'" + this.publisher + "'" + ", " + "'" + this.objName + "'" + ", " + this.foundTime + ", " + "'" + this.position + "'" + ", " + "'" + this.description + "'" + ", " + "'" + this.imageIdentifier + "'" + ", " + "'" + this.contact + "'" + ", " + "'" + this.claimant + "'" + ", " + this.createTime + ')';
     }
 
     @Override
