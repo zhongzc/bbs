@@ -1,17 +1,17 @@
 package com.gaufoo.bbs.components._repositories;
 
-import com.gaufoo.bbs.components.fileBuilder.FileBuilderRepository;
-import com.gaufoo.bbs.components.fileBuilder.common.FileId;
+import com.gaufoo.bbs.components.file.FileFactoryRepository;
+import com.gaufoo.bbs.components.file.common.FileId;
 import com.gaufoo.bbs.util.Tuple;
 
 import java.util.Hashtable;
 import java.util.Map;
 
-public class FileBuilderMemoryRepository implements FileBuilderRepository {
+public class FileFactoryMemoryRepository implements FileFactoryRepository {
     private final String repositoryName;
     private final Map<String, Tuple<byte[], String>> map = new Hashtable<>();
 
-    public FileBuilderMemoryRepository(String repositoryName) {
+    public FileFactoryMemoryRepository(String repositoryName) {
         this.repositoryName = repositoryName;
     }
 
@@ -45,7 +45,7 @@ public class FileBuilderMemoryRepository implements FileBuilderRepository {
         return this.repositoryName;
     }
 
-    public static FileBuilderRepository get(String repositoryName) {
-        return new FileBuilderMemoryRepository(repositoryName);
+    public static FileFactoryRepository get(String repositoryName) {
+        return new FileFactoryMemoryRepository(repositoryName);
     }
 }

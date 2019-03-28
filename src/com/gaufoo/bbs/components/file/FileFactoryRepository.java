@@ -1,8 +1,8 @@
-package com.gaufoo.bbs.components.fileBuilder;
+package com.gaufoo.bbs.components.file;
 
-import com.gaufoo.bbs.components.fileBuilder.common.FileId;
+import com.gaufoo.bbs.components.file.common.FileId;
 
-public interface FileBuilderRepository {
+public interface FileFactoryRepository {
     boolean saveFile(FileId fileId, byte[] file, String filename);
 
     String getFilename(FileId fileId);

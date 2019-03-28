@@ -216,8 +216,9 @@ public class LostFoundImpl implements LostFound {
         Optional<LostId> id = lostFound.pubLost(LostInfo.of("aaa", "bbb", Instant.now(), "ccc", "ddd", "fff", "eee"));
         System.out.println(id);
         System.out.println(lostFound.lostInfo(id.get()));
-        lostFound.changeImageIdentifier(id.get(), "a-beautiful-pic");
-        System.out.println(lostFound.lostInfo(id.get()));
+        if( lostFound.changeImageIdentifier(id.get(), "a-beautiful-pic")) {
+            System.out.println(lostFound.lostInfo(id.get()));
+        }
     }
 
 }

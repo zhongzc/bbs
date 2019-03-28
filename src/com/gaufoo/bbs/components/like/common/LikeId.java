@@ -1,32 +1,32 @@
-package com.gaufoo.bbs.components.fileBuilder.common;
+package com.gaufoo.bbs.components.like.common;
 
 import java.util.Objects;
 
-final public class FileId {
+public class LikeId {
     public final String value;
 
-    private FileId(String value) {
+    private LikeId(String value) {
         this.value = value;
     }
 
-    public static FileId of(String value) {
-        return new FileId(value);
+    public static LikeId of(String value) {
+        return new LikeId(value);
     }
 
-    public FileId modValue(String value) {
-        return new FileId(value);
+    public LikeId modValue(String value) {
+        return new LikeId(value);
     }
 
     @Override
     public String toString() {
-        return "FileId" + "(" + "'" + this.value + "'" + ')';
+        return "LikeId" + "(" + "'" + this.value + "'" + ')';
     }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        FileId other = (FileId) o;
+        LikeId other = (LikeId) o;
         return Objects.equals(value, other.value);
     }
 
