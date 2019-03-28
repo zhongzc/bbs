@@ -8,37 +8,50 @@ import java.util.Map;
 import java.util.stream.Stream;
 
 public class LostFoundMemoryRepository implements LostFoundRepository {
-    private final Map<String, LostInput> losts = new Hashtable<>();
-    private final Map<String, FoundInput> founds = new Hashtable<>();
+    private final String repositoryName;
+    private final Map<String, LostInfo> losts = new Hashtable<>();
+    private final Map<String, FoundInfo> founds = new Hashtable<>();
 
-    @Override
-    public boolean saveLost(LostId id, LostInternal info) {
-        return false;
+    private LostFoundMemoryRepository(String repositoryName) {
+        this.repositoryName = repositoryName;
     }
 
     @Override
-    public boolean saveFound(FoundId id, FoundInternal info) {
-        return false;
+    public boolean saveLost(LostId id, LostInfo info) {
+        if (losts.containsKey(id.value)) return false;
+        losts.put(id.value, info);
+        return true;
     }
 
     @Override
-    public boolean updateLost(LostId id, LostInternal info) {
-        return false;
+    public boolean saveFound(FoundId id, FoundInfo info) {
+        if (founds.containsKey(id.value)) return false;
+        founds.put(id.value, info);
+        return true;
     }
 
     @Override
-    public boolean updateFound(FoundId id, FoundInternal info) {
-        return false;
+    public boolean updateLost(LostId id, LostInfo info) {
+        if (!losts.containsKey(id.value)) return false;
+        losts.replace(id.value, info);
+        return true;
     }
 
     @Override
-    public LostInternal getLostInfo(LostId id) {
-        return null;
+    public boolean updateFound(FoundId id, FoundInfo info) {
+        if (!founds.containsKey(id.value)) return false;
+        founds.replace(id.value, info);
+        return true;
     }
 
     @Override
-    public FoundInternal getFoundInfo(FoundId id) {
-        return null;
+    public LostInfo getLostInfo(LostId id) {
+        return losts.get(id.value);
+    }
+
+    @Override
+    public FoundInfo getFoundInfo(FoundId id) {
+        return founds.get(id.value);
     }
 
     @Override
@@ -61,9 +74,7 @@ public class LostFoundMemoryRepository implements LostFoundRepository {
         founds.remove(id.value);
     }
 
-    private static LostFoundRepository instance = new LostFoundMemoryRepository();
-
-    public static LostFoundRepository get() {
-        return instance;
+    public static LostFoundRepository get(String repositoryName) {
+        return new LostFoundMemoryRepository(repositoryName);
     }
 }

@@ -1,25 +1,55 @@
 package com.gaufoo.bbs.components.lostfound;
 
-import com.gaufoo.bbs.components.fileBuilder.FileBuilder;
 import com.gaufoo.bbs.components.idGenerator.IdGenerator;
-import com.gaufoo.bbs.components.lostfound.common.*;
+import com.gaufoo.bbs.components.lostfound.common.FoundId;
+import com.gaufoo.bbs.components.lostfound.common.FoundInfo;
+import com.gaufoo.bbs.components.lostfound.common.LostId;
+import com.gaufoo.bbs.components.lostfound.common.LostInfo;
 
 import java.time.Instant;
 import java.util.Optional;
 import java.util.stream.Stream;
 
 public interface LostFound {
-    Optional<LostId> pubLost(LostInput lostInput);
+    Optional<LostId> pubLost(LostInfo lostInput);
 
-    Optional<FoundId> pubFound(FoundInput foundInput);
+    Optional<FoundId> pubFound(FoundInfo foundInput);
 
     Optional<LostInfo> lostInfo(LostId lostId);
 
     Optional<FoundInfo> foundInfo(FoundId foundId);
 
-//    boolean changeLostInfo(LostId lostId, LostInput lostInput);
-//
-//    boolean changeFoundInfo(FoundId foundId, FoundInput foundInput);
+    boolean changePublisher(LostId lostId, String newPublisher);
+
+    boolean changeObjName(LostId lostId, String newObjName);
+
+    boolean changeLostTime(LostId lostId, Instant newLostTime);
+
+    boolean changePosition(LostId lostId, String newPosition);
+
+    boolean changeDescription(LostId lostId, String newDescription);
+
+    boolean changeImageIdentifier(LostId lostId, String newImageIdentifier);
+
+    boolean changeContact(LostId lostId, String newContact);
+
+    boolean changeClaimant(LostId lostId, String newClaimant);
+
+    boolean changePublisher(FoundId foundId, String newPublisher);
+
+    boolean changeObjName(FoundId foundId, String newObjName);
+
+    boolean changeFoundTime(FoundId foundId, Instant newFoundTime);
+
+    boolean changePosition(FoundId foundId, String newPosition);
+
+    boolean changeDescription(FoundId foundId, String newDescription);
+
+    boolean changeImageIdentifier(FoundId foundId, String newImageIdentifier);
+
+    boolean changeContact(FoundId foundId, String newContact);
+
+    boolean changeClaimant(FoundId foundId, String newClaimant);
 
     Stream<LostId> allLosts();
 
@@ -69,10 +99,7 @@ public interface LostFound {
 
     void removeFound(FoundId foundId);
 
-    static LostFound defau1t(LostFoundRepository repository,
-                             FileBuilder fileBuilder,
-                             IdGenerator idGenerator,
-                             IdGenerator foundIds) {
-        return new LostFoundImpl(repository, fileBuilder, idGenerator, foundIds);
+    static LostFound defau1t(String componentName, LostFoundRepository repository, IdGenerator idGenerator, IdGenerator foundIds) {
+        return new LostFoundImpl(componentName, repository, idGenerator, foundIds);
     }
 }

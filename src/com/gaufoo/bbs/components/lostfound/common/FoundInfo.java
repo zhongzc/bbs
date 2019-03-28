@@ -9,17 +9,17 @@ final public class FoundInfo {
     public final Instant foundTime;
     public final String position;
     public final String description;
-    public final String imageURI;
+    public final String imageIdentifier;
     public final String contact;
     public final String claimant;
 
-    private FoundInfo(String publisher, String objName, Instant foundTime, String position, String description, String imageURI, String contact, String claimant) {
+    private FoundInfo(String publisher, String objName, Instant foundTime, String position, String description, String imageIdentifier, String contact, String claimant) {
         this.publisher = publisher;
         this.objName = objName;
         this.foundTime = foundTime;
         this.position = position;
         this.description = description;
-        this.imageURI = imageURI;
+        this.imageIdentifier = imageIdentifier;
         this.contact = contact;
         this.claimant = claimant;
     }
@@ -29,40 +29,40 @@ final public class FoundInfo {
     }
 
     public FoundInfo modPublisher(String publisher) {
-        return new FoundInfo(publisher, this.objName, this.foundTime, this.position, this.description, this.imageURI, this.contact, this.claimant);
+        return new FoundInfo(publisher, this.objName, this.foundTime, this.position, this.description, this.imageIdentifier, this.contact, this.claimant);
     }
 
     public FoundInfo modObjName(String objName) {
-        return new FoundInfo(this.publisher, objName, this.foundTime, this.position, this.description, this.imageURI, this.contact, this.claimant);
+        return new FoundInfo(this.publisher, objName, this.foundTime, this.position, this.description, this.imageIdentifier, this.contact, this.claimant);
     }
 
     public FoundInfo modFoundTime(Instant foundTime) {
-        return new FoundInfo(this.publisher, this.objName, foundTime, this.position, this.description, this.imageURI, this.contact, this.claimant);
+        return new FoundInfo(this.publisher, this.objName, foundTime, this.position, this.description, this.imageIdentifier, this.contact, this.claimant);
     }
 
     public FoundInfo modPosition(String position) {
-        return new FoundInfo(this.publisher, this.objName, this.foundTime, position, this.description, this.imageURI, this.contact, this.claimant);
+        return new FoundInfo(this.publisher, this.objName, this.foundTime, position, this.description, this.imageIdentifier, this.contact, this.claimant);
     }
 
     public FoundInfo modDescription(String description) {
-        return new FoundInfo(this.publisher, this.objName, this.foundTime, this.position, description, this.imageURI, this.contact, this.claimant);
+        return new FoundInfo(this.publisher, this.objName, this.foundTime, this.position, description, this.imageIdentifier, this.contact, this.claimant);
     }
 
-    public FoundInfo modImageURI(String imageURI) {
-        return new FoundInfo(this.publisher, this.objName, this.foundTime, this.position, this.description, imageURI, this.contact, this.claimant);
+    public FoundInfo modImageIdentifier(String imageIdentifier) {
+        return new FoundInfo(this.publisher, this.objName, this.foundTime, this.position, this.description, imageIdentifier, this.contact, this.claimant);
     }
 
     public FoundInfo modContact(String contact) {
-        return new FoundInfo(this.publisher, this.objName, this.foundTime, this.position, this.description, this.imageURI, contact, this.claimant);
+        return new FoundInfo(this.publisher, this.objName, this.foundTime, this.position, this.description, this.imageIdentifier, contact, this.claimant);
     }
 
     public FoundInfo modClaimant(String claimant) {
-        return new FoundInfo(this.publisher, this.objName, this.foundTime, this.position, this.description, this.imageURI, this.contact, claimant);
+        return new FoundInfo(this.publisher, this.objName, this.foundTime, this.position, this.description, this.imageIdentifier, this.contact, claimant);
     }
 
     @Override
     public String toString() {
-        return "FoundInfo" + "(" + "'" + this.publisher + "'" + ", " + "'" + this.objName + "'" + ", " + this.foundTime + ", " + "'" + this.position + "'" + ", " + "'" + this.description + "'" + ", " + "'" + this.imageURI + "'" + ", " + "'" + this.contact + "'" + ", " + "'" + this.claimant + "'" + ')';
+        return "FoundInfo" + "(" + "'" + this.publisher + "'" + ", " + "'" + this.objName + "'" + ", " + this.foundTime + ", " + "'" + this.position + "'" + ", " + "'" + this.description + "'" + ", " + "'" + this.imageIdentifier + "'" + ", " + "'" + this.contact + "'" + ", " + "'" + this.claimant + "'" + ')';
     }
 
     @Override
@@ -75,13 +75,14 @@ final public class FoundInfo {
                 Objects.equals(foundTime, other.foundTime) &&
                 Objects.equals(position, other.position) &&
                 Objects.equals(description, other.description) &&
-                Objects.equals(imageURI, other.imageURI) &&
+                Objects.equals(imageIdentifier, other.imageIdentifier) &&
                 Objects.equals(contact, other.contact) &&
                 Objects.equals(claimant, other.claimant);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(publisher, objName, foundTime, position, description, imageURI, contact, claimant);
+        return Objects.hash(publisher, objName, foundTime, position, description, imageIdentifier, contact, claimant);
     }
+
 }
