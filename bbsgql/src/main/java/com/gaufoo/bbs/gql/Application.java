@@ -1,4 +1,4 @@
-package com.gaufoo.bbsgql;
+package com.gaufoo.bbs.gql;
 
 import com.coxautodev.graphql.tools.SchemaParserDictionary;
 import com.gaufoo.bbs.application.resTypes.SignUpError;

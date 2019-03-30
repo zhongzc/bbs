@@ -1,4 +1,4 @@
-package com.gaufoo.bbsgql;
+package com.gaufoo.bbs.gql;
 
 import com.coxautodev.graphql.tools.GraphQLQueryResolver;
 import graphql.schema.DataFetchingEnvironment;

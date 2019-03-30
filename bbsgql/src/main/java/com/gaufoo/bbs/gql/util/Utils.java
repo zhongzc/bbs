@@ -1,4 +1,4 @@
-package com.gaufoo.bbsgql.util;
+package com.gaufoo.bbs.gql.util;
 
 import graphql.schema.DataFetchingEnvironment;
 import graphql.servlet.GraphQLContext;
