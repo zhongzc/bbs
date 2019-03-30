@@ -20,7 +20,6 @@ public class Authentication {
 
             Optional<UserId> userId = ComponentFactory.user.createUser(UserInfo.of(nickname, null, UserInfo.Gender.secret, null, null, null));
             if (!userId.isPresent()) {
-                ComponentFactory.authenticator.remove(username);
                 return SignUpError.of("用户创建失败");
             } else {
                 needUser.attach(Permission.of(userId.get().value, Authenticator.Role.USER));
