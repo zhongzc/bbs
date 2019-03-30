@@ -4,6 +4,8 @@ import com.gaufoo.bbs.components._repositories.AuthenticatorMemoryRepository;
 import com.gaufoo.bbs.components._repositories.TokenGeneratorMemoryRepository;
 import com.gaufoo.bbs.components._repositories.UserFactoryMemoryRepository;
 import com.gaufoo.bbs.components.authenticator.Authenticator;
+import com.gaufoo.bbs.components.authenticator.common.Permission;
+import com.gaufoo.bbs.components.authenticator.exceptions.AuthenticatorException;
 import com.gaufoo.bbs.components.idGenerator.IdGenerator;
 import com.gaufoo.bbs.components.tokenGenerator.TokenGenerator;
 import com.gaufoo.bbs.components.user.UserFactory;
