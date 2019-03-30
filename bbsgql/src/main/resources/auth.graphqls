@@ -1,0 +1,9 @@
+type SignUpError {
+    error: String!
+}
+
+type SignUpPayload {
+    token: String!
+}
+
+union SignUpResult = SignUpError | SignUpPayload

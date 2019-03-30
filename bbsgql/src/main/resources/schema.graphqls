@@ -1,0 +1,14 @@
+type Query {
+    test(testStr: String!): String!
+}
+
+type Mutation {
+    test(testStr: String!): String!
+
+    signUp(username: String!, password: String!, nickname: String!): SignUpResult!
+}
+
+schema {
+    query: Query
+    mutation: Mutation
+}
