@@ -8,7 +8,7 @@
         <version>2.1.3.RELEASE</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
-    <groupId>com.gaufoo</groupId>
+    <groupId>com.gaufoo.bbs</groupId>
     <artifactId>bbsgql</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>bbsgql</name>
@@ -43,7 +43,7 @@
             <version>${graphql.tools.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.gaufoo</groupId>
+            <groupId>com.gaufoo.bbs</groupId>
             <artifactId>bbsapp</artifactId>
             <version>1.0-SNAPSHOT</version>
             <scope>compile</scope>
