@@ -29,11 +29,14 @@ class AuthenticatorImpl implements Authenticator {
     }
 
     @Override
-    public void signUp(String username, String password, Permission permission) throws AuthenticatorException {
+    public Attachable signUp(String username, String password) throws AuthenticatorException {
         if (!usernameValidator.validate(username)) throw new UsernameInvalid("用户名不合法");
         if (!passwordValidator.validate(password)) throw new PasswordInvalid("密码不合法");
         if (repository.contains(username)) throw new UsernameInvalid("用户名已存在");
-        if (!repository.saveUser(username, password, permission)) throw new CommonException("注册失败");
+
+        return permission -> {
+            if (!repository.saveUser(username, password, permission)) throw new CommonException("注册失败");
+        };
     }
 
     @Override
@@ -99,6 +102,11 @@ class AuthenticatorImpl implements Authenticator {
     }
 
     @Override
+    public void remove(String username) {
+        repository.deleteUser(username);
+    }
+
+    @Override
     public String getName() {
         return this.componentName;
     }
@@ -122,7 +130,7 @@ class AuthenticatorImpl implements Authenticator {
         );
 
         // 注册
-        authenticator.signUp("gaufoo@123.com", "Abc123456",
+        authenticator.signUp("gaufoo@123.com", "Abc123456").attach(
                 Permission.of("001", Authenticator.Role.USER));
         // 登录
         UserToken token = authenticator.login("gaufoo@123.com", "Abc123456");

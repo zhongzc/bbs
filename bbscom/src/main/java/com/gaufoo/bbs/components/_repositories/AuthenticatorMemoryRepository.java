@@ -6,6 +6,7 @@ import com.gaufoo.bbs.util.Tuple;
 
 import java.util.Hashtable;
 import java.util.Map;
+import java.util.Optional;
 
 public class AuthenticatorMemoryRepository implements AuthenticatorRepository {
     private final String repositoryName;
@@ -71,6 +72,17 @@ public class AuthenticatorMemoryRepository implements AuthenticatorRepository {
     @Override
     public String getUsernameByResetToken(ResetToken token) {
         return resetTokenToUsername.get(token.value);
+    }
+
+    @Override
+    public void deleteUser(String username) {
+        Optional.ofNullable(usernameToPwdPermission.get(username))
+                .map(t -> userTokenToPermission.entrySet().removeIf(p ->
+                        p.getValue().equals(t.y)));
+
+        resetTokenToUsername.entrySet().removeIf(p -> p.getValue().equals(username));
+
+        userTokenToPermission.remove(username);
     }
 
     @Override

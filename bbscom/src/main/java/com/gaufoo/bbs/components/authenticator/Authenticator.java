@@ -1,5 +1,6 @@
 package com.gaufoo.bbs.components.authenticator;
 
+import com.gaufoo.bbs.components.authenticator.common.Attachable;
 import com.gaufoo.bbs.components.authenticator.common.UserToken;
 import com.gaufoo.bbs.components.authenticator.common.Permission;
 import com.gaufoo.bbs.components.authenticator.common.ResetToken;
@@ -9,7 +10,7 @@ import com.gaufoo.bbs.components.validator.Validator;
 
 public interface Authenticator {
 
-    void signUp(String username, String password, Permission permission) throws AuthenticatorException;
+    Attachable signUp(String username, String password) throws AuthenticatorException;
 
     UserToken login(String username, String password) throws AuthenticatorException;
 
@@ -20,6 +21,8 @@ public interface Authenticator {
     ResetToken reqResetPassword(String username) throws AuthenticatorException;
 
     void resetPassword(ResetToken resetToken, String newPassword) throws AuthenticatorException;
+
+    void remove(String username);
 
     String getName();
 
