@@ -4,10 +4,12 @@ import com.gaufoo.bbs.components._repositories.LikeComponentMemoryRepository;
 import com.gaufoo.bbs.components.idGenerator.IdGenerator;
 import com.gaufoo.bbs.components.like.common.LikeId;
 import com.gaufoo.bbs.components.like.common.LikeInfo;
+import com.gaufoo.bbs.util.Util;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class LikeComponentImpl implements LikeComponent {
@@ -33,27 +35,24 @@ public class LikeComponentImpl implements LikeComponent {
     @Override
     public boolean like(LikeId likee, String liker) {
         Optional<LikeInfo> info = Optional.ofNullable(repository.getLikeInfo(likee));
-        return info.map(i -> {
-            List<String> lk = i.liker;
-            return lk.add(liker);
-        }).orElse(false);
+        return info.map(i -> i.liker.add(liker)
+                && repository.updateLike(likee, i)).orElse(false);
     }
 
     @Override
     public boolean cancelLike(LikeId likee, String liker) {
         Optional<LikeInfo> info = Optional.ofNullable(repository.getLikeInfo(likee));
-        return info.map(i -> {
-            List<String> lk = i.liker;
-            return lk.remove(liker);
-        }).orElse(false);
+        return info.map(i -> i.liker.remove(liker)
+                && repository.updateLike(likee, i)).orElse(false);
     }
 
     @Override
     public boolean dislike(LikeId likee, String disliker) {
         Optional<LikeInfo> info = Optional.ofNullable(repository.getLikeInfo(likee));
         return info.map(i -> {
-            List<String> dlk = i.disliker;
-            return dlk.add(disliker);
+            i.liker.remove(disliker);
+            return i.disliker.add(disliker)
+                    && repository.updateLike(likee, i);
         }).orElse(false);
     }
 
@@ -94,5 +93,9 @@ public class LikeComponentImpl implements LikeComponent {
         like.like(id.get(), "mee");
         System.out.println(like.likeInfo(id.get()));
         System.out.println(like.likeValue(id.get(), (l, dl) -> l - dl));
+        like.cancelLike(id.get(), "mee");
+        System.out.println(like.likeInfo(id.get()));
+        like.dislike(id.get(), "mee");
+        System.out.println(like.likeInfo(id.get()));
     }
 }

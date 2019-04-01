@@ -2,15 +2,21 @@ package com.gaufoo.bbs.components._repositories;
 
 import com.gaufoo.bbs.components.lostfound.LostFoundRepository;
 import com.gaufoo.bbs.components.lostfound.common.*;
+import com.google.gson.Gson;
 
 import java.util.Hashtable;
 import java.util.Map;
 import java.util.stream.Stream;
 
 public class LostFoundMemoryRepository implements LostFoundRepository {
+    private final static Gson gson = new Gson();
     private final String repositoryName;
-    private final Map<String, LostInfo> losts = new Hashtable<>();
-    private final Map<String, FoundInfo> founds = new Hashtable<>();
+
+    // LostId -> LostInfo
+    private final Map<String, String> losts = new Hashtable<>();
+
+    // FoundId -> FoundInfo
+    private final Map<String, String> founds = new Hashtable<>();
 
     private LostFoundMemoryRepository(String repositoryName) {
         this.repositoryName = repositoryName;
@@ -19,39 +25,39 @@ public class LostFoundMemoryRepository implements LostFoundRepository {
     @Override
     public boolean saveLost(LostId id, LostInfo info) {
         if (losts.containsKey(id.value)) return false;
-        losts.put(id.value, info);
+        losts.put(id.value, gson.toJson(info));
         return true;
     }
 
     @Override
     public boolean saveFound(FoundId id, FoundInfo info) {
         if (founds.containsKey(id.value)) return false;
-        founds.put(id.value, info);
+        founds.put(id.value, gson.toJson(info));
         return true;
     }
 
     @Override
     public boolean updateLost(LostId id, LostInfo info) {
         if (!losts.containsKey(id.value)) return false;
-        losts.replace(id.value, info);
+        losts.put(id.value, gson.toJson(info));
         return true;
     }
 
     @Override
     public boolean updateFound(FoundId id, FoundInfo info) {
         if (!founds.containsKey(id.value)) return false;
-        founds.replace(id.value, info);
+        founds.put(id.value, gson.toJson(info));
         return true;
     }
 
     @Override
     public LostInfo getLostInfo(LostId id) {
-        return losts.get(id.value);
+        return gson.fromJson(losts.get(id.value), LostInfo.class);
     }
 
     @Override
     public FoundInfo getFoundInfo(FoundId id) {
-        return founds.get(id.value);
+        return gson.fromJson(founds.get(id.value), FoundInfo.class);
     }
 
     @Override

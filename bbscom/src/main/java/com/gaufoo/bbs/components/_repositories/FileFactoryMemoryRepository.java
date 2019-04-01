@@ -26,7 +26,7 @@ public class FileFactoryMemoryRepository implements FileFactoryRepository {
     @Override
     public String getFilename(FileId fileId) {
         Tuple<byte[], String > t = map.get(fileId.value);
-        if (t != null) return t.y;
+        if (t != null) return t.right;
         else return null;
     }
 

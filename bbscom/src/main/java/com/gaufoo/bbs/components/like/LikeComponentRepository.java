@@ -9,6 +9,8 @@ public interface LikeComponentRepository {
 
     boolean saveLike(LikeId likeId, LikeInfo likeInfo);
 
+    boolean updateLike(LikeId likeId, LikeInfo likeInfo);
+
     LikeInfo getLikeInfo(LikeId id);
 
     Stream<LikeId> getAllLike();

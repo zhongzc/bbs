@@ -1,14 +1,18 @@
 package com.gaufoo.bbs.components._repositories;
 
 import com.gaufoo.bbs.components.tokenGenerator.TokenGeneratorRepository;
+import com.google.gson.Gson;
 
 import java.time.Instant;
 import java.util.Hashtable;
 import java.util.Map;
 
 public class TokenGeneratorMemoryRepository implements TokenGeneratorRepository {
+    private final static Gson gson = new Gson();
     private final String repositoryName;
-    private final Map<String, Instant> map = new Hashtable<>();
+
+    // Token -> Instant
+    private final Map<String, String> tokenToExpireTime = new Hashtable<>();
 
     private TokenGeneratorMemoryRepository(String repositoryName) {
         this.repositoryName = repositoryName;
@@ -16,18 +20,18 @@ public class TokenGeneratorMemoryRepository implements TokenGeneratorRepository 
 
     @Override
     public void saveToken(String token, Instant expireTime) {
-        if (token != null) map.put(token, expireTime);
+        if (!tokenToExpireTime.containsKey(token)) tokenToExpireTime.put(token, gson.toJson(expireTime));
     }
 
     @Override
     public Instant getExpireTime(String token) {
         if (token == null) return null;
-        else return map.get(token);
+        else return gson.fromJson(tokenToExpireTime.get(token), Instant.class);
     }
 
     @Override
     public void delete(String token) {
-        if (token != null) map.remove(token);
+        if (token != null) tokenToExpireTime.remove(token);
     }
 
     @Override

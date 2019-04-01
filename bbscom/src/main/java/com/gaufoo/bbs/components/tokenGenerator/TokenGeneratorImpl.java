@@ -60,9 +60,9 @@ class TokenGeneratorImpl implements TokenGenerator {
 
     private static final String STRING =
             "ABCDEFGHIJKLMNOPQRSTUVWXYZ" +
-            "abcdedfhijklmnopqrstuvwxyz" +
-            "0123456789" +
-            "/*-.,;:'\"\\|[]{}()<>?!@#$%^&`~=_";
+                    "abcdedfhijklmnopqrstuvwxyz" +
+                    "0123456789" +
+                    "/*-.,;:'\"\\|[]{}()<>?!@#$%^&`~=_";
 
     private static String randomString(int count) {
         StringBuilder builder = new StringBuilder();
@@ -77,6 +77,10 @@ class TokenGeneratorImpl implements TokenGenerator {
 
     public static void main(String[] args) {
         TokenGenerator generator = TokenGenerator.defau1t("", TokenGeneratorMemoryRepository.get(""));
-        System.out.println(generator.genToken("123", Instant.now().plusSeconds(8000)));
+        String token = generator.genToken("123", Instant.now().plusSeconds(8000));
+        System.out.println(token);
+        System.out.println(generator.isExpired(token));
+        generator.expire(token);
+        System.out.println(generator.isExpired(token));
     }
 }

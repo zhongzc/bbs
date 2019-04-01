@@ -3,15 +3,24 @@ package com.gaufoo.bbs.components._repositories;
 import com.gaufoo.bbs.components.authenticator.AuthenticatorRepository;
 import com.gaufoo.bbs.components.authenticator.common.*;
 import com.gaufoo.bbs.util.Tuple;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
 import java.util.Hashtable;
 import java.util.Map;
 import java.util.Optional;
 
 public class AuthenticatorMemoryRepository implements AuthenticatorRepository {
+    private static final Gson gson = new Gson();
     private final String repositoryName;
-    private final Map<String, Tuple<String, Permission>> usernameToPwdPermission = new Hashtable<>();
-    private final Map<String, Permission> userTokenToPermission = new Hashtable<>();
+
+    // Username -> Tuple<Password, Permission>
+    private final Map<String, String> usernameToPwdPermission = new Hashtable<>();
+
+    // UserToken -> Permission
+    private final Map<String, String> userTokenToPermission = new Hashtable<>();
+
+    // ResetToken -> Username
     private final Map<String, String> resetTokenToUsername = new Hashtable<>();
 
     private AuthenticatorMemoryRepository(String repositoryName) {
@@ -25,13 +34,13 @@ public class AuthenticatorMemoryRepository implements AuthenticatorRepository {
 
     @Override
     public boolean saveUser(String username, String password, Permission permission) {
-        usernameToPwdPermission.put(username, Tuple.of(password, permission));
+        usernameToPwdPermission.put(username, gson.toJson(Tuple.of(password, permission)));
         return true;
     }
 
     @Override
     public boolean saveUserToken(UserToken token, Permission permission) {
-        userTokenToPermission.put(token.value, permission);
+        userTokenToPermission.put(token.value, gson.toJson(permission));
         return true;
     }
 
@@ -43,30 +52,31 @@ public class AuthenticatorMemoryRepository implements AuthenticatorRepository {
 
     @Override
     public String getPassword(String username) {
-        Tuple<String, Permission> t =  usernameToPwdPermission.get(username);
+        String t = usernameToPwdPermission.get(username);
         if (t == null) return null;
-        else return t.x;
+        return jsonToPwdPms(t).left;
     }
 
     @Override
     public boolean setPassword(String username, String password) {
-        Tuple<String, Permission> t =  usernameToPwdPermission.get(username);
+        String t = usernameToPwdPermission.get(username);
         if (t == null) return false;
-        usernameToPwdPermission.replace(username, Tuple.of(password, t.y));
 
+        usernameToPwdPermission.put(username, gson.toJson(jsonToPwdPms(t).modLeft(password)));
         return true;
     }
 
     @Override
     public Permission getPermissionByUsername(String username) {
-        Tuple<String, Permission> t =  usernameToPwdPermission.get(username);
+        String t = usernameToPwdPermission.get(username);
         if (t == null) return null;
-        else return t.y;
+
+        return jsonToPwdPms(t).right;
     }
 
     @Override
     public Permission getPermissionByToken(UserToken token) {
-        return userTokenToPermission.get(token.value);
+        return gson.fromJson(userTokenToPermission.get(token.value), Permission.class);
     }
 
     @Override
@@ -77,8 +87,8 @@ public class AuthenticatorMemoryRepository implements AuthenticatorRepository {
     @Override
     public void deleteUser(String username) {
         Optional.ofNullable(usernameToPwdPermission.get(username))
-                .map(t -> userTokenToPermission.entrySet().removeIf(p ->
-                        p.getValue().equals(t.y)));
+                .ifPresent(t -> userTokenToPermission.entrySet().removeIf(p ->
+                        gson.fromJson(p.getValue(), Permission.class).equals(jsonToPwdPms(t).right)));
 
         resetTokenToUsername.entrySet().removeIf(p -> p.getValue().equals(username));
 
@@ -92,13 +102,12 @@ public class AuthenticatorMemoryRepository implements AuthenticatorRepository {
 
     @Override
     public void deleteUserTokenByUsername(String username) {
-        Tuple<String, Permission> t = usernameToPwdPermission.get(username);
+        String t = usernameToPwdPermission.get(username);
         if (t == null) return;
 
-        String userId = t.y.userId;
-
+        String userId = jsonToPwdPms(t).right.userId;
         userTokenToPermission.entrySet().removeIf(e ->
-            e.getValue().userId.equals(userId)
+                gson.fromJson(e.getValue(), Permission.class).userId.equals(userId)
         );
     }
 
@@ -114,5 +123,9 @@ public class AuthenticatorMemoryRepository implements AuthenticatorRepository {
 
     public static AuthenticatorRepository get(String repositoryName) {
         return new AuthenticatorMemoryRepository(repositoryName);
+    }
+
+    private static Tuple<String, Permission> jsonToPwdPms(String json) {
+        return gson.fromJson(json, new TypeToken<Tuple<String, Permission>>(){}.getType());
     }
 }
