@@ -7,3 +7,14 @@ type SignUpPayload {
 }
 
 union SignUpResult = SignUpError | SignUpPayload
+
+type LogInError {
+    error: String!
+}
+
+type LogInPayload {
+    token: String!
+}
+
+union LogInResult = LogInError | LogInPayload
+

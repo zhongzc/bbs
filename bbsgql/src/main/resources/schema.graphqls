@@ -6,6 +6,8 @@ type Mutation {
     test(testStr: String!): String!
 
     signUp(username: String!, password: String!, nickname: String!): SignUpResult!
+
+    logIn(username: String!, password: String!): LogInResult!
 }
 
 schema {

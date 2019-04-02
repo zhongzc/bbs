@@ -1,8 +1,6 @@
 package com.gaufoo.bbs.application;
 
-import com.gaufoo.bbs.application.resTypes.SignUpError;
-import com.gaufoo.bbs.application.resTypes.SignUpPayload;
-import com.gaufoo.bbs.application.resTypes.SignUpResult;
+import com.gaufoo.bbs.application.resTypes.*;
 import com.gaufoo.bbs.components.authenticator.Authenticator;
 import com.gaufoo.bbs.components.authenticator.common.Attachable;
 import com.gaufoo.bbs.components.authenticator.common.Permission;
@@ -44,6 +42,19 @@ public class Authentication {
         } catch (AuthenticatorException e) {
             log.warn(String.format("sign up failed: %s %s#%s#%s", e.getMessage(), username, password, nickname));
             return SignUpError.of(e.getMessage());
+        }
+    }
+
+    public static LogInResult logIn(String username, String password) {
+        log.info(String.format("login: %s#%s", username, password));
+
+        try {
+            UserToken token = ComponentFactory.authenticator.login(username, password);
+            log.info(String.format("login successfully: %s %s#%s", token, username, password));
+            return LogInPayload.of(token.value);
+        } catch (AuthenticatorException e) {
+            log.warn(String.format("login failed: %s %s#%s", e.getMessage(), username, password));
+            return LogInError.of(e.getMessage());
         }
     }
 }
