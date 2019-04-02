@@ -18,3 +18,7 @@ type LogInPayload {
 
 union LogInResult = LogInError | LogInPayload
 
+
+type LogOutError {
+    error: String!
+}

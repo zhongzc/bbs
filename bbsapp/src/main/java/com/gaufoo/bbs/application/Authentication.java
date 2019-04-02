@@ -57,4 +57,8 @@ public class Authentication {
             return LogInError.of(e.getMessage());
         }
     }
+
+    public static void logOut(String token) {
+        ComponentFactory.authenticator.logout(UserToken.of(token));
+    }
 }

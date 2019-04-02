@@ -8,6 +8,8 @@ type Mutation {
     signUp(username: String!, password: String!, nickname: String!): SignUpResult!
 
     logIn(username: String!, password: String!): LogInResult!
+
+    logOut: LogOutError
 }
 
 schema {
