@@ -2,9 +2,6 @@ package com.gaufoo.bbs.gql;
 
 import com.coxautodev.graphql.tools.GraphQLMutationResolver;
 import com.gaufoo.bbs.application.Authentication;
-import com.gaufoo.bbs.application.resTypes.LogInResult;
-import com.gaufoo.bbs.application.resTypes.LogOutError;
-import com.gaufoo.bbs.application.resTypes.SignUpResult;
 import com.gaufoo.bbs.gql.util.Utils;
 import graphql.schema.DataFetchingEnvironment;
 import org.springframework.stereotype.Component;
@@ -15,20 +12,20 @@ public class Mutation implements GraphQLMutationResolver {
         return testStr;
     }
 
-    SignUpResult signUp(String username, String password, String nickname, DataFetchingEnvironment env) {
+    Authentication.SignUpResult signUp(String username, String password, String nickname, DataFetchingEnvironment env) {
         return Authentication.signUp(username, password, nickname);
     }
 
-    LogInResult logIn(String username, String password) {
+    Authentication.LogInResult logIn(String username, String password) {
         return Authentication.logIn(username, password);
     }
 
-    LogOutError logOut(DataFetchingEnvironment env) {
+    Authentication.LogOutError logOut(DataFetchingEnvironment env) {
         return Utils.getAuthToken(env)
                 .map(tkn -> {
                     Authentication.logOut(tkn);
-                    return (LogOutError)null;
+                    return (Authentication.LogOutError)null;
                 })
-                .orElse(LogOutError.of("尚未登录"));
+                .orElse(Authentication.LogOutError.of("尚未登录"));
     }
 }

@@ -1,6 +1,5 @@
 package com.gaufoo.bbs.application;
 
-import com.gaufoo.bbs.application.resTypes.*;
 import com.gaufoo.bbs.components.authenticator.Authenticator;
 import com.gaufoo.bbs.components.authenticator.common.Attachable;
 import com.gaufoo.bbs.components.authenticator.common.Permission;
@@ -60,5 +59,91 @@ public class Authentication {
 
     public static void logOut(String token) {
         ComponentFactory.authenticator.logout(UserToken.of(token));
+    }
+
+    public static class LogInError implements LogInResult {
+        private String error;
+
+        public LogInError(String error) {
+            this.error = error;
+        }
+
+        public static LogInError of(String error) {
+            return new LogInError(error);
+        }
+
+        public String getError() {
+            return error;
+        }
+    }
+
+    public static class LogInPayload implements LogInResult {
+        private String token;
+
+        public LogInPayload(String token) {
+            this.token = token;
+        }
+
+        public static LogInPayload of(String token) {
+            return new LogInPayload(token);
+        }
+
+        public String getToken() {
+            return token;
+        }
+    }
+
+    public interface LogInResult {
+    }
+
+    public static class LogOutError {
+        private String error;
+
+        public LogOutError(String error) {
+            this.error = error;
+        }
+
+        public static LogOutError of(String error) {
+            return new LogOutError(error);
+        }
+
+        public String getError() {
+            return error;
+        }
+    }
+
+    public static class SignUpError implements SignUpResult {
+        private final String error;
+
+        public SignUpError(String error) {
+            this.error = error;
+        }
+
+        public static SignUpError of(String error) {
+            return new SignUpError(error);
+        }
+
+        public String getError() {
+            return error;
+        }
+    }
+
+    public static class SignUpPayload implements SignUpResult {
+        private final String token;
+
+        public SignUpPayload(String token) {
+            this.token = token;
+        }
+
+        public static SignUpPayload of(String token) {
+            return new SignUpPayload(token);
+        }
+
+        public String getToken() {
+            return token;
+        }
+    }
+
+    public interface SignUpResult {
     }
 }
