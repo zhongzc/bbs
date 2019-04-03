@@ -1,6 +1,7 @@
 package com.gaufoo.bbs.gql;
 
 import com.coxautodev.graphql.tools.SchemaParserDictionary;
+import com.gaufoo.bbs.application.AccountAndPassword;
 import com.gaufoo.bbs.application.Authentication;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -15,10 +16,18 @@ public class Application {
 
     @Bean
     SchemaParserDictionary schemaParserDictionary() {
-        return new SchemaParserDictionary()
-                .add(Authentication.SignUpError.class)
-                .add(Authentication.SignUpPayload.class)
-                .add(Authentication.LogInError.class)
-                .add(Authentication.LogInPayload.class);
+        Class<?>[] subUnionTypes = {
+                Authentication.SignUpError.class,
+                Authentication.SignUpPayload.class,
+                Authentication.LogInError.class,
+                Authentication.LogInPayload.class,
+                AccountAndPassword.ConfirmPasswordError.class,
+                AccountAndPassword.ConfirmPasswordPayload.class,
+        };
+        SchemaParserDictionary schemaParserDictionary = new SchemaParserDictionary();
+        for(Class<?> clazz: subUnionTypes) {
+            schemaParserDictionary.add(clazz);
+        }
+        return schemaParserDictionary;
     }
 }

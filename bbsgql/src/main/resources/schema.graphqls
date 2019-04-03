@@ -6,10 +6,11 @@ type Mutation {
     test(testStr: String!): String!
 
     signUp(username: String!, password: String!, nickname: String!): SignUpResult!
-
     logIn(username: String!, password: String!): LogInResult!
-
     logOut: LogOutError
+
+    confirmPassword(username: String!, password: String!): ConfirmPasswordResult!
+    changePassword(resetToken: String!, newPassword: String!): ChangePasswordError
 }
 
 schema {
