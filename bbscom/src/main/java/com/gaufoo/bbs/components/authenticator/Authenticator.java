@@ -26,6 +26,8 @@ public interface Authenticator {
 
     String getName();
 
+    boolean isAuthenticated(String username, String password);
+
     enum Role {
         USER,
         ADMIN,

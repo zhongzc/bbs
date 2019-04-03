@@ -111,6 +111,11 @@ class AuthenticatorImpl implements Authenticator {
         return this.componentName;
     }
 
+    @Override
+    public boolean isAuthenticated(String username, String password) {
+        return repository.contains(username) && repository.getPassword(username).equals(password);
+    }
+
     public static void main(String[] args) throws AuthenticatorException {
         // 用户名和密码合法性验证器
         Validator<String> usernameV = Validator.email();
@@ -136,9 +141,16 @@ class AuthenticatorImpl implements Authenticator {
         UserToken token = authenticator.login("gaufoo@123.com", "Abc123456");
         System.out.println(token.value);   // 获得token
         System.out.println(authenticator.getLoggedUser(token).userId); // 从token获得id
+
+        assert authenticator.isAuthenticated("gaufoo@123.com", "Abc123456");
+        assert !authenticator.isAuthenticated("gaufoo@123.com", "abc123456");
+
         // 修改密码
         ResetToken rtoken = authenticator.reqResetPassword("gaufoo@123.com");
         authenticator.resetPassword(rtoken, "123456Abc");
+
+        assert !authenticator.isAuthenticated("gaufoo@123.com", "Abc123456");
+        assert authenticator.isAuthenticated("gaufoo@123.com", "123456Abc");
 
         // 改密码后，原登录信息无效
         // System.out.println(authenticator.getLoggedUser(token).getUserId());
