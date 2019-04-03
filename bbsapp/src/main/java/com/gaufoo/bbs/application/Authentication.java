@@ -16,49 +16,50 @@ public class Authentication {
     private static final Logger log = LoggerFactory.getLogger(Authentication.class);
 
     public static SignUpResult signUp(String username, String password, String nickname) {
-        log.info(String.format("sign up: %s#%s#%s", username, password, nickname));
+        log.debug("sign up - username: {}, nickname: {}", username, nickname);
 
         try {
             Attachable needUser = ComponentFactory.authenticator.signUp(username, password);
 
             Optional<UserId> userId = ComponentFactory.user.createUser(UserInfo.of(nickname, null, UserInfo.Gender.secret, null, null, null));
             if (!userId.isPresent()) {
-                log.warn(String.format("sign up failed: %s %s#%s#%s", "用户创建失败", username, password, nickname));
+                log.debug("sign up - failed, error: {}, username: {}, nickname: {}", "用户创建失败", username, nickname);
                 return SignUpError.of("用户创建失败");
             } else {
                 needUser.attach(Permission.of(userId.get().value, Authenticator.Role.USER));
             }
 
         } catch (AuthenticatorException e) {
-            log.warn(String.format("sign up failed: %s %s#%s#%s", e.getMessage(), username, password, nickname));
+            log.debug("sign up - failed, error: {}, username: {}, nickname: {}", e.getMessage(), username, nickname);
             return SignUpError.of(e.getMessage());
         }
 
         try {
             UserToken token = ComponentFactory.authenticator.login(username, password);
-            log.info(String.format("sign up successfully: %s %s#%s#%s", token, username, password, nickname));
+            log.debug("sign up - successfully, token: {}, username: {}, nickname: {}", token, username, nickname);
             return SignUpPayload.of(token.value);
         } catch (AuthenticatorException e) {
-            log.warn(String.format("sign up failed: %s %s#%s#%s", e.getMessage(), username, password, nickname));
+            log.debug("sign up - failed, error: {}, username: {}, nickname: {}", e.getMessage(), username, nickname);
             return SignUpError.of(e.getMessage());
         }
     }
 
     public static LogInResult logIn(String username, String password) {
-        log.info(String.format("login: %s#%s", username, password));
+        log.debug("login, username: {}, password: {}", username, password);
 
         try {
             UserToken token = ComponentFactory.authenticator.login(username, password);
-            log.info(String.format("login successfully: %s %s#%s", token, username, password));
+            log.debug("login - successfully, token: {}, username: {}", token, username);
             return LogInPayload.of(token.value);
         } catch (AuthenticatorException e) {
-            log.warn(String.format("login failed: %s %s#%s", e.getMessage(), username, password));
+            log.debug("login - failed, error: {}, username: {}", e.getMessage(), username);
             return LogInError.of(e.getMessage());
         }
     }
 
-    public static void logOut(String token) {
+    public static LogOutError logOut(String token) {
         ComponentFactory.authenticator.logout(UserToken.of(token));
+        return null;
     }
 
     public static class LogInError implements LogInResult {

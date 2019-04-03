@@ -23,10 +23,7 @@ public class Mutation implements GraphQLMutationResolver {
 
     Authentication.LogOutError logOut(DataFetchingEnvironment env) {
         return Utils.getAuthToken(env)
-                .map(tkn -> {
-                    Authentication.logOut(tkn);
-                    return (Authentication.LogOutError)null;
-                })
+                .map(Authentication::logOut)
                 .orElse(Authentication.LogOutError.of("用户未登录"));
     }
 
@@ -38,9 +35,8 @@ public class Mutation implements GraphQLMutationResolver {
 
     AccountAndPassword.ChangePasswordError changePassword(String resetToken, String newPassword, DataFetchingEnvironment env) {
         return Utils.getAuthToken(env)
-                .map(userToken -> {
-                    AccountAndPassword.changePassword(userToken, resetToken, newPassword);
-                    return (AccountAndPassword.ChangePasswordError)null;
-                }).orElse(AccountAndPassword.ChangePasswordError.of("用户未登录"));
+                .map(userToken ->
+                    AccountAndPassword.changePassword(userToken, resetToken, newPassword))
+                .orElse(AccountAndPassword.ChangePasswordError.of("用户未登录"));
     }
 }

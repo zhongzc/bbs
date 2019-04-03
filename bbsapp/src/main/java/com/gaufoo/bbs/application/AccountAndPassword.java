@@ -1,6 +1,5 @@
 package com.gaufoo.bbs.application;
 
-import com.gaufoo.bbs.components.authenticator.common.Permission;
 import com.gaufoo.bbs.components.authenticator.common.ResetToken;
 import com.gaufoo.bbs.components.authenticator.common.UserToken;
 import com.gaufoo.bbs.components.authenticator.exceptions.AuthenticatorException;
@@ -46,12 +45,6 @@ public class AccountAndPassword {
         }
     }
 
-    // TODO: change username
-//    public static void ChangeEmail(String userToken, String resetToken, String newEmail) {
-//
-//    }
-
-
     public static class ConfirmPasswordError implements ConfirmPasswordResult {
         private String error;
 
@@ -96,6 +89,22 @@ public class AccountAndPassword {
 
         public static ChangePasswordError of(String error) {
             return new ChangePasswordError(error);
+        }
+
+        public String getError() {
+            return error;
+        }
+    }
+
+    public static class ChangeUsernameError {
+        private String error;
+
+        public ChangeUsernameError(String error) {
+            this.error = error;
+        }
+
+        public static ChangeUsernameError of(String error) {
+            return new ChangeUsernameError(error);
         }
 
         public String getError() {
