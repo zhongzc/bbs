@@ -1,8 +1,8 @@
-type UserInfoError {
+type PersonalInfoError {
     error: String!
 }
 
-type UserInfo {
+type PersonalInfo {
     pictureBase64: String!
     username: String!
     gender: String!
@@ -12,7 +12,7 @@ type UserInfo {
     introduction: String!
 }
 
-union UserInfoResult = UserInfoError | UserInfo
+union PersonalInfoResult = PersonalInfoError | PersonalInfo
 
 type ModifyPersonInfoError {
     error: String!

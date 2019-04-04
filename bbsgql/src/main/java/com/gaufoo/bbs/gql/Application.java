@@ -24,8 +24,8 @@ public class Application {
                 Authentication.LogInPayload.class,
                 AccountAndPassword.ConfirmPasswordError.class,
                 AccountAndPassword.ConfirmPasswordPayload.class,
-                PersonalInformation.UserInfoError.class,
-                PersonalInformation.UserInfo.class,
+                PersonalInformation.PersonalInfoError.class,
+                PersonalInformation.PersonalInfo.class,
         };
         SchemaParserDictionary schemaParserDictionary = new SchemaParserDictionary();
         for(Class<?> clazz: subUnionTypes) {

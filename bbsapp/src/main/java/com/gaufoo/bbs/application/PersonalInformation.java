@@ -9,6 +9,7 @@ import com.gaufoo.bbs.components.scutMajor.common.MajorValue;
 import com.gaufoo.bbs.components.scutMajor.common.School;
 import com.gaufoo.bbs.components.user.UserFactory;
 import com.gaufoo.bbs.components.user.common.UserId;
+import com.gaufoo.bbs.components.user.common.UserInfo;
 import com.gaufoo.bbs.components.user.common.UserInfo.Gender;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,93 +24,107 @@ import java.util.Base64;
 import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.function.Function;
+import java.util.stream.Stream;
 
 public class PersonalInformation {
     private static Logger logger = LoggerFactory.getLogger(PersonalInformation.class);
 
-    public static UserInfoResult userInfo(String userId) {
+    public static PersonalInfoResult userInfo(String userId) {
         logger.debug("userInfo, userId: {}", userId);
         return ComponentFactory.user.userInfo(UserId.of(userId))
-                .map(info -> (UserInfoResult)new UserInfo() {
-                    @Override
-                    public String getPictureBase64() {
-                        logger.debug("userInfo :: getPictureBase64, userId: {}", userId);
-                        return factorOutImgBase64(info.profilePicIdentifier);
-                    }
-
-                    @Override
-                    public String getUsername() {
-                        logger.debug("userInfo :: getUsername, userId: {}", userId);
-                        return info.nickname;
-                    }
-
-                    @Override
-                    public String getGender() {
-                        logger.debug("userInfo :: getGender, userId: {}", userId);
-                        return info.gender.toString();
-                    }
-
-                    @Override
-                    public String getGrade() {
-                        logger.debug("userInfo :: getGrade, userId: {}", userId);
-                        return info.grade;
-                    }
-
-                    @Override
-                    public String getSchool() {
-                        logger.debug("userInfo :: getSchool, userId: {}", userId);
-                        return factorOutSchool(info.majorCode);
-                    }
-
-                    @Override
-                    public String getMajor() {
-                        logger.debug("userInfo :: getMajor, userId: {}", userId);
-                        return factorOutMajor(info.majorCode);
-                    }
-
-                    @Override
-                    public String getIntroduction() {
-                        logger.debug("userInfo :: getIntroduction, userId: {}", userId);
-                        return info.introduction;
-                    }
-                }).orElseGet(() -> {
+                .map(PersonalInformation::constructUserInfo)
+                .orElseGet(() -> {
                     logger.debug("userInfo - failed, error: {}, userId: {}", "找不到用户", userId);
-                    return UserInfoError.of("找不到用户");
+                    return PersonalInfoError.of("找不到用户");
                 });
     }
 
-    private static String factorOutImgBase64(String pictureId) {
-        return ComponentFactory.file.fileURI(FileId.of(pictureId))
-                .map(uri -> {
-                    try {
-                        Path imgPath = Paths.get(new URI(uri));
-                        byte[] imgBytes = Files.readAllBytes(imgPath);
-                        return Base64.getEncoder().encodeToString(imgBytes);
-                    } catch (URISyntaxException | IOException e) {
-                        logger.warn("userInfo :: getPictureBase64 - failed, error: {}", e.getMessage());
-                        return "";
-                    }
-                }).orElseGet(() -> {
-                    logger.debug("userInfo :: factorOutImgBase64 - failed, error: {}, pictureId: {}", "找不到pictureURI", pictureId);
-                    return "";
-                });
+    private static PersonalInfoResult constructUserInfo(UserInfo info) {
+        return new PersonalInfo() {
+            @Override
+            public String getPictureBase64() {
+                logger.debug("userInfo :: getPictureBase64, nickname: {}", info.nickname);
+                return factorOutImageBase64(info.profilePicIdentifier);
+            }
+            @Override
+            public String getUsername() {
+                logger.debug("userInfo :: getUsername, nickname: {}", info.nickname);
+                return info.nickname;
+            }
+            @Override
+            public String getGender() {
+                logger.debug("userInfo :: getGender, nickname: {}", info.nickname);
+                return info.gender.toString();
+            }
+            @Override
+            public String getGrade() {
+                logger.debug("userInfo :: getGrade, nickname: {}", info.nickname);
+                return info.grade;
+            }
+            @Override
+            public String getSchool() {
+                logger.debug("userInfo :: getSchool, nickname: {}", info.nickname);
+                return factorOutSchool(info.majorCode);
+            }
+            @Override
+            public String getMajor() {
+                logger.debug("userInfo :: getMajor, nickname: {}", info.nickname);
+                return factorOutMajor(info.majorCode);
+            }
+            @Override
+            public String getIntroduction() {
+                logger.debug("userInfo :: getIntroduction, nickname: {}", info.nickname);
+                return info.introduction;
+            }
+        };
     }
+
+    private static String factorOutImageBase64(String pictureId) {
+        return Optional.ofNullable(pictureId)
+                .map(FileId::of)
+                .flatMap(ComponentFactory.file::fileURI)
+                .flatMap(PersonalInformation::safeConstructURI)
+                .map(Paths::get)
+                .flatMap(PersonalInformation::safeReadAllBytes)
+                .map(Base64.getEncoder()::encodeToString)
+                .orElse("");
+    }
+    private static Optional<URI> safeConstructURI(String uriStr) {
+        try {
+            return Optional.of(new URI(uriStr));
+        } catch (URISyntaxException e) {
+            logger.warn("userInfo :: safeConstructURI, uri: {}", uriStr);
+            return Optional.empty();
+        }
+    }
+    private static Optional<byte[]> safeReadAllBytes(Path path) {
+        try {
+            return Optional.of(Files.readAllBytes(path));
+        } catch (IOException e) {
+            logger.warn("userInfo :: safeReadAllBytes, path: {}", path.toString());
+            return Optional.empty();
+        }
+    }
+
+
 
     private static String factorOutSchool(String majorCode) {
-        return ComponentFactory.major.getMajorValueFromCode(MajorCode.of(majorCode))
-                .map(majorVal -> majorVal.school.toString()).orElseGet(() -> {
-                    logger.warn("userInfo :: getSchool(majorCode = {}) - failed, error: 转换失败", majorCode);
+        return factorOutMajorCode(majorCode, majorValue -> majorValue.school.toString());
+    }
+    private static String factorOutMajor(String majorCode) {
+        return factorOutMajorCode(majorCode, majorValue -> majorValue.major.toString());
+    }
+    private static String factorOutMajorCode(String majorCode, Function<MajorValue, String> transformer) {
+        return Optional.ofNullable(majorCode)
+                .map(MajorCode::of)
+                .flatMap(ComponentFactory.major::getMajorValueFromCode)
+                .map(transformer)
+                .orElseGet(() -> {
+                    logger.warn("userInfo :: factorOutMajorCode(majorCode = {}) - failed, error: 转换失败", majorCode);
                     return "";
                 });
     }
 
-    private static String factorOutMajor(String majorCode) {
-        return ComponentFactory.major.getMajorValueFromCode(MajorCode.of(majorCode))
-                .map(majorVal -> majorVal.major.toString()).orElseGet(() -> {
-                    logger.warn("userInfo :: getMajor(majorCode = {}) - failed, error: 转换失败", majorCode);
-                    return "";
-                });
-    }
 
     public static ModifyPersonInfoError uploadUserProfile(String userToken, String base64Image) {
         logger.debug("uploadUserProfile, userToken: {}, base64Image: {}", userToken, base64Image);
@@ -138,14 +153,12 @@ public class PersonalInformation {
     }
 
     public static ModifyPersonInfoError changeAcademy(String userToken, String academy) {
-        Optional<School> oSchool = parseAcademy(academy);
-        if (!oSchool.isPresent()) return ModifyPersonInfoError.of("无法解析学院");
-        School school = oSchool.get();
-
-        return changeCommon(userToken, academy, "school", "changeAcademy","更改学院失败",
-                ((userFactory, userId) ->
-                        updateMajorValue(userFactory, userId,
-                                (oldMajorValue -> MajorValue.of(school, oldMajorValue.major)))));
+        return parseAcademy(academy).map(school ->
+                changeCommon(userToken, academy, "school", "changeAcademy","更改学院失败",
+                        ((userFactory, userId) ->
+                                updateMajorValue(userFactory, userId,
+                                        (oldMajorValue -> MajorValue.of(school, oldMajorValue.major))))))
+                .orElse(ModifyPersonInfoError.of("无法解析学院"));
     }
     private static Optional<School> parseAcademy(String academy) {
         for (School school : School.values()) {
@@ -155,21 +168,17 @@ public class PersonalInformation {
         return Optional.empty();
     }
     public static ModifyPersonInfoError changeMajor(String userToken, String majorStr) {
-        Optional<Major> oMajor = parseMajor(majorStr);
-        if (!oMajor.isPresent()) return ModifyPersonInfoError.of("无法解析专业");
-        Major major = oMajor.get();
-
-        return changeCommon(userToken, majorStr, "major", "changeMajor","更改专业失败",
-                ((userFactory, userId) ->
-                        updateMajorValue(userFactory, userId,
-                                (oldMajorValue -> MajorValue.of(oldMajorValue.school, major)))));
+        return parseMajor(majorStr).map(major ->
+                changeCommon(userToken, majorStr, "major", "changeMajor","更改专业失败",
+                        ((userFactory, userId) ->
+                                updateMajorValue(userFactory, userId,
+                                        oldMajorValue -> MajorValue.of(oldMajorValue.school, major)))))
+                .orElse(ModifyPersonInfoError.of("无法解析专业"));
     }
     private static Optional<Major> parseMajor(String majorStr) {
-        for (Major major : Major.values()) {
-            if (major.toString().equals(majorStr))
-                return Optional.of(major);
-        }
-        return Optional.empty();
+        return Stream.of(Major.values())
+                .filter(major -> major.toString().equals(majorStr))
+                .findFirst();
     }
     private static Boolean updateMajorValue(UserFactory userFactory, UserId userId, Function<MajorValue, MajorValue> transformer) {
         return userFactory.userInfo(userId)
@@ -240,15 +249,15 @@ public class PersonalInformation {
     }
 
 
-    public static class UserInfoError implements UserInfoResult {
+    public static class PersonalInfoError implements PersonalInfoResult {
         private String error;
 
-        public UserInfoError(String error) {
+        public PersonalInfoError(String error) {
             this.error = error;
         }
 
-        public static UserInfoError of(String error) {
-            return new UserInfoError(error);
+        public static PersonalInfoError of(String error) {
+            return new PersonalInfoError(error);
         }
 
         public String getError() {
@@ -256,7 +265,7 @@ public class PersonalInformation {
         }
     }
 
-    public interface UserInfo extends UserInfoResult {
+    public interface PersonalInfo extends PersonalInfoResult {
         String getPictureBase64();
         String getUsername();
         String getGender();
@@ -266,7 +275,7 @@ public class PersonalInformation {
         String getIntroduction();
     }
 
-    public interface UserInfoResult {
+    public interface PersonalInfoResult {
     }
 
     public static class ModifyPersonInfoError {

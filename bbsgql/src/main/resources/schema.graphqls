@@ -1,7 +1,7 @@
 type Query {
     test(testStr: String!): String!
 
-    userInfo(userId: String!): UserInfoResult!
+    userInfo(userId: String!): PersonalInfoResult!
 }
 
 type Mutation {

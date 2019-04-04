@@ -11,7 +11,7 @@ public class Query implements GraphQLQueryResolver {
         return testStr;
     }
 
-    PersonalInformation.UserInfoResult userInfo(String userId) {
+    PersonalInformation.PersonalInfoResult userInfo(String userId) {
         return PersonalInformation.userInfo(userId);
     }
 }
