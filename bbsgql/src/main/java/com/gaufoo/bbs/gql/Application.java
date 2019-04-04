@@ -24,6 +24,8 @@ public class Application {
                 Authentication.LogInPayload.class,
                 AccountAndPassword.ConfirmPasswordError.class,
                 AccountAndPassword.ConfirmPasswordPayload.class,
+                Authentication.GetIdError.class,
+                Authentication.GetIdPayload.class,
                 PersonalInformation.PersonalInfoError.class,
                 PersonalInformation.PersonalInfo.class,
         };
