@@ -62,6 +62,14 @@ public class Authentication {
         return null;
     }
 
+    public static GetIdResult getLoggedUserId(String token) {
+        try {
+            return GetIdPayload.of(ComponentFactory.authenticator.getLoggedUser(UserToken.of(token)).userId);
+        } catch (AuthenticatorException e) {
+            return GetIdError.of(e.getMessage());
+        }
+    }
+
     public static class LogInError implements LogInResult {
         private String error;
 
@@ -147,4 +155,38 @@ public class Authentication {
 
     public interface SignUpResult {
     }
+
+    public static class GetIdError implements GetIdResult {
+        private final String error;
+
+        private GetIdError(String error) {
+            this.error = error;
+        }
+
+        public static GetIdError of(String error) {
+            return new GetIdError(error);
+        }
+
+        public String getError() {
+            return error;
+        }
+    }
+
+    public static class GetIdPayload implements GetIdResult {
+        private final String userid;
+
+        private GetIdPayload(String userid) {
+            this.userid = userid;
+        }
+
+        public static GetIdPayload of(String userid) {
+            return new GetIdPayload(userid);
+        }
+
+        public String getUserid() {
+            return userid;
+        }
+    }
+
+    public interface GetIdResult {}
 }

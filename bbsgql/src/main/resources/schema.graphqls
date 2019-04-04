@@ -1,6 +1,8 @@
 type Query {
     test(testStr: String!): String!
 
+    loggedId: GetIdResult!
+
     userInfo(userId: String!): PersonalInfoResult!
 }
 

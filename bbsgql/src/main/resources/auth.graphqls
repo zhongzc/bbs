@@ -22,3 +22,13 @@ union LogInResult = LogInError | LogInPayload
 type LogOutError {
     error: String!
 }
+
+type GetIdError {
+    error: String!
+}
+
+type GetIdPayload {
+    userid: String!
+}
+
+union GetIdResult = GetIdError | GetIdPayload
