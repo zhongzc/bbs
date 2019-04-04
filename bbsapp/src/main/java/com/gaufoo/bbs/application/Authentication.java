@@ -58,6 +58,8 @@ public class Authentication {
     }
 
     public static LogOutError logOut(String token) {
+        log.debug("logOut, token: {}", token);
+
         ComponentFactory.authenticator.logout(UserToken.of(token));
         return null;
     }
