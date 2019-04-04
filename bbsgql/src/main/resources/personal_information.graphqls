@@ -1,0 +1,19 @@
+type UserInfoError {
+    error: String!
+}
+
+type UserInfo {
+    pictureBase64: String!
+    username: String!
+    gender: String!
+    grade: String!
+    school: String!
+    major: String!
+    introduction: String!
+}
+
+union UserInfoResult = UserInfoError | UserInfo
+
+type ModifyPersonInfoError {
+    error: String!
+}

@@ -46,7 +46,7 @@ public class MajorFactoryImpl implements MajorFactory {
         schoolToMajor.put(建筑学院, Util.buildList(建筑学, 城乡规划, 风景园林));
     }
 
-    private MajorFactoryImpl(String componentName) {
+    MajorFactoryImpl(String componentName) {
         this.componentName = componentName;
     }
 

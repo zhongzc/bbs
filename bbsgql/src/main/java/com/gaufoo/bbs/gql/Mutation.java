@@ -3,6 +3,7 @@ package com.gaufoo.bbs.gql;
 import com.coxautodev.graphql.tools.GraphQLMutationResolver;
 import com.gaufoo.bbs.application.AccountAndPassword;
 import com.gaufoo.bbs.application.Authentication;
+import com.gaufoo.bbs.application.PersonalInformation;
 import com.gaufoo.bbs.gql.util.Utils;
 import graphql.schema.DataFetchingEnvironment;
 import org.springframework.stereotype.Component;
@@ -38,5 +39,47 @@ public class Mutation implements GraphQLMutationResolver {
                 .map(userToken ->
                     AccountAndPassword.changePassword(userToken, resetToken, newPassword))
                 .orElse(AccountAndPassword.ChangePasswordError.of("用户未登录"));
+    }
+
+    PersonalInformation.ModifyPersonInfoError uploadUserProfile(String base64Image, DataFetchingEnvironment env) {
+        return Utils.getAuthToken(env)
+                .map(userToken -> PersonalInformation.uploadUserProfile(userToken, base64Image))
+                .orElse(PersonalInformation.ModifyPersonInfoError.of("用户未登录"));
+    }
+
+    PersonalInformation.ModifyPersonInfoError changeAcademy(String academy, DataFetchingEnvironment env) {
+        return Utils.getAuthToken(env)
+                .map(userToken -> PersonalInformation.changeAcademy(userToken, academy))
+                .orElse(PersonalInformation.ModifyPersonInfoError.of("用户未登录"));
+    }
+
+    PersonalInformation.ModifyPersonInfoError changeMajor(String major, DataFetchingEnvironment env) {
+        return Utils.getAuthToken(env)
+                .map(userToken -> PersonalInformation.changeMajor(userToken, major))
+                .orElse(PersonalInformation.ModifyPersonInfoError.of("用户未登录"));
+    }
+
+    PersonalInformation.ModifyPersonInfoError changeGender(String gender, DataFetchingEnvironment env) {
+        return Utils.getAuthToken(env)
+                .map(userToken -> PersonalInformation.changeGender(userToken, gender))
+                .orElse(PersonalInformation.ModifyPersonInfoError.of("用户未登录"));
+    }
+
+    PersonalInformation.ModifyPersonInfoError changeGrade(String grade, DataFetchingEnvironment env) {
+        return Utils.getAuthToken(env)
+                .map(userToken -> PersonalInformation.changeGrade(userToken, grade))
+                .orElse(PersonalInformation.ModifyPersonInfoError.of("用户未登录"));
+    }
+
+    PersonalInformation.ModifyPersonInfoError changeIntroduction(String introduction, DataFetchingEnvironment env) {
+        return Utils.getAuthToken(env)
+                .map(userToken -> PersonalInformation.changeIntroduction(userToken, introduction))
+                .orElse(PersonalInformation.ModifyPersonInfoError.of("用户未登录"));
+    }
+
+    PersonalInformation.ModifyPersonInfoError changeNickname(String nickname, DataFetchingEnvironment env) {
+        return Utils.getAuthToken(env)
+                .map(userToken -> PersonalInformation.changeNickname(userToken, nickname))
+                .orElse(PersonalInformation.ModifyPersonInfoError.of("用户未登录"));
     }
 }

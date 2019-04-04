@@ -1,5 +1,7 @@
 type Query {
     test(testStr: String!): String!
+
+    userInfo(userId: String!): UserInfoResult!
 }
 
 type Mutation {
@@ -11,6 +13,14 @@ type Mutation {
 
     confirmPassword(username: String!, password: String!): ConfirmPasswordResult!
     changePassword(resetToken: String!, newPassword: String!): ChangePasswordError
+
+    uploadUserProfile(base64Image: String!): ModifyPersonInfoError
+    changeGender(gender: String!): ModifyPersonInfoError
+    changeGrade(grade: String!): ModifyPersonInfoError
+    changeIntroduction(introduction: String!): ModifyPersonInfoError
+    changeNickname(nickname: String!): ModifyPersonInfoError
+    changeAcademy(academy: String!): ModifyPersonInfoError
+    changeMajor(academy: String!): ModifyPersonInfoError
 }
 
 schema {

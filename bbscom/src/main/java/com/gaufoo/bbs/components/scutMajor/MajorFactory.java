@@ -18,4 +18,8 @@ public interface MajorFactory {
     Optional<MajorValue> getMajorValueFromCode(MajorCode code);
 
     String getName();
+
+    static MajorFactory defau1t(String componentName) {
+        return new MajorFactoryImpl(componentName);
+    }
 }
