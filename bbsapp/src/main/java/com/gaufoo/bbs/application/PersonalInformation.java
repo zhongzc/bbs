@@ -14,12 +14,6 @@ import com.gaufoo.bbs.components.user.common.UserInfo.Gender;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Base64;
 import java.util.Optional;
 import java.util.function.BiFunction;
@@ -42,9 +36,9 @@ public class PersonalInformation {
     private static PersonalInfoResult constructUserInfo(UserInfo info) {
         return new PersonalInfo() {
             @Override
-            public String getPictureBase64() {
-                logger.debug("userInfo :: getPictureBase64, nickname: {}", info.nickname);
-                return factorOutImageBase64(info.profilePicIdentifier);
+            public String getPictureUrl() {
+                logger.debug("userInfo :: getPictureUrl, nickname: {}", info.nickname);
+                return factorOutImageUrl(info.profilePicIdentifier);
             }
             @Override
             public String getUsername() {
@@ -79,34 +73,12 @@ public class PersonalInformation {
         };
     }
 
-    private static String factorOutImageBase64(String pictureId) {
+    private static String factorOutImageUrl(String pictureId) {
         return Optional.ofNullable(pictureId)
                 .map(FileId::of)
                 .flatMap(ComponentFactory.file::fileURI)
-                .flatMap(PersonalInformation::safeConstructURI)
-                .map(Paths::get)
-                .flatMap(PersonalInformation::safeReadAllBytes)
-                .map(Base64.getEncoder()::encodeToString)
                 .orElse("");
     }
-    private static Optional<URI> safeConstructURI(String uriStr) {
-        try {
-            return Optional.of(new URI(uriStr));
-        } catch (URISyntaxException e) {
-            logger.warn("userInfo :: safeConstructURI, uri: {}", uriStr);
-            return Optional.empty();
-        }
-    }
-    private static Optional<byte[]> safeReadAllBytes(Path path) {
-        try {
-            return Optional.of(Files.readAllBytes(path));
-        } catch (IOException e) {
-            logger.warn("userInfo :: safeReadAllBytes, path: {}", path.toString());
-            return Optional.empty();
-        }
-    }
-
-
 
     private static String factorOutSchool(String majorCode) {
         return factorOutMajorCode(majorCode, majorValue -> majorValue.school.toString());
@@ -266,7 +238,7 @@ public class PersonalInformation {
     }
 
     public interface PersonalInfo extends PersonalInfoResult {
-        String getPictureBase64();
+        String getPictureUrl();
         String getUsername();
         String getGender();
         String getGrade();
