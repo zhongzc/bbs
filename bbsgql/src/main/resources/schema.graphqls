@@ -4,6 +4,9 @@ type Query {
     loggedId: GetIdResult!
 
     userInfo(userId: String!): PersonalInfoResult!
+    allAcademies: [String!]!
+    allMajors: [String!]!
+    majorsIn(academy: String!): MajorsInResult!
 }
 
 type Mutation {

@@ -14,10 +14,10 @@ import com.gaufoo.bbs.components.user.common.UserInfo.Gender;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Base64;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.BiFunction;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class PersonalInformation {
@@ -94,6 +94,30 @@ public class PersonalInformation {
                 .orElseGet(() -> {
                     logger.warn("userInfo :: factorOutMajorCode(majorCode = {}) - failed, error: 转换失败", majorCode);
                     return "";
+                });
+    }
+
+
+    public static List<String> allAcademies() {
+        logger.debug("allAcademies");
+        return Arrays.stream(School.values()).map(Objects::toString).collect(Collectors.toList());
+    }
+
+    public static List<String> allMajors() {
+        logger.debug("allMajors");
+        return Arrays.stream(Major.values()).map(Objects::toString).collect(Collectors.toList());
+    }
+
+    public static MajorsInResult majorsIn(String academy) {
+        logger.debug("majorsIn, academy: {}", academy);
+        return parseAcademy(academy)
+                .map(school -> ComponentFactory.major.majorsIn(school)
+                        .map(Enum::toString)
+                        .collect(Collectors.toList()))
+                .map(listOfMajor -> (MajorsInResult)MajorsInPayload.of(listOfMajor))
+                .orElseGet(() -> {
+                    logger.debug("majorsIn - failed, academy: {}", academy);
+                    return MajorsInError.of("无法解析学院");
                 });
     }
 
@@ -266,5 +290,38 @@ public class PersonalInformation {
         }
     }
 
+    public static class MajorsInPayload implements MajorsInResult {
+        private List<String> majors;
 
+        public MajorsInPayload(List<String> majors) {
+            this.majors = majors;
+        }
+
+        public static MajorsInPayload of(List<String> majors) {
+            return new MajorsInPayload(majors);
+        }
+
+        public List<String> getMajors() {
+            return majors;
+        }
+    }
+
+    public static class MajorsInError implements MajorsInResult {
+        private String error;
+
+        public MajorsInError(String error) {
+            this.error = error;
+        }
+
+        public static MajorsInError of(String error) {
+            return new MajorsInError(error);
+        }
+
+        public String getError() {
+            return error;
+        }
+    }
+
+    public interface MajorsInResult {
+    }
 }

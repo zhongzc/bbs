@@ -17,3 +17,13 @@ union PersonalInfoResult = PersonalInfoError | PersonalInfo
 type ModifyPersonInfoError {
     error: String!
 }
+
+type MajorsInError {
+    error: String!
+}
+
+type MajorsInPayload {
+    majors: [String!]!
+}
+
+union MajorsInResult = MajorsInError | MajorsInPayload

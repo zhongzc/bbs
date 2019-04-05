@@ -35,6 +35,8 @@ public class Application implements WebMvcConfigurer {
                 Authentication.GetIdPayload.class,
                 PersonalInformation.PersonalInfoError.class,
                 PersonalInformation.PersonalInfo.class,
+                PersonalInformation.MajorsInError.class,
+                PersonalInformation.MajorsInPayload.class,
         };
         SchemaParserDictionary schemaParserDictionary = new SchemaParserDictionary();
         for(Class<?> clazz: subUnionTypes) {
