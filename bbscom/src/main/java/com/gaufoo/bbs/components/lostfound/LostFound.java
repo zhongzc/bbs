@@ -101,7 +101,7 @@ public interface LostFound {
 
     String getName();
 
-    static LostFound defau1t(String componentName, LostFoundRepository repository, IdGenerator idGenerator, IdGenerator foundIds) {
-        return new LostFoundImpl(componentName, repository, idGenerator, foundIds);
+    static LostFound defau1t(String componentName, LostFoundRepository repository, IdGenerator lostIds, IdGenerator foundIds) {
+        return new LostFoundImpl(componentName, repository, lostIds, foundIds);
     }
 }
