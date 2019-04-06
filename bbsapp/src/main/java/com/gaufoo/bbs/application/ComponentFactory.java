@@ -21,12 +21,16 @@ public class ComponentFactory {
                     Validator.email(), Validator.nonContainsSpace().compose(Validator.minLength(8)).compose(Validator.maxLength(20)),
                     TokenGenerator.defau1t("authToken", TokenGeneratorMemoryRepository.get("authTokenMryRep")));
 
-    public static final FileFactory file =
-            FileFactory.defau1t("file", FileFactoryMemoryRepository.get("fileMryRep"), IdGenerator.seqInteger("usrImgId"));
+    public static final FileFactory userProfiles =
+            FileFactory.defau1t("userProfiles", FileFactoryMemoryRepository.get("fileMryRep"), IdGenerator.seqInteger("usrImgId"));
 
     public static final MajorFactory major = MajorFactory.defau1t("major");
 
     public static final LostFound lostFound =
             LostFound.defau1t("lstFnd", LostFoundMemoryRepository.get("lstFndMryRep"),
                     IdGenerator.seqInteger("lstId"), IdGenerator.seqInteger("fndId"));
+
+    public static final FileFactory lostFoundImages =
+            FileFactory.defau1t("lostFoundImages", FileFactoryMemoryRepository.get("lostFileMryRep"), IdGenerator.seqInteger("lostImgId"));
+
 }

@@ -3,6 +3,7 @@ package com.gaufoo.bbs.gql;
 import com.coxautodev.graphql.tools.SchemaParserDictionary;
 import com.gaufoo.bbs.application.AccountAndPassword;
 import com.gaufoo.bbs.application.Authentication;
+import com.gaufoo.bbs.application.LostAndFound;
 import com.gaufoo.bbs.application.PersonalInformation;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -37,6 +38,9 @@ public class Application implements WebMvcConfigurer {
                 PersonalInformation.PersonalInfo.class,
                 PersonalInformation.MajorsInError.class,
                 PersonalInformation.MajorsInPayload.class,
+                LostAndFound.ItemInfoError.class,
+                LostAndFound.FoundItemInfo.class,
+                LostAndFound.LostItemInfo.class,
         };
         SchemaParserDictionary schemaParserDictionary = new SchemaParserDictionary();
         for(Class<?> clazz: subUnionTypes) {

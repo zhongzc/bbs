@@ -3,7 +3,9 @@ package com.gaufoo.bbs.gql;
 import com.coxautodev.graphql.tools.GraphQLMutationResolver;
 import com.gaufoo.bbs.application.AccountAndPassword;
 import com.gaufoo.bbs.application.Authentication;
+import com.gaufoo.bbs.application.LostAndFound;
 import com.gaufoo.bbs.application.PersonalInformation;
+import com.gaufoo.bbs.components.lostfound.common.LostInfo;
 import com.gaufoo.bbs.gql.util.Utils;
 import graphql.schema.DataFetchingEnvironment;
 import org.springframework.stereotype.Component;
@@ -81,6 +83,19 @@ public class Mutation implements GraphQLMutationResolver {
         return authenticatedGuard(
                 userToken -> PersonalInformation.changeNickname(userToken, nickname),
                 PersonalInformation.ModifyPersonInfoError::of, env);
+    }
+
+
+    LostAndFound.ItemInfoResult publishFound(LostAndFound.ItemInfoInput itemInfo, DataFetchingEnvironment env) {
+        return authenticatedGuard(
+                userToken -> LostAndFound.publishFound(userToken, itemInfo),
+                LostAndFound.ItemInfoError::of, env);
+    }
+
+    LostAndFound.ItemInfoResult publishLost(LostAndFound.ItemInfoInput itemInfo, DataFetchingEnvironment env) {
+        return authenticatedGuard(
+                userToken -> LostAndFound.publishLost(userToken, itemInfo),
+                LostAndFound.ItemInfoError::of, env);
     }
 
     private static <E> E authenticatedGuard(Function<String, E> transformer, Function<String, E> errorConstructor,

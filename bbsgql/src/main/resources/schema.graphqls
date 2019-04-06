@@ -7,6 +7,10 @@ type Query {
     allAcademies: [String!]!
     allMajors: [String!]!
     majorsIn(academy: String!): MajorsInResult!
+
+    foundItemInfo(foundId: String!): ItemInfoResult!
+    lostItemInfo(lostId: String!): ItemInfoResult!
+
 }
 
 type Mutation {
@@ -26,6 +30,9 @@ type Mutation {
     changeNickname(nickname: String!): ModifyPersonInfoError
     changeAcademy(academy: String!): ModifyPersonInfoError
     changeMajor(major: String!): ModifyPersonInfoError
+
+    publishFound(itemInfo: ItemInfoInput!): ItemInfoResult!
+    publishLost(itemInfo: ItemInfoInput!): ItemInfoResult!
 }
 
 schema {

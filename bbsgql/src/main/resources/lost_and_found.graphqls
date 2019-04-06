@@ -1,0 +1,34 @@
+type ItemInfoError {
+    error: String!
+}
+
+type FoundItemInfo {
+    publisher: String!
+    name: String!
+    description: String!
+    position: String!
+    pictureUrl: String!
+    creationTime: Long!
+    foundTime: Long!
+}
+
+type LostItemInfo {
+    publisher: String!
+    name: String!
+    description: String!
+    position: String!
+    pictureUrl: String!
+    creationTime: Long!
+    lostTime: Long!
+}
+
+union ItemInfoResult = ItemInfoError | FoundItemInfo | LostItemInfo
+
+input ItemInfoInput {
+    itemName: String!
+    description: String!
+    position: String!
+    contact: String!
+    imageBase64: String!
+    time: Long!
+}

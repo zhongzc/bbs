@@ -2,6 +2,7 @@ package com.gaufoo.bbs.gql;
 
 import com.coxautodev.graphql.tools.GraphQLQueryResolver;
 import com.gaufoo.bbs.application.Authentication;
+import com.gaufoo.bbs.application.LostAndFound;
 import com.gaufoo.bbs.application.PersonalInformation;
 import com.gaufoo.bbs.gql.util.Utils;
 import graphql.schema.DataFetchingEnvironment;
@@ -32,5 +33,13 @@ public class Query implements GraphQLQueryResolver {
     Authentication.GetIdResult loggedId(DataFetchingEnvironment env) {
         return Utils.getAuthToken(env).map(Authentication::getLoggedUserId)
                 .orElse(Authentication.GetIdError.of("用户未登录"));
+    }
+
+    LostAndFound.ItemInfoResult foundItemInfo(String foundId) {
+        return LostAndFound.foundItem(foundId);
+    }
+
+    LostAndFound.ItemInfoResult lostItemInfo(String lostId) {
+        return LostAndFound.lostItem(lostId);
     }
 }

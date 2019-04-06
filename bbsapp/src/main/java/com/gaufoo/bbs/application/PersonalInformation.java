@@ -76,7 +76,7 @@ public class PersonalInformation {
     private static String factorOutImageUrl(String pictureId) {
         return Optional.ofNullable(pictureId)
                 .map(FileId::of)
-                .flatMap(ComponentFactory.file::fileURI)
+                .flatMap(ComponentFactory.userProfiles::fileURI)
                 .orElse("");
     }
 
@@ -127,7 +127,7 @@ public class PersonalInformation {
         try {
             String userId = ComponentFactory.authenticator.getLoggedUser(UserToken.of(userToken)).userId;
             byte[] decodedImg = Base64.getDecoder().decode(base64Image);
-            return ComponentFactory.file.createFile(decodedImg, "user-profile-" + userId)
+            return ComponentFactory.userProfiles.createFile(decodedImg, "user-profile-" + userId)
                     .map(fileId -> {
                         boolean success = ComponentFactory.user.changeProfilePicIdentifier(UserId.of(userId), fileId.value);
                         if (success) {

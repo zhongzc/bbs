@@ -133,12 +133,12 @@ const logIn = (username, password) => {
 };
 
 unit_test("login", () =>
-	after_signUp((auth, uname, pass) => {
+	after_signUp((auth, uname, pass) => 
 		logIn(uname, pass).then(data => {
 			assert(data.error === undefined);
 			assert(data.token.length !== 0);
 		})
-	})
+	)
 );
 
 
@@ -189,11 +189,11 @@ const confirmPassword = (username, password, auth) => {
 	})
 }
 unit_test("confirmPassword - correct password", () =>
-	after_signUp((auth, uname, pass) => {
+	after_signUp((auth, uname, pass) => 
 		confirmPassword(uname, pass, auth).then(result => {
 			assert(result.error === undefined);
-		});
-	})
+		})
+	)
 );
 
 unit_test("confirmPassword - wrong password", () =>
