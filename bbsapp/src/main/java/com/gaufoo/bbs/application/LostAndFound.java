@@ -17,6 +17,7 @@ import java.util.UUID;
 public class LostAndFound {
     private static Logger logger = LoggerFactory.getLogger(LostAndFound.class);
 
+    //lostId
     public static ItemInfoResult lostItem(String lostId) {
         logger.debug("lostItem, lostId: {}", lostId);
         return ComponentFactory.lostFound.lostInfo(LostId.of(lostId))
@@ -209,7 +210,7 @@ public class LostAndFound {
         }
     }
 
-    public interface LostItemInfo extends ItemInfoResult {
+    public interface    LostItemInfo extends ItemInfoResult {
         String getPublisher();
         String getName();
         String getDescription();

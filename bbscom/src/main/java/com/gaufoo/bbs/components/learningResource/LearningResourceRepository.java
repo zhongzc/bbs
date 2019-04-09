@@ -15,4 +15,6 @@ public interface LearningResourceRepository {
     Stream<ResourceId> getAllResources();
 
     void deleteResource(ResourceId resourceId);
+
+    String getRepositoryName();
 }

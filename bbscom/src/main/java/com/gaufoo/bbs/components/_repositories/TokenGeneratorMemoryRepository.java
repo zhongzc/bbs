@@ -6,7 +6,9 @@ import com.google.gson.Gson;
 import java.time.Instant;
 import java.util.Hashtable;
 import java.util.Map;
-
+/*
+*   存放UserToken ResetToken的地方
+*/
 public class TokenGeneratorMemoryRepository implements TokenGeneratorRepository {
     private final static Gson gson = new Gson();
     private final String repositoryName;
