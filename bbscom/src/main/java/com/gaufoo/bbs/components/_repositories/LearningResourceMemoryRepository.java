@@ -22,7 +22,7 @@ public class LearningResourceMemoryRepository implements LearningResourceReposit
     }
     @Override
     public boolean updateResource(ResourceId resourceId, ResourceInfo modSharer){
-    if(resources.containsKey(resourceId.value))return false;
+    if(!resources.containsKey(resourceId.value))return false;
     resources.put(resourceId.value,gson.toJson(modSharer));
     return true;
     }
@@ -45,4 +45,5 @@ public class LearningResourceMemoryRepository implements LearningResourceReposit
     public static LearningResourceRepository get(String repositoryName){
         return new LearningResourceMemoryRepository(repositoryName);
     }
+
 }
