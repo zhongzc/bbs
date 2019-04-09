@@ -5,7 +5,6 @@ import com.gaufoo.bbs.application.AccountAndPassword;
 import com.gaufoo.bbs.application.Authentication;
 import com.gaufoo.bbs.application.LostAndFound;
 import com.gaufoo.bbs.application.PersonalInformation;
-import com.gaufoo.bbs.components.lostfound.common.LostInfo;
 import com.gaufoo.bbs.gql.util.Utils;
 import graphql.schema.DataFetchingEnvironment;
 import org.springframework.stereotype.Component;
@@ -43,43 +42,43 @@ public class Mutation implements GraphQLMutationResolver {
                 AccountAndPassword.ChangePasswordError::of, env);
     }
 
-    PersonalInformation.ModifyPersonInfoError uploadUserProfile(String base64Image, DataFetchingEnvironment env) {
+    PersonalInformation.ModifyPersonInfoResult uploadUserProfile(String base64Image, DataFetchingEnvironment env) {
         return authenticatedGuard(
                 userToken -> PersonalInformation.uploadUserProfile(userToken, base64Image),
                 PersonalInformation.ModifyPersonInfoError::of, env);
     }
 
-    PersonalInformation.ModifyPersonInfoError changeAcademy(String academy, DataFetchingEnvironment env) {
+    PersonalInformation.ModifyPersonInfoResult changeAcademy(String academy, DataFetchingEnvironment env) {
         return authenticatedGuard(
                 userToken -> PersonalInformation.changeAcademy(userToken, academy),
                 PersonalInformation.ModifyPersonInfoError::of, env);
     }
 
-    PersonalInformation.ModifyPersonInfoError changeMajor(String major, DataFetchingEnvironment env) {
+    PersonalInformation.ModifyPersonInfoResult changeMajor(String major, DataFetchingEnvironment env) {
         return authenticatedGuard(
                 userToken -> PersonalInformation.changeMajor(userToken, major),
                 PersonalInformation.ModifyPersonInfoError::of, env);
     }
 
-    PersonalInformation.ModifyPersonInfoError changeGender(String gender, DataFetchingEnvironment env) {
+    PersonalInformation.ModifyPersonInfoResult changeGender(String gender, DataFetchingEnvironment env) {
         return authenticatedGuard(
                 userToken -> PersonalInformation.changeGender(userToken, gender),
                 PersonalInformation.ModifyPersonInfoError::of, env);
     }
 
-    PersonalInformation.ModifyPersonInfoError changeGrade(String grade, DataFetchingEnvironment env) {
+    PersonalInformation.ModifyPersonInfoResult changeGrade(String grade, DataFetchingEnvironment env) {
         return authenticatedGuard(
                 userToken -> PersonalInformation.changeGrade(userToken, grade),
                 PersonalInformation.ModifyPersonInfoError::of, env);
     }
 
-    PersonalInformation.ModifyPersonInfoError changeIntroduction(String introduction, DataFetchingEnvironment env) {
+    PersonalInformation.ModifyPersonInfoResult changeIntroduction(String introduction, DataFetchingEnvironment env) {
         return authenticatedGuard(
                 userToken -> PersonalInformation.changeIntroduction(userToken, introduction),
                 PersonalInformation.ModifyPersonInfoError::of, env);
     }
 
-    PersonalInformation.ModifyPersonInfoError changeNickname(String nickname, DataFetchingEnvironment env) {
+    PersonalInformation.ModifyPersonInfoResult changeNickname(String nickname, DataFetchingEnvironment env) {
         return authenticatedGuard(
                 userToken -> PersonalInformation.changeNickname(userToken, nickname),
                 PersonalInformation.ModifyPersonInfoError::of, env);

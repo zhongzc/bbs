@@ -38,6 +38,8 @@ public class Application implements WebMvcConfigurer {
                 PersonalInformation.PersonalInfo.class,
                 PersonalInformation.MajorsInError.class,
                 PersonalInformation.MajorsInPayload.class,
+                PersonalInformation.ModifyPersonSuccess.class,
+                PersonalInformation.ModifyPersonInfoError.class,
                 LostAndFound.ItemInfoError.class,
                 LostAndFound.FoundItemInfo.class,
                 LostAndFound.LostItemInfo.class,

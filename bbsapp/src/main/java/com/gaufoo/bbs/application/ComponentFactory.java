@@ -39,5 +39,5 @@ public class ComponentFactory {
 
     public static final  LikeComponent like=LikeComponent.defau1t("like", LikeComponentMemoryRepository.get("likeMryRep"), IdGenerator.seqInteger("likeId"));
 
-    public static final LearningResource learningResource=LearningResource.defau1t("learnResource", LearningResourceRepository.)
+//    public static final LearningResource learningResource=LearningResource.defau1t("learnResource", LearningResourceRepository.)
 }

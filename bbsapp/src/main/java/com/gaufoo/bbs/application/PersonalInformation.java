@@ -122,7 +122,7 @@ public class PersonalInformation {
     }
 
 
-    public static ModifyPersonInfoError uploadUserProfile(String userToken, String base64Image) {
+    public static ModifyPersonInfoResult uploadUserProfile(String userToken, String base64Image) {
         logger.debug("uploadUserProfile, userToken: {}, base64Image: {}", userToken, base64Image);
         try {
             String userId = ComponentFactory.authenticator.getLoggedUser(UserToken.of(userToken)).userId;
@@ -132,7 +132,7 @@ public class PersonalInformation {
                         boolean success = ComponentFactory.user.changeProfilePicIdentifier(UserId.of(userId), fileId.value);
                         if (success) {
                             logger.debug("uploadUserProfile - success, userId: {}, fileId: {}", userId, fileId.value);
-                            return null;
+                            return ModifyPersonSuccess.ok();
                         }
                         logger.debug("uploadUserProfile - failed, error: {}, userId: {}, fileId: {}", "更改图片失败", userId, fileId.value);
                         return ModifyPersonInfoError.of("更改图片失败");
@@ -148,7 +148,7 @@ public class PersonalInformation {
         }
     }
 
-    public static ModifyPersonInfoError changeAcademy(String userToken, String academy) {
+    public static ModifyPersonInfoResult changeAcademy(String userToken, String academy) {
         return parseAcademy(academy).map(school ->
                 changeCommon(userToken, academy, "school", "changeAcademy","更改学院失败",
                         ((userFactory, userId) ->
@@ -163,7 +163,7 @@ public class PersonalInformation {
         }
         return Optional.empty();
     }
-    public static ModifyPersonInfoError changeMajor(String userToken, String majorStr) {
+    public static ModifyPersonInfoResult changeMajor(String userToken, String majorStr) {
         return parseMajor(majorStr).map(major ->
                 changeCommon(userToken, majorStr, "major", "changeMajor","更改专业失败",
                         ((userFactory, userId) ->
@@ -189,7 +189,7 @@ public class PersonalInformation {
 
 
 
-    public static ModifyPersonInfoError changeGender(String userToken, String genderStr) {
+    public static ModifyPersonInfoResult changeGender(String userToken, String genderStr) {
         Optional<Gender> oGender = parseGender(genderStr);
         if (!oGender.isPresent()) {
             logger.debug("changeGender - failed, error: {}, userToken: {}, genderStr: {}", "无法解析性别", userToken, genderStr);
@@ -209,23 +209,23 @@ public class PersonalInformation {
     }
 
 
-    public static ModifyPersonInfoError changeGrade(String userToken, String grade) {
+    public static ModifyPersonInfoResult changeGrade(String userToken, String grade) {
         return changeCommon(userToken, grade, "grade", "changeGrade", "更改年级失败",
                 (userFactory, userId) -> userFactory.changeIntroduction(userId, grade));
     }
 
-    public static ModifyPersonInfoError changeIntroduction(String userToken, String introduction) {
+    public static ModifyPersonInfoResult changeIntroduction(String userToken, String introduction) {
         return changeCommon(userToken, introduction, "introduction", "changeIntroduction", "更改个人信息失败",
                 (userFactory, userId) -> userFactory.changeIntroduction(userId, introduction));
     }
 
-    public static ModifyPersonInfoError changeNickname(String userToken, String nickname) {
+    public static ModifyPersonInfoResult changeNickname(String userToken, String nickname) {
         return changeCommon(userToken, nickname, "nickname", "changeNickname", "更改昵称失败",
                 (userFactory, userId) -> userFactory.changeNickname(userId, nickname));
     }
 
-    private static ModifyPersonInfoError changeCommon(String userToken, String payload, String field, String methodName,
-                                                      String errMsg, BiFunction<UserFactory, UserId, Boolean> compFunc) {
+    private static ModifyPersonInfoResult changeCommon(String userToken, String payload, String field, String methodName,
+                                                       String errMsg, BiFunction<UserFactory, UserId, Boolean> compFunc) {
         logger.debug("{}, userToken: {}, {}: {}", methodName, userToken, field, payload);
         try {
             String userId = ComponentFactory.authenticator.getLoggedUser(UserToken.of(userToken)).userId;
@@ -233,7 +233,7 @@ public class PersonalInformation {
 
             if (success) {
                 logger.debug("{} - success, userToken: {}, {}: {}", methodName, userToken, field, payload);
-                return null;
+                return ModifyPersonSuccess.ok();
             } else {
                 logger.debug("{} - failed, error: {} userToken: {}, {}: {}", errMsg, methodName, userToken, field, payload);
                 return ModifyPersonInfoError.of(errMsg);
@@ -274,7 +274,7 @@ public class PersonalInformation {
     public interface PersonalInfoResult {
     }
 
-    public static class ModifyPersonInfoError {
+    public static class ModifyPersonInfoError implements ModifyPersonInfoResult {
         private String error;
 
         public ModifyPersonInfoError(String error) {
@@ -288,6 +288,25 @@ public class PersonalInformation {
         public String getError() {
             return error;
         }
+    }
+
+    public static class ModifyPersonSuccess implements ModifyPersonInfoResult {
+        private boolean ok;
+
+        public ModifyPersonSuccess() {
+            this.ok = true;
+        }
+
+        public static ModifyPersonSuccess ok() {
+            return new ModifyPersonSuccess();
+        }
+
+        public boolean isOk() {
+            return ok;
+        }
+    }
+
+    public interface ModifyPersonInfoResult {
     }
 
     public static class MajorsInPayload implements MajorsInResult {

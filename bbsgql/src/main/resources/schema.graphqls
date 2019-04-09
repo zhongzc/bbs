@@ -23,13 +23,13 @@ type Mutation {
     confirmPassword(username: String!, password: String!): ConfirmPasswordResult!
     changePassword(resetToken: String!, newPassword: String!): ChangePasswordError
 
-    uploadUserProfile(base64Image: String!): ModifyPersonInfoError
-    changeGender(gender: String!): ModifyPersonInfoError
-    changeGrade(grade: String!): ModifyPersonInfoError
-    changeIntroduction(introduction: String!): ModifyPersonInfoError
-    changeNickname(nickname: String!): ModifyPersonInfoError
-    changeAcademy(academy: String!): ModifyPersonInfoError
-    changeMajor(major: String!): ModifyPersonInfoError
+    uploadUserProfile(base64Image: String!): ModifyPersonInfoResult
+    changeGender(gender: String!): ModifyPersonInfoResult
+    changeGrade(grade: String!): ModifyPersonInfoResult
+    changeIntroduction(introduction: String!): ModifyPersonInfoResult
+    changeNickname(nickname: String!): ModifyPersonInfoResult
+    changeAcademy(academy: String!): ModifyPersonInfoResult
+    changeMajor(major: String!): ModifyPersonInfoResult
 
     publishFound(itemInfo: ItemInfoInput!): ItemInfoResult!
     publishLost(itemInfo: ItemInfoInput!): ItemInfoResult!
