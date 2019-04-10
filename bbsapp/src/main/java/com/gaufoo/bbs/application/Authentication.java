@@ -5,6 +5,9 @@ import com.gaufoo.bbs.components.authenticator.common.Attachable;
 import com.gaufoo.bbs.components.authenticator.common.Permission;
 import com.gaufoo.bbs.components.authenticator.common.UserToken;
 import com.gaufoo.bbs.components.authenticator.exceptions.AuthenticatorException;
+import com.gaufoo.bbs.components.scutMajor.common.Major;
+import com.gaufoo.bbs.components.scutMajor.common.MajorValue;
+import com.gaufoo.bbs.components.scutMajor.common.School;
 import com.gaufoo.bbs.components.user.common.UserId;
 import com.gaufoo.bbs.components.user.common.UserInfo;
 import org.slf4j.Logger;
@@ -21,7 +24,8 @@ public class Authentication {
         try {
             Attachable needUser = ComponentFactory.authenticator.signUp(username, password);
 
-            Optional<UserId> userId = ComponentFactory.user.createUser(UserInfo.of(nickname, null, UserInfo.Gender.secret, null, null, null));
+            Optional<UserId> userId = ComponentFactory.user.createUser(UserInfo.of(nickname, null,
+                    UserInfo.Gender.secret, null, defaultMajorCodeValue(), null));
             if (!userId.isPresent()) {
                 log.debug("sign up - failed, error: {}, username: {}, nickname: {}", "用户创建失败", username, nickname);
                 return SignUpError.of("用户创建失败");
@@ -42,6 +46,11 @@ public class Authentication {
             log.debug("sign up - failed, error: {}, username: {}, nickname: {}", e.getMessage(), username, nickname);
             return SignUpError.of(e.getMessage());
         }
+    }
+
+    private static String defaultMajorCodeValue() {
+        MajorValue defaultMajorValue =  MajorValue.of(School.无, Major.无);
+        return ComponentFactory.major.generateMajorCode(defaultMajorValue).value;
     }
 
     public static LogInResult logIn(String username, String password) {

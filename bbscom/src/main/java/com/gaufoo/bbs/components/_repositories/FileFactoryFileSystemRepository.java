@@ -43,8 +43,6 @@ public class FileFactoryFileSystemRepository implements FileFactoryRepository {
 
     @Override
     public boolean saveFile(FileId fileId, byte[] file, String filename) {
-        Map<String, String> inter = idToFilename;
-        System.out.println(inter);
         if (idToFilename.containsKey(fileId.value)) return false;
         Path filepath = directory.resolve(fileId.value);
         try {

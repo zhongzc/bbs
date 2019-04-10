@@ -37,6 +37,9 @@ const generateEmailPassAndNickname = () => {
 	return ["tangenta" + newSuffix + "@126.com", "pass1234", "tangenta" + newSuffix];
 };
 
+// ---------convenient func---------
+
+// [dependencies: signUp]
 const after_signUp = (func) => {
 	[username, password, nickname] = generateEmailPassAndNickname();
 	return signUp(username, password, nickname)
@@ -46,11 +49,22 @@ const after_signUp = (func) => {
 		});
 };
 
+// [dependencies: signUp, loggedId]
+const provided_userId = (func) => 
+	after_signUp((auth, username, password, nickname) =>
+		loggedId(auth).then(result =>
+			func(result.userid, username, password, nickname)
+		)
+	);
+
+
+//---------unit test---------
+
 let unitTests = [];
 const unit_test = (name, f) => {
 	unitTests.push({ name: name, func: f });
 };
-const unique_unit_test = (name, f) => {
+const unit_test_only = (name, f) => {
 	unitTests.push({ name: name, func: f, unique: true });
 }
 
@@ -61,16 +75,23 @@ const fire_unit_test = async () => {
 		return;
 	}
 	const testsToRun = uniqueUnitTest.length === 0 ? unitTests : uniqueUnitTest;
+	let passTestCounter = 0;
 	for (let f of testsToRun) {
 		await f.func()
-			.then(() => console.log("SUCCESS # unit test: " + f.name))
+			.then(() => {
+				passTestCounter++;
+				return console.log("SUCCESS # unit test: " + f.name)
+			})
 			.then(() => new Promise(resolve => setTimeout(resolve, 30)))  // visual enjoyment
 			.catch(error => {
-				console.error("=== unit test FAILED ===");
+				console.error("=== (" + f.name + ") unit test FAILED ===");
 				console.error(error);
 			});
 	}
+	console.log("Pass/Run :" + passTestCounter + "/" + testsToRun.length);
 }
+
+// ---------assertions---------
 
 const assert = (bool) => {
 	if (!bool) throw new Error("assertion failed");
@@ -85,6 +106,12 @@ const assertEq = (left, right) => {
 const assertNotEq = (left, right) => {
 	if (left === right) {
 		throw new Error("left: " + left + " is equal to right: " + right);
+	}
+}
+
+const assertNonEmpty = (obj) => {
+	if (obj === undefined || obj === null) {
+		throw new Error("empty value: " + obj);
 	}
 }
 
@@ -317,7 +344,7 @@ unit_test("upload user profile", () =>
 	after_signUp(auth => {
 		const base64Image = getBase64Image(document.getElementById("test-img"));
 		return uploadUserProfile(base64Image, auth).then(result => {
-			assertEq(result.ok, true);
+			assert(result.ok);
 		});
 	})
 );
@@ -327,7 +354,7 @@ unit_test("upload user profile", () =>
 const CHANGE_GENDER = `
 	mutation ChangeGender($gender: String!) {
 		changeGender(gender: $gender) {
-			... on ModifyPersonInfoResult {
+			... on ModifyPersonInfoSuccess {
 				ok
 			}
 			... on ModifyPersonInfoError {
@@ -336,12 +363,37 @@ const CHANGE_GENDER = `
 		}
 	}
 `;
+
+const changeGender = (gender, userToken) => {
+	return sendGQL({
+		query: CHANGE_GENDER,
+		variables: {
+			gender: gender,
+		},
+		auth: userToken
+	});
+};
+
+unit_test("change gender - invalid gender", () => 
+	after_signUp(auth => {
+		changeGender("unknown-gender", auth).then(result => {
+			assertNotEq(result.error.length, 0)
+		})
+	})
+);
+unit_test("change gender - valid gender", () => 
+	after_signUp(auth => {
+		changeGender("male", auth).then(result => {
+			assert(result.ok);
+		})
+	})
+);
 // =============================================
 
 const CHANGE_GRADE = `
 	mutation ChangeGrade($grade: String!) {
 		changeGrade(grade: $grade) {
-			... on ModifyPersonInfoResult {
+			... on ModifyPersonInfoSuccess {
 				ok
 			}
 			... on ModifyPersonInfoError {
@@ -350,12 +402,30 @@ const CHANGE_GRADE = `
 		}
 }
 `;
+
+const changeGrade = (grade, userToken) => {
+	return sendGQL({
+		query: CHANGE_GRADE,
+		variables: {
+			grade: grade,
+		},
+		auth: userToken
+	});
+};
+
+unit_test("change grade", () => 
+	after_signUp(auth => {
+		changeGrade("2017级", auth).then(result => {
+			assert(result.ok);
+		})
+	})
+);
 // =============================================
 
 const CHANGE_INTRODUCTION = `
 	mutation ChangeIntroduction($introduction: String!) {
 		changeIntroduction(introduction: $introduction) {
-			... on ModifyPersonInfoResult {
+			... on ModifyPersonInfoSuccess {
 				ok
 			}
 			... on ModifyPersonInfoError {
@@ -364,12 +434,30 @@ const CHANGE_INTRODUCTION = `
 		}
 }
 `;
+
+const changeIntroduction = (introduction, userToken) => {
+	return sendGQL({
+		query: CHANGE_INTRODUCTION,
+		variables: {
+			introduction: introduction,
+		},
+		auth: userToken
+	});
+};
+
+unit_test("change introduction", () => 
+	after_signUp(auth => {
+		changeIntroduction("个人介绍", auth).then(result => {
+			assert(result.ok);
+		})
+	})
+);
 // =============================================
 
 const CHANGE_NICKNAME = `
 	mutation ChangeNickname($nickname: String!) {
 		changeNickname(nickname: $nickname) {
-			... on ModifyPersonInfoResult {
+			... on ModifyPersonInfoSuccess {
 				ok
 			}
 			... on ModifyPersonInfoError {
@@ -378,12 +466,30 @@ const CHANGE_NICKNAME = `
 		}
 }
 `;
+
+const changeNickname = (nickname, userToken) => {
+	return sendGQL({
+		query: CHANGE_NICKNAME,
+		variables: {
+			nickname: nickname,
+		},
+		auth: userToken
+	});
+};
+
+unit_test("change nickname", () => 
+	after_signUp(auth => {
+		changeNickname("昵称", auth).then(result => {
+			assert(result.ok);
+		})
+	})
+);
 // =============================================
 
 const CHANGE_ACADEMY = `
 	mutation ChangeAcademy($academy: String!) {
 		changeAcademy(academy: $academy) {
-			... on ModifyPersonInfoResult {
+			... on ModifyPersonInfoSuccess {
 				ok
 			}
 			... on ModifyPersonInfoError {
@@ -392,12 +498,37 @@ const CHANGE_ACADEMY = `
 		}
 }
 `;
+
+const changeAcademy = (academy, userToken) => {
+	return sendGQL({
+		query: CHANGE_ACADEMY,
+		variables: {
+			academy: academy,
+		},
+		auth: userToken
+	});
+};
+
+unit_test("change academy - invalid academy", () => 
+	after_signUp(auth => {
+		changeAcademy("学院", auth).then(result => {
+			assertNotEq(result.error, undefined);
+		})
+	})
+);
+unit_test("change academy - valid academy", () => 
+	after_signUp(auth => {
+		changeAcademy("计算机科学与工程学院", auth).then(result => {
+			assert(result.ok);
+		})
+	})
+);
 // =============================================
 
 const CHANGE_MAJOR = `
 	mutation ChangeMajor($major: String!) {
 		changeMajor(major: $major) {
-			... on ModifyPersonInfoResult {
+			... on ModifyPersonInfoSuccess {
 				ok
 			}
 			... on ModifyPersonInfoError {
@@ -406,11 +537,36 @@ const CHANGE_MAJOR = `
 		}
 	}
 `;
+
+const changeMajor = (major, userToken) => {
+	return sendGQL({
+		query: CHANGE_MAJOR,
+		variables: {
+			major: major,
+		},
+		auth: userToken
+	});
+};
+
+unit_test("change major - invalid major", () => 
+	after_signUp(auth => {
+		changeMajor("专业", auth).then(result => {
+			assertNonEmpty(result.error);
+		})
+	})
+);
+unit_test("change major - valid major", () => 
+	after_signUp(auth => {
+		changeMajor("网络工程", auth).then(result => {
+			assert(result.ok);
+		})
+	})
+);
 // =========================================query=========================================
 
 // =============================================
 const LOGGED_ID = `
-	query LoggedId($userToken: String!) {
+	query LoggedId {
 		loggedId {
 			... on GetIdError {
 				error
@@ -426,7 +582,16 @@ const loggedId = (auth) => {
 		query: LOGGED_ID,
 		auth: auth,
 	});
-}
+};
+
+unit_test("logged id", () =>
+	after_signUp(auth => 
+		loggedId(auth).then(result => {
+			assertEq(result.error, undefined);
+			assert(result.userid.length > 0);
+		})
+	)
+);
 // =============================================
 
 const USER_INFO = `
@@ -456,6 +621,24 @@ const userInfo = (userId) => {
 	});
 };
 
+unit_test("userInfo", () => 
+	provided_userId((userId, u, p, nickname) => 
+		userInfo(userId).then(result => {
+			assertEq(result.error, undefined);
+			const exceptedResult = {
+				pictureUrl: "",
+				username: nickname,
+				gender: "secret",
+				grade: "",
+				school: "无",
+				major: "无",
+				introduction: ""
+			};
+			assert(JSON.stringify(result) == JSON.stringify(exceptedResult));
+		})
+	)
+);
+
 // =============================================
 
 const ALL_ACADEMIES = `
@@ -463,12 +646,39 @@ const ALL_ACADEMIES = `
 		allAcademies
 	}
 `;
+
+const allAcademies = () => {
+	return sendGQL({
+		query: ALL_ACADEMIES,
+	});
+};
+
+unit_test("allAcademies", () => 
+	allAcademies().then(result => {
+		assertEq(result.length, 27)
+	})
+);
+
+// =============================================
+
+
 const ALL_MAJORS = `
 	query AllMajors {
 		allMajors
 	}
 `;
 
+const allMajors = () => {
+	return sendGQL({
+		query: ALL_MAJORS,
+	});
+};
+
+unit_test("allMajors", () => 
+	allMajors().then(result => {
+		assertEq(result.length, 86)
+	})
+);
 // =============================================
 
 const MAJORS_IN = `
@@ -484,6 +694,26 @@ const MAJORS_IN = `
 	}
 `;
 
+const majorsIn = (academy) => {
+	return sendGQL({
+		query: MAJORS_IN,
+		variables: {
+			academy: academy
+		},
+	});
+};
+
+unit_test("majorsIn - invalid academy", () =>
+	majorsIn("$%&^%").then(result => 
+		assertNonEmpty(result.error)
+	)
+);
+
+unit_test("majorsIn - valid academy", () =>
+	majorsIn("计算机科学与工程学院").then(result => {
+		assertEq(result.majors.length, 3)
+	})
+);
 
 // =========================================use case========================================
 // =========================================use case========================================

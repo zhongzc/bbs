@@ -28,8 +28,15 @@ public class ComponentFactory {
         lostFoundRcPath.toFile().mkdirs();
     }
 
-    private static void clearUp() {
+    public static void deleteResourcesFolder() {
         Utils.deleteFileRecursively(tempPath);
+    }
+    public static void removeResources() {
+        Utils.deleteFileRecursively(profilesRcPath);
+        Utils.deleteFileRecursively(lostFoundRcPath);
+
+        profilesRcPath.toFile().mkdirs();
+        lostFoundRcPath.toFile().mkdirs();
     }
 
     public static final UserFactory user =
@@ -62,6 +69,6 @@ public class ComponentFactory {
 //    public static final LearningResource learningResource=LearningResource.defau1t("learnResource", LearningResourceRepository.)
 
     public static void main(String[] args) {
-        clearUp();
+        deleteResourcesFolder();
     }
 }

@@ -53,7 +53,7 @@ public class PersonalInformation {
             @Override
             public String getGrade() {
                 logger.debug("userInfo :: getGrade, nickname: {}", info.nickname);
-                return info.grade;
+                return Optional.ofNullable(info.grade).orElse("");
             }
             @Override
             public String getSchool() {
@@ -68,7 +68,7 @@ public class PersonalInformation {
             @Override
             public String getIntroduction() {
                 logger.debug("userInfo :: getIntroduction, nickname: {}", info.nickname);
-                return info.introduction;
+                return Optional.ofNullable(info.introduction).orElse("");
             }
         };
     }
@@ -116,7 +116,7 @@ public class PersonalInformation {
                         .collect(Collectors.toList()))
                 .map(listOfMajor -> (MajorsInResult)MajorsInPayload.of(listOfMajor))
                 .orElseGet(() -> {
-                    logger.debug("majorsIn - failed, academy: {}", academy);
+                    logger.debug("majorsIn - failed, error: {}, academy: {}", "无法解析学院", academy);
                     return MajorsInError.of("无法解析学院");
                 });
     }
@@ -248,7 +248,7 @@ public class PersonalInformation {
                 logger.debug("{} - success, userToken: {}, {}: {}", methodName, userToken, field, payload);
                 return ModifyPersonInfoSuccess.build();
             } else {
-                logger.debug("{} - failed, error: {} userToken: {}, {}: {}", errMsg, methodName, userToken, field, payload);
+                logger.debug("{} - failed, error: {} userToken: {}, {}: {}", methodName, errMsg, userToken, field, payload);
                 return ModifyPersonInfoError.of(errMsg);
             }
         } catch (AuthenticatorException e) {

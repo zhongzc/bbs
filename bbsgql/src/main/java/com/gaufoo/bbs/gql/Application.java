@@ -62,6 +62,8 @@ public class Application implements WebMvcConfigurer {
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        ComponentFactory.removeResources();
+
         logger.info("profile resource location: {}", ComponentFactory.profilesRcPath.toUri().toString());
         logger.info("lost and found resource location: {}", ComponentFactory.lostFoundRcPath.toUri().toString());
 
