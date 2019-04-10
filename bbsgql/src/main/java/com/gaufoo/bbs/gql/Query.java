@@ -15,23 +15,12 @@ import java.util.List;
 @Component
 public class Query implements GraphQLQueryResolver {
 
-    private String serverAddress = "http://localhost";
-    @Value("${server.port}")
-    private String serverPort;
-
-    @Value("${user-profile-images-mapping}")
-    private String profileImgMapping;
-
-    @Value("${lost-and-found-images-mapping}")
-    private String lostFoundMapping;
-
     String test(String testStr, DataFetchingEnvironment env) {
         return testStr;
     }
 
     PersonalInformation.PersonalInfoResult userInfo(String userId) {
-        return PersonalInformation.userInfo(userId,
-                Utils.urlMakerProducer(String.format("%s:%s%s", serverAddress, serverPort, profileImgMapping)));
+        return PersonalInformation.userInfo(userId);
     }
     List<String> allAcademies() {
         return PersonalInformation.allAcademies();

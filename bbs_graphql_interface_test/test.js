@@ -1,5 +1,7 @@
+const remoteAddress = "http://localhost:4000";
+
 const sendGQL = (queryPayloadObject) => {
-	return fetch("http://localhost:4000/graphql/", {
+	return fetch(remoteAddress + "/graphql/", {
 		method: "POST",
 		body: JSON.stringify({
 			variables: queryPayloadObject.variables,
@@ -50,7 +52,7 @@ const after_signUp = (func) => {
 };
 
 // [dependencies: signUp, loggedId]
-const provided_userId = (func) => 
+const provided_userId = (func) =>
 	after_signUp((auth, username, password, nickname) =>
 		loggedId(auth).then(result =>
 			func(result.userid, username, password, nickname)
@@ -67,28 +69,46 @@ const unit_test = (name, f) => {
 const unit_test_only = (name, f) => {
 	unitTests.push({ name: name, func: f, unique: true });
 }
+const fire_unit_tests = () => {
+	fire_tests("unit test", unitTests);
+}
 
-const fire_unit_test = async () => {
-	const uniqueUnitTest = unitTests.filter(testObj => testObj.unique !== undefined);
-	if (uniqueUnitTest.length > 1) {
-		console.error("===== more than one unique unit test found =====");
+//---------behavior test---------
+
+let behavTests = [];
+const behav_test = (name, f) => {
+	behavTests.push({ name: name, func: f });
+};
+const behav_test_only = (name, f) => {
+	behavTests.push({ name: name, func: f, unique: true });
+}
+const fire_behav_tests = () => {
+	fire_tests("behavior test", behavTests);
+}
+
+//---------test firing---------
+
+const fire_tests = async (kind, tests) => {
+	const uniqueTest = tests.filter(testObj => testObj.unique !== undefined);
+	if (uniqueTest.length > 1) {
+		console.error("===== more than one unique " + kind + "s are found: (" + uniqueTest.map(x => x.name).join(", ") + ") =====");
 		return;
 	}
-	const testsToRun = uniqueUnitTest.length === 0 ? unitTests : uniqueUnitTest;
+	const testsToRun = uniqueTest.length === 0 ? tests : uniqueTest;
 	let passTestCounter = 0;
 	for (let f of testsToRun) {
 		await f.func()
 			.then(() => {
 				passTestCounter++;
-				return console.log("SUCCESS # unit test: " + f.name)
+				return console.log("SUCCESS # " + kind + ": " + f.name)
 			})
-			.then(() => new Promise(resolve => setTimeout(resolve, 30)))  // visual enjoyment
+			.then(() => new Promise(resolve => setTimeout(resolve, 20)))  // visual enjoyment
 			.catch(error => {
-				console.error("=== (" + f.name + ") unit test FAILED ===");
+				console.error("=== (" + f.name + ") " + kind + " FAILED ===");
 				console.error(error);
 			});
 	}
-	console.log("Unit tests Pass/Run: " + passTestCounter + "/" + testsToRun.length);
+	console.log(kind + " pass/run: " + passTestCounter + "/" + testsToRun.length);
 }
 
 // ---------assertions---------
@@ -374,14 +394,14 @@ const changeGender = (gender, userToken) => {
 	});
 };
 
-unit_test("change gender - invalid gender", () => 
+unit_test("change gender - invalid gender", () =>
 	after_signUp(auth => {
 		changeGender("unknown-gender", auth).then(result => {
 			assertNotEq(result.error.length, 0)
 		})
 	})
 );
-unit_test("change gender - valid gender", () => 
+unit_test("change gender - valid gender", () =>
 	after_signUp(auth => {
 		changeGender("male", auth).then(result => {
 			assert(result.ok);
@@ -413,7 +433,7 @@ const changeGrade = (grade, userToken) => {
 	});
 };
 
-unit_test("change grade", () => 
+unit_test("change grade", () =>
 	after_signUp(auth => {
 		changeGrade("2017级", auth).then(result => {
 			assert(result.ok);
@@ -445,7 +465,7 @@ const changeIntroduction = (introduction, userToken) => {
 	});
 };
 
-unit_test("change introduction", () => 
+unit_test("change introduction", () =>
 	after_signUp(auth => {
 		changeIntroduction("个人介绍", auth).then(result => {
 			assert(result.ok);
@@ -477,7 +497,7 @@ const changeNickname = (nickname, userToken) => {
 	});
 };
 
-unit_test("change nickname", () => 
+unit_test("change nickname", () =>
 	after_signUp(auth => {
 		changeNickname("昵称", auth).then(result => {
 			assert(result.ok);
@@ -509,14 +529,14 @@ const changeAcademy = (academy, userToken) => {
 	});
 };
 
-unit_test("change academy - invalid academy", () => 
+unit_test("change academy - invalid academy", () =>
 	after_signUp(auth => {
 		changeAcademy("学院", auth).then(result => {
 			assertNotEq(result.error, undefined);
 		})
 	})
 );
-unit_test("change academy - valid academy", () => 
+unit_test("change academy - valid academy", () =>
 	after_signUp(auth => {
 		changeAcademy("计算机科学与工程学院", auth).then(result => {
 			assert(result.ok);
@@ -548,14 +568,14 @@ const changeMajor = (major, userToken) => {
 	});
 };
 
-unit_test("change major - invalid major", () => 
+unit_test("change major - invalid major", () =>
 	after_signUp(auth => {
 		changeMajor("专业", auth).then(result => {
 			assertNonEmpty(result.error);
 		})
 	})
 );
-unit_test("change major - valid major", () => 
+unit_test("change major - valid major", () =>
 	after_signUp(auth => {
 		changeMajor("网络工程", auth).then(result => {
 			assert(result.ok);
@@ -585,7 +605,7 @@ const loggedId = (auth) => {
 };
 
 unit_test("logged id", () =>
-	after_signUp(auth => 
+	after_signUp(auth =>
 		loggedId(auth).then(result => {
 			assertEq(result.error, undefined);
 			assert(result.userid.length > 0);
@@ -621,11 +641,11 @@ const userInfo = (userId) => {
 	});
 };
 
-unit_test("userInfo", () => 
-	provided_userId((userId, u, p, nickname) => 
+unit_test("userInfo", () =>
+	provided_userId((userId, u, p, nickname) =>
 		userInfo(userId).then(result => {
 			assertEq(result.error, undefined);
-			const exceptedResult = {
+			const expected = {
 				pictureUrl: "",
 				username: nickname,
 				gender: "secret",
@@ -634,7 +654,7 @@ unit_test("userInfo", () =>
 				major: "无",
 				introduction: ""
 			};
-			assert(JSON.stringify(result) == JSON.stringify(exceptedResult));
+			assert(JSON.stringify(result) == JSON.stringify(expected));
 		})
 	)
 );
@@ -653,7 +673,7 @@ const allAcademies = () => {
 	});
 };
 
-unit_test("allAcademies", () => 
+unit_test("allAcademies", () =>
 	allAcademies().then(result => {
 		assertEq(result.length, 27)
 	})
@@ -674,7 +694,7 @@ const allMajors = () => {
 	});
 };
 
-unit_test("allMajors", () => 
+unit_test("allMajors", () =>
 	allMajors().then(result => {
 		assertEq(result.length, 86)
 	})
@@ -704,7 +724,7 @@ const majorsIn = (academy) => {
 };
 
 unit_test("majorsIn - invalid academy", () =>
-	majorsIn("$%&^%").then(result => 
+	majorsIn("$%&^%").then(result =>
 		assertNonEmpty(result.error)
 	)
 );
@@ -717,7 +737,39 @@ unit_test("majorsIn - valid academy", () =>
 
 
 
-fire_unit_test();
+fire_unit_tests();
 // =========================================use case========================================
 // =========================================use case========================================
 // =========================================use case========================================
+
+function isCanvasBlank(canvas) {
+	return !canvas.getContext('2d')
+		.getImageData(0, 0, canvas.width, canvas.height).data
+		.some(channel => channel !== 0);
+}
+
+behav_test_only("upload user profile image and then get url", () =>
+	after_signUp(auth => {
+		const base64Image = getBase64Image(document.getElementById("test-img"));
+		return uploadUserProfile(base64Image, auth).then(result => {
+			assert(result.ok);
+			return loggedId(auth).then(result => {
+				const userId = result.userid;
+				return userInfo(userId).then(result => {
+					const relativePath = result.pictureUrl;
+					const canvas = document.getElementById("canvas");
+					const context = canvas.getContext('2d');
+					const image = new Image();
+					image.src = remoteAddress + relativePath;
+					image.crossOrigin = "anonymous";
+					image.onload = function () {
+						context.drawImage(image, 0, 0);
+						assert(!isCanvasBlank(canvas));
+					};
+				});
+			});
+		});
+	})
+);
+
+fire_behav_tests();

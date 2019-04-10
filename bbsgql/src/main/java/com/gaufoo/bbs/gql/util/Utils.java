@@ -3,7 +3,6 @@ package com.gaufoo.bbs.gql.util;
 import graphql.schema.DataFetchingEnvironment;
 import graphql.servlet.GraphQLContext;
 
-import java.net.URI;
 import java.nio.file.Paths;
 import java.util.Optional;
 import java.util.function.Function;

@@ -14,6 +14,7 @@ import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
+import java.nio.file.Paths;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -74,15 +75,13 @@ public class Application implements WebMvcConfigurer {
 
         ComponentFactory.componentFactory = new ComponentFactory(config);
 
-        logger.info("profile resource location: {}", componentFactory.config.folderPathOf(FileType.UserProfileImage));
-        logger.info("lost and found resource location: {}", componentFactory.config.folderPathOf(FileType.LostFoundImage));
-
-
         List<String> allUrlPrefixes = new LinkedList<>();
         List<String> allFolderPaths = new LinkedList<>();
         config.allFileTypes().forEach(fileType -> {
-            allUrlPrefixes.add(config.urlPrefixOf(fileType));
-            allFolderPaths.add(config.folderPathOf(fileType).toString());
+            logger.info("mapped url: " + config.urlPrefixOf(fileType) + "/**");
+            logger.info("mapped folder: " + config.folderPathOf(fileType).toString());
+            allUrlPrefixes.add(config.urlPrefixOf(fileType) + "/**");
+            allFolderPaths.add(config.folderPathOf(fileType).toUri().toString());
         });
 
         registry.addResourceHandler(allUrlPrefixes.toArray(new String[0]))

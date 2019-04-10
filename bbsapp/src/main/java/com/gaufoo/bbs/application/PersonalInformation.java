@@ -1,5 +1,7 @@
 package com.gaufoo.bbs.application;
 
+import com.gaufoo.bbs.application.util.StaticResourceConfig;
+import com.gaufoo.bbs.application.util.Utils;
 import com.gaufoo.bbs.components.authenticator.common.UserToken;
 import com.gaufoo.bbs.components.authenticator.exceptions.AuthenticatorException;
 import com.gaufoo.bbs.components.file.common.FileId;
@@ -11,6 +13,7 @@ import com.gaufoo.bbs.components.user.UserFactory;
 import com.gaufoo.bbs.components.user.common.UserId;
 import com.gaufoo.bbs.components.user.common.UserInfo;
 import com.gaufoo.bbs.components.user.common.UserInfo.Gender;
+import com.gaufoo.bbs.application.util.StaticResourceConfig.FileType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,22 +28,22 @@ import static com.gaufoo.bbs.application.ComponentFactory.componentFactory;
 public class PersonalInformation {
     private static Logger logger = LoggerFactory.getLogger(PersonalInformation.class);
 
-    public static PersonalInfoResult userInfo(String userId, Function<String, String> uriConverter) {
+    public static PersonalInfoResult userInfo(String userId) {
         logger.debug("userInfo, userId: {}", userId);
         return componentFactory.user.userInfo(UserId.of(userId))
-                .map(userInfo -> constructUserInfo(userInfo, uriConverter))
+                .map(PersonalInformation::constructUserInfo)
                 .orElseGet(() -> {
                     logger.debug("userInfo - failed, error: {}, userId: {}", "找不到用户", userId);
                     return PersonalInfoError.of("找不到用户");
                 });
     }
 
-    private static PersonalInfoResult constructUserInfo(UserInfo info, Function<String, String> uriConverter) {
+    private static PersonalInfoResult constructUserInfo(UserInfo info) {
         return new PersonalInfo() {
             @Override
             public String getPictureUrl() {
                 logger.debug("userInfo :: getPictureUrl, nickname: {}", info.nickname);
-                return uriConverter.apply(factorOutImgUri(info.profilePicIdentifier));
+                return Utils.makeUrl(factorOutImgUri(info.profilePicIdentifier), FileType.UserProfileImage);
             }
             @Override
             public String getUsername() {

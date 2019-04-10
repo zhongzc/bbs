@@ -1,13 +1,12 @@
 package com.gaufoo.bbs.application.util;
 
+import com.gaufoo.bbs.application.ComponentFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.nio.file.FileVisitResult;
-import java.nio.file.FileVisitor;
-import java.nio.file.Files;
-import java.nio.file.Path;
+import java.net.URI;
+import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 
 public class Utils {
@@ -38,5 +37,12 @@ public class Utils {
         } catch (IOException e) {
             logger.warn("deleteFileRecursively - failed, error: {}, path: {}", e.getMessage(), path);
         }
+    }
+
+
+    public static String makeUrl(String uri, StaticResourceConfig.FileType fileType) {
+        if (uri == null || uri.isEmpty()) return "";
+        return ComponentFactory.componentFactory.config.urlPrefixOf(fileType) + "/" +
+                Paths.get(URI.create(uri)).toFile().getName();
     }
 }
