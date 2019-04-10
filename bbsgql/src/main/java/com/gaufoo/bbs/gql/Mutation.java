@@ -7,6 +7,7 @@ import com.gaufoo.bbs.application.LostAndFound;
 import com.gaufoo.bbs.application.PersonalInformation;
 import com.gaufoo.bbs.gql.util.Utils;
 import graphql.schema.DataFetchingEnvironment;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;

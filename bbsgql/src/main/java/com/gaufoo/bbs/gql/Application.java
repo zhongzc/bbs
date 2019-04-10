@@ -1,18 +1,27 @@
 package com.gaufoo.bbs.gql;
 
 import com.coxautodev.graphql.tools.SchemaParserDictionary;
-import com.gaufoo.bbs.application.AccountAndPassword;
-import com.gaufoo.bbs.application.Authentication;
-import com.gaufoo.bbs.application.LostAndFound;
-import com.gaufoo.bbs.application.PersonalInformation;
+import com.gaufoo.bbs.application.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+
 
 @SpringBootApplication
 public class Application implements WebMvcConfigurer {
+    private static Logger logger = LoggerFactory.getLogger(Application.class);
+
+    @Value("${user-profile-images-mapping}")
+    private String profileImgMapping;
+
+    @Value("${lost-and-found-images-mapping}")
+    private String lostFoundMapping;
 
     public static void main(String[] args) {
         SpringApplication.run(Application.class, args);
@@ -38,7 +47,7 @@ public class Application implements WebMvcConfigurer {
                 PersonalInformation.PersonalInfo.class,
                 PersonalInformation.MajorsInError.class,
                 PersonalInformation.MajorsInPayload.class,
-                PersonalInformation.ModifyPersonSuccess.class,
+                PersonalInformation.ModifyPersonInfoSuccess.class,
                 PersonalInformation.ModifyPersonInfoError.class,
                 LostAndFound.ItemInfoError.class,
                 LostAndFound.FoundItemInfo.class,
@@ -50,4 +59,16 @@ public class Application implements WebMvcConfigurer {
         }
         return schemaParserDictionary;
     }
+
+    @Override
+    public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        logger.info("profile resource location: {}", ComponentFactory.profilesRcPath.toUri().toString());
+        logger.info("lost and found resource location: {}", ComponentFactory.lostFoundRcPath.toUri().toString());
+
+        registry.addResourceHandler(profileImgMapping, lostFoundMapping)
+                .addResourceLocations(
+                        ComponentFactory.profilesRcPath.toUri().toString(),
+                        ComponentFactory.lostFoundRcPath.toUri().toString());
+    }
+
 }

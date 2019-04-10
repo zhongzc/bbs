@@ -18,11 +18,11 @@ type ModifyPersonInfoError {
     error: String!
 }
 
-type ModifyPersonSuccess {
+type ModifyPersonInfoSuccess {
     ok: Boolean!
 }
 
-union ModifyPersonInfoResult = ModifyPersonInfoError | ModifyPersonSuccess
+union ModifyPersonInfoResult = ModifyPersonInfoError | ModifyPersonInfoSuccess
 
 type MajorsInError {
     error: String!

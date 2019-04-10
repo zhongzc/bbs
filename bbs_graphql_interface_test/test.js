@@ -40,31 +40,53 @@ const generateEmailPassAndNickname = () => {
 const after_signUp = (func) => {
 	[username, password, nickname] = generateEmailPassAndNickname();
 	return signUp(username, password, nickname)
-	.then(signUpResult => {
-		const auth = signUpResult.token;
-		return func(auth, username, password, nickname);
-	});
+		.then(signUpResult => {
+			const auth = signUpResult.token;
+			return func(auth, username, password, nickname);
+		});
 };
 
 let unitTests = [];
 const unit_test = (name, f) => {
-	unitTests.push({name: name, func: f});
+	unitTests.push({ name: name, func: f });
 };
+const unique_unit_test = (name, f) => {
+	unitTests.push({ name: name, func: f, unique: true });
+}
+
 const fire_unit_test = async () => {
-	for (let f of unitTests) {
+	const uniqueUnitTest = unitTests.filter(testObj => testObj.unique !== undefined);
+	if (uniqueUnitTest.length > 1) {
+		console.error("===== more than one unique unit test found =====");
+		return;
+	}
+	const testsToRun = uniqueUnitTest.length === 0 ? unitTests : uniqueUnitTest;
+	for (let f of testsToRun) {
 		await f.func()
-		.then(() => console.log("SUCCESS # unit test: " + f.name))
-		.then(() => new Promise(resolve => setTimeout(resolve, 30)))  // visual enjoyment
-		.catch(error => {
-			console.error("=== unit test FAILED ===");
-			console.error(error);
-		});
+			.then(() => console.log("SUCCESS # unit test: " + f.name))
+			.then(() => new Promise(resolve => setTimeout(resolve, 30)))  // visual enjoyment
+			.catch(error => {
+				console.error("=== unit test FAILED ===");
+				console.error(error);
+			});
 	}
 }
 
 const assert = (bool) => {
 	if (!bool) throw new Error("assertion failed");
 };
+
+const assertEq = (left, right) => {
+	if (left !== right) {
+		throw new Error("left: " + left + " is not equal to right: " + right);
+	}
+}
+	;
+const assertNotEq = (left, right) => {
+	if (left === right) {
+		throw new Error("left: " + left + " is equal to right: " + right);
+	}
+}
 
 const fail = () => {
 	throw new Error("test failed");
@@ -102,7 +124,7 @@ const signUp = (username, password, nickname) => {
 };
 
 unit_test("signUp", () =>
-	after_signUp(auth => 
+	after_signUp(auth =>
 		assert(auth.length !== 0)
 	)
 );
@@ -133,7 +155,7 @@ const logIn = (username, password) => {
 };
 
 unit_test("login", () =>
-	after_signUp((auth, uname, pass) => 
+	after_signUp((auth, uname, pass) =>
 		logIn(uname, pass).then(data => {
 			assert(data.error === undefined);
 			assert(data.token.length !== 0);
@@ -158,7 +180,7 @@ const logOut = (auth) => {
 	});
 };
 unit_test("logout", () =>
-	after_signUp(auth => 
+	after_signUp(auth =>
 		logOut(auth).then(error => {
 			assert(error === null);
 		})
@@ -189,7 +211,7 @@ const confirmPassword = (username, password, auth) => {
 	})
 }
 unit_test("confirmPassword - correct password", () =>
-	after_signUp((auth, uname, pass) => 
+	after_signUp((auth, uname, pass) =>
 		confirmPassword(uname, pass, auth).then(result => {
 			assert(result.error === undefined);
 		})
@@ -197,7 +219,7 @@ unit_test("confirmPassword - correct password", () =>
 );
 
 unit_test("confirmPassword - wrong password", () =>
-	after_signUp((auth, uname, pass) => 
+	after_signUp((auth, uname, pass) =>
 		confirmPassword(uname, pass + "fail it", auth).then(result => {
 			assert(result.resetToken === undefined);
 		})
@@ -226,7 +248,7 @@ const changePassword = (resetToken, newPassword, userToken) => {
 };
 
 unit_test("changePassword", () =>
-	after_signUp((auth, uname, pass) => 
+	after_signUp((auth, uname, pass) =>
 		confirmPassword(uname, pass, auth).then(data => {
 			const resetToken = data.resetToken;
 			const newPassword = "new" + pass;
@@ -249,18 +271,68 @@ unit_test("changePassword", () =>
 const UPLOAD_USER_PROFILE = `
 	mutation UploadUserProfile($base64Image: String!) {
 		uploadUserProfile(base64Image: $base64Image) {
-			error
+			... on ModifyPersonInfoSuccess {
+				ok
+			}
+			... on ModifyPersonInfoError {
+				error
+			}
 		}
 	}
 `;
 
+const uploadUserProfile = (base64Image, userToken) => {
+	return sendGQL({
+		query: UPLOAD_USER_PROFILE,
+		variables: {
+			base64Image: base64Image
+		},
+		auth: userToken
+	});
+}
+
+// user uploaded image
+function encodeImageFileAsURL(element, onLoaded) {
+	var file = element.files[0];
+	var reader = new FileReader();
+	reader.onloadend = function () {
+		const base64Img = reader.result.replace(/^data:image\/(png|jpg);base64,/, "");
+		onLoaded(base64Img);
+	}
+	reader.readAsDataURL(file);
+}
+
+// image from internet
+function getBase64Image(img) {
+	var canvas = document.createElement("canvas");
+	canvas.width = img.width;
+	canvas.height = img.height;
+	var ctx = canvas.getContext("2d");
+	ctx.drawImage(img, 0, 0);
+	var dataURL = canvas.toDataURL("image/png");
+	return dataURL.replace(/^data:image\/(png|jpg);base64,/, "");
+}
+
+unit_test("upload user profile", () =>
+	after_signUp(auth => {
+		const base64Image = getBase64Image(document.getElementById("test-img"));
+		return uploadUserProfile(base64Image, auth).then(result => {
+			assertEq(result.ok, true);
+		});
+	})
+);
 
 // =============================================
 
 const CHANGE_GENDER = `
 	mutation ChangeGender($gender: String!) {
 		changeGender(gender: $gender) {
-			error
+			... on ModifyPersonInfoResult {
+				ok
+			}
+			... on ModifyPersonInfoError {
+				error
+			}
 		}
 	}
 `;
@@ -269,7 +341,12 @@ const CHANGE_GENDER = `
 const CHANGE_GRADE = `
 	mutation ChangeGrade($grade: String!) {
 		changeGrade(grade: $grade) {
-			error
+			... on ModifyPersonInfoResult {
+				ok
+			}
+			... on ModifyPersonInfoError {
+				error
+			}
 		}
 }
 `;
@@ -278,7 +355,12 @@ const CHANGE_GRADE = `
 const CHANGE_INTRODUCTION = `
 	mutation ChangeIntroduction($introduction: String!) {
 		changeIntroduction(introduction: $introduction) {
-			error
+			... on ModifyPersonInfoResult {
+				ok
+			}
+			... on ModifyPersonInfoError {
+				error
+			}
 		}
 }
 `;
@@ -287,7 +369,12 @@ const CHANGE_INTRODUCTION = `
 const CHANGE_NICKNAME = `
 	mutation ChangeNickname($nickname: String!) {
 		changeNickname(nickname: $nickname) {
-			error
+			... on ModifyPersonInfoResult {
+				ok
+			}
+			... on ModifyPersonInfoError {
+				error
+			}
 		}
 }
 `;
@@ -296,7 +383,12 @@ const CHANGE_NICKNAME = `
 const CHANGE_ACADEMY = `
 	mutation ChangeAcademy($academy: String!) {
 		changeAcademy(academy: $academy) {
-			error
+			... on ModifyPersonInfoResult {
+				ok
+			}
+			... on ModifyPersonInfoError {
+				error
+			}
 		}
 }
 `;
@@ -305,7 +397,12 @@ const CHANGE_ACADEMY = `
 const CHANGE_MAJOR = `
 	mutation ChangeMajor($major: String!) {
 		changeMajor(major: $major) {
-			error
+			... on ModifyPersonInfoResult {
+				ok
+			}
+			... on ModifyPersonInfoError {
+				error
+			}
 		}
 	}
 `;

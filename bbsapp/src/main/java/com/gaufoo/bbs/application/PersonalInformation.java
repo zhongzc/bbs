@@ -23,22 +23,22 @@ import java.util.stream.Stream;
 public class PersonalInformation {
     private static Logger logger = LoggerFactory.getLogger(PersonalInformation.class);
 
-    public static PersonalInfoResult userInfo(String userId) {
+    public static PersonalInfoResult userInfo(String userId, Function<String, String> uriConverter) {
         logger.debug("userInfo, userId: {}", userId);
         return ComponentFactory.user.userInfo(UserId.of(userId))
-                .map(PersonalInformation::constructUserInfo)
+                .map(userInfo -> constructUserInfo(userInfo, uriConverter))
                 .orElseGet(() -> {
                     logger.debug("userInfo - failed, error: {}, userId: {}", "找不到用户", userId);
                     return PersonalInfoError.of("找不到用户");
                 });
     }
 
-    private static PersonalInfoResult constructUserInfo(UserInfo info) {
+    private static PersonalInfoResult constructUserInfo(UserInfo info, Function<String, String> uriConverter) {
         return new PersonalInfo() {
             @Override
             public String getPictureUrl() {
                 logger.debug("userInfo :: getPictureUrl, nickname: {}", info.nickname);
-                return factorOutImageUrl(info.profilePicIdentifier);
+                return uriConverter.apply(factorOutImgUri(info.profilePicIdentifier));
             }
             @Override
             public String getUsername() {
@@ -73,7 +73,7 @@ public class PersonalInformation {
         };
     }
 
-    private static String factorOutImageUrl(String pictureId) {
+    private static String factorOutImgUri(String pictureId) {
         return Optional.ofNullable(pictureId)
                 .map(FileId::of)
                 .flatMap(ComponentFactory.userProfiles::fileURI)
@@ -127,25 +127,38 @@ public class PersonalInformation {
         try {
             String userId = ComponentFactory.authenticator.getLoggedUser(UserToken.of(userToken)).userId;
             byte[] decodedImg = Base64.getDecoder().decode(base64Image);
+
+            removeOldProfileIfPresent(userId);
+
             return ComponentFactory.userProfiles.createFile(decodedImg, "user-profile-" + userId)
                     .map(fileId -> {
                         boolean success = ComponentFactory.user.changeProfilePicIdentifier(UserId.of(userId), fileId.value);
                         if (success) {
                             logger.debug("uploadUserProfile - success, userId: {}, fileId: {}", userId, fileId.value);
-                            return ModifyPersonSuccess.ok();
+                            return ModifyPersonInfoSuccess.build();
                         }
                         logger.debug("uploadUserProfile - failed, error: {}, userId: {}, fileId: {}", "更改图片失败", userId, fileId.value);
                         return ModifyPersonInfoError.of("更改图片失败");
                     }).orElseGet(() -> {
-                        logger.debug("uploadUserProfile - failed, error: {}, userId: {}, base64Image: {}", "创建图片失败", userId, base64Image);
+                        logger.debug("uploadUserProfile - failed, error: {}, userId: {}", "创建图片失败", userId);
                         return ModifyPersonInfoError.of("创建图片失败");
                     });
 
 
         } catch (AuthenticatorException e) {
-            logger.debug("uploadUserProfile - failed, error: {}, userToken: {}, base64Image: {}", e.getMessage(), userToken, base64Image);
+            logger.debug("uploadUserProfile - failed, error: {}, userToken: {}", e.getMessage(), userToken);
             return ModifyPersonInfoError.of(e.getMessage());
         }
+    }
+
+    private static void removeOldProfileIfPresent(String userId) {
+        oldProfileImageId(userId).ifPresent(oldFileId ->
+                ComponentFactory.userProfiles.Remove(FileId.of(oldFileId)));
+    }
+
+    private static Optional<String> oldProfileImageId(String userId) {
+        return ComponentFactory.user.userInfo(UserId.of(userId))
+                .map(userInfo -> userInfo.profilePicIdentifier);
     }
 
     public static ModifyPersonInfoResult changeAcademy(String userToken, String academy) {
@@ -211,7 +224,7 @@ public class PersonalInformation {
 
     public static ModifyPersonInfoResult changeGrade(String userToken, String grade) {
         return changeCommon(userToken, grade, "grade", "changeGrade", "更改年级失败",
-                (userFactory, userId) -> userFactory.changeIntroduction(userId, grade));
+                (userFactory, userId) -> userFactory.changeGrade(userId, grade));
     }
 
     public static ModifyPersonInfoResult changeIntroduction(String userToken, String introduction) {
@@ -233,7 +246,7 @@ public class PersonalInformation {
 
             if (success) {
                 logger.debug("{} - success, userToken: {}, {}: {}", methodName, userToken, field, payload);
-                return ModifyPersonSuccess.ok();
+                return ModifyPersonInfoSuccess.build();
             } else {
                 logger.debug("{} - failed, error: {} userToken: {}, {}: {}", errMsg, methodName, userToken, field, payload);
                 return ModifyPersonInfoError.of(errMsg);
@@ -290,20 +303,22 @@ public class PersonalInformation {
         }
     }
 
-    public static class ModifyPersonSuccess implements ModifyPersonInfoResult {
-        private boolean ok;
+    public static class ModifyPersonInfoSuccess implements ModifyPersonInfoResult {
+        private Boolean ok;
 
-        public ModifyPersonSuccess() {
+
+        public ModifyPersonInfoSuccess() {
             this.ok = true;
         }
 
-        public static ModifyPersonSuccess ok() {
-            return new ModifyPersonSuccess();
+        public static ModifyPersonInfoSuccess build() {
+            return new ModifyPersonInfoSuccess();
         }
 
-        public boolean isOk() {
+        public Boolean getOk() {
             return ok;
         }
+
     }
 
     public interface ModifyPersonInfoResult {
