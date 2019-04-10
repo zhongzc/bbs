@@ -20,12 +20,14 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static com.gaufoo.bbs.application.ComponentFactory.componentFactory;
+
 public class PersonalInformation {
     private static Logger logger = LoggerFactory.getLogger(PersonalInformation.class);
 
     public static PersonalInfoResult userInfo(String userId, Function<String, String> uriConverter) {
         logger.debug("userInfo, userId: {}", userId);
-        return ComponentFactory.user.userInfo(UserId.of(userId))
+        return componentFactory.user.userInfo(UserId.of(userId))
                 .map(userInfo -> constructUserInfo(userInfo, uriConverter))
                 .orElseGet(() -> {
                     logger.debug("userInfo - failed, error: {}, userId: {}", "找不到用户", userId);
@@ -76,7 +78,7 @@ public class PersonalInformation {
     private static String factorOutImgUri(String pictureId) {
         return Optional.ofNullable(pictureId)
                 .map(FileId::of)
-                .flatMap(ComponentFactory.userProfiles::fileURI)
+                .flatMap(componentFactory.userProfiles::fileURI)
                 .orElse("");
     }
 
@@ -89,7 +91,7 @@ public class PersonalInformation {
     private static String factorOutMajorCode(String majorCode, Function<MajorValue, String> transformer) {
         return Optional.ofNullable(majorCode)
                 .map(MajorCode::of)
-                .flatMap(ComponentFactory.major::getMajorValueFromCode)
+                .flatMap(componentFactory.major::getMajorValueFromCode)
                 .map(transformer)
                 .orElseGet(() -> {
                     logger.warn("userInfo :: factorOutMajorCode(majorCode = {}) - failed, error: 转换失败", majorCode);
@@ -111,7 +113,7 @@ public class PersonalInformation {
     public static MajorsInResult majorsIn(String academy) {
         logger.debug("majorsIn, academy: {}", academy);
         return parseAcademy(academy)
-                .map(school -> ComponentFactory.major.majorsIn(school)
+                .map(school -> componentFactory.major.majorsIn(school)
                         .map(Enum::toString)
                         .collect(Collectors.toList()))
                 .map(listOfMajor -> (MajorsInResult)MajorsInPayload.of(listOfMajor))
@@ -125,14 +127,14 @@ public class PersonalInformation {
     public static ModifyPersonInfoResult uploadUserProfile(String userToken, String base64Image) {
         logger.debug("uploadUserProfile, userToken: {}, base64Image: {}", userToken, base64Image);
         try {
-            String userId = ComponentFactory.authenticator.getLoggedUser(UserToken.of(userToken)).userId;
+            String userId = componentFactory.authenticator.getLoggedUser(UserToken.of(userToken)).userId;
             byte[] decodedImg = Base64.getDecoder().decode(base64Image);
 
             removeOldProfileIfPresent(userId);
 
-            return ComponentFactory.userProfiles.createFile(decodedImg, "user-profile-" + userId)
+            return componentFactory.userProfiles.createFile(decodedImg, "user-profile-" + userId)
                     .map(fileId -> {
-                        boolean success = ComponentFactory.user.changeProfilePicIdentifier(UserId.of(userId), fileId.value);
+                        boolean success = componentFactory.user.changeProfilePicIdentifier(UserId.of(userId), fileId.value);
                         if (success) {
                             logger.debug("uploadUserProfile - success, userId: {}, fileId: {}", userId, fileId.value);
                             return ModifyPersonInfoSuccess.build();
@@ -153,11 +155,11 @@ public class PersonalInformation {
 
     private static void removeOldProfileIfPresent(String userId) {
         oldProfileImageId(userId).ifPresent(oldFileId ->
-                ComponentFactory.userProfiles.Remove(FileId.of(oldFileId)));
+                componentFactory.userProfiles.Remove(FileId.of(oldFileId)));
     }
 
     private static Optional<String> oldProfileImageId(String userId) {
-        return ComponentFactory.user.userInfo(UserId.of(userId))
+        return componentFactory.user.userInfo(UserId.of(userId))
                 .map(userInfo -> userInfo.profilePicIdentifier);
     }
 
@@ -193,10 +195,10 @@ public class PersonalInformation {
         return userFactory.userInfo(userId)
                 .flatMap(userInfo -> Optional.ofNullable(userInfo.majorCode))
                 .map(MajorCode::of)
-                .flatMap(ComponentFactory.major::getMajorValueFromCode)
+                .flatMap(componentFactory.major::getMajorValueFromCode)
                 .map(transformer)
-                .map(ComponentFactory.major::generateMajorCode)
-                .map(newMajorVal -> ComponentFactory.user.changeMajorCode(userId, newMajorVal.value))
+                .map(componentFactory.major::generateMajorCode)
+                .map(newMajorVal -> componentFactory.user.changeMajorCode(userId, newMajorVal.value))
                 .orElse(false);
     }
 
@@ -209,7 +211,7 @@ public class PersonalInformation {
             return ModifyPersonInfoError.of("无法解析性别");
         }
         return changeCommon(userToken, genderStr, "gender", "changeGender", "更改性别失败",
-                ((userFactory, userId) -> ComponentFactory.user.changeGender(userId, oGender.get())));
+                ((userFactory, userId) -> componentFactory.user.changeGender(userId, oGender.get())));
     }
     private static Optional<Gender> parseGender(String gender) {
         switch (gender.toLowerCase()) {
@@ -241,8 +243,8 @@ public class PersonalInformation {
                                                        String errMsg, BiFunction<UserFactory, UserId, Boolean> compFunc) {
         logger.debug("{}, userToken: {}, {}: {}", methodName, userToken, field, payload);
         try {
-            String userId = ComponentFactory.authenticator.getLoggedUser(UserToken.of(userToken)).userId;
-            boolean success = compFunc.apply(ComponentFactory.user, UserId.of(userId));
+            String userId = componentFactory.authenticator.getLoggedUser(UserToken.of(userToken)).userId;
+            boolean success = compFunc.apply(componentFactory.user, UserId.of(userId));
 
             if (success) {
                 logger.debug("{} - success, userToken: {}, {}: {}", methodName, userToken, field, payload);

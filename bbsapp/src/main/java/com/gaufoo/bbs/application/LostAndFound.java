@@ -14,13 +14,15 @@ import java.time.Instant;
 import java.util.Base64;
 import java.util.UUID;
 
+import static com.gaufoo.bbs.application.ComponentFactory.componentFactory;
+
 public class LostAndFound {
     private static Logger logger = LoggerFactory.getLogger(LostAndFound.class);
 
     //lostId
     public static ItemInfoResult lostItem(String lostId) {
         logger.debug("lostItem, lostId: {}", lostId);
-        return ComponentFactory.lostFound.lostInfo(LostId.of(lostId))
+        return componentFactory.lostFound.lostInfo(LostId.of(lostId))
                 .map(lostInfo -> (ItemInfoResult) constructItemInfo(lostInfo))
                 .orElseGet(() -> {
                     logger.debug("lostItem - failed, error: {}, lostId: {}", "找不到失物", lostId);
@@ -48,7 +50,7 @@ public class LostAndFound {
             }
             @Override
             public String getPictureUrl() {
-                return ComponentFactory.lostFoundImages.fileURI(FileId.of(lostInfo.imageIdentifier))
+                return componentFactory.lostFoundImages.fileURI(FileId.of(lostInfo.imageIdentifier))
                         .orElse("");
             }
             @Override
@@ -65,7 +67,7 @@ public class LostAndFound {
 
     public static ItemInfoResult foundItem(String foundId) {
         logger.debug("foundItem, foundId: {}", foundId);
-        return ComponentFactory.lostFound.foundInfo(FoundId.of(foundId))
+        return componentFactory.lostFound.foundInfo(FoundId.of(foundId))
                 .map(foundInfo -> (ItemInfoResult) constructItemInfo(foundInfo))
                 .orElseGet(() -> {
                     logger.debug("foundItem - failed, error: {}, foundId: {}", "找不到寻物", foundId);
@@ -93,7 +95,7 @@ public class LostAndFound {
             }
             @Override
             public String getPictureUrl() {
-                return ComponentFactory.lostFoundImages.fileURI(FileId.of(foundInfo.imageIdentifier))
+                return componentFactory.lostFoundImages.fileURI(FileId.of(foundInfo.imageIdentifier))
                         .orElse("");
             }
             @Override
@@ -110,16 +112,16 @@ public class LostAndFound {
     public static ItemInfoResult publishFound(String userToken, ItemInfoInput itemInfo) {
         logger.debug("publishFound, userToken: {}, ItemInfoInput: {}", userToken, itemInfo);
         try {
-            String userId = ComponentFactory.authenticator.getLoggedUser(UserToken.of(userToken)).userId;
+            String userId = componentFactory.authenticator.getLoggedUser(UserToken.of(userToken)).userId;
 
             byte[] image = Base64.getDecoder().decode(itemInfo.imageBase64);
-            return ComponentFactory.lostFoundImages.createFile(image, UUID.randomUUID().toString())
-                    .flatMap(ComponentFactory.lostFoundImages::fileURI)
+            return componentFactory.lostFoundImages.createFile(image, UUID.randomUUID().toString())
+                    .flatMap(componentFactory.lostFoundImages::fileURI)
                     .map(imageUri ->
                             FoundInfo.of(userId, itemInfo.itemName, Instant.ofEpochMilli(itemInfo.time),
                             itemInfo.position, itemInfo.description, imageUri, itemInfo.contact))
-                    .flatMap(ComponentFactory.lostFound::pubFound)
-                    .flatMap(ComponentFactory.lostFound::foundInfo)
+                    .flatMap(componentFactory.lostFound::pubFound)
+                    .flatMap(componentFactory.lostFound::foundInfo)
                     .map(foundInfo -> (ItemInfoResult)constructItemInfo(foundInfo))
                     .orElseGet(() -> {
                         logger.debug("publishFound - failed, userToken: {}, ItemInfoInput: {}", userToken, itemInfo);
@@ -134,16 +136,16 @@ public class LostAndFound {
     public static ItemInfoResult publishLost(String userToken, ItemInfoInput itemInfo) {
         logger.debug("publishLost, userToken: {}, ItemInfoInput: {}", userToken, itemInfo);
         try {
-            String userId = ComponentFactory.authenticator.getLoggedUser(UserToken.of(userToken)).userId;
+            String userId = componentFactory.authenticator.getLoggedUser(UserToken.of(userToken)).userId;
 
             byte[] image = Base64.getDecoder().decode(itemInfo.imageBase64);
-            return ComponentFactory.lostFoundImages.createFile(image, UUID.randomUUID().toString())
-                    .flatMap(ComponentFactory.lostFoundImages::fileURI)
+            return componentFactory.lostFoundImages.createFile(image, UUID.randomUUID().toString())
+                    .flatMap(componentFactory.lostFoundImages::fileURI)
                     .map(imageUri ->
                             LostInfo.of(userId, itemInfo.itemName, Instant.ofEpochMilli(itemInfo.time),
                                     itemInfo.position, itemInfo.description, imageUri, itemInfo.contact))
-                    .flatMap(ComponentFactory.lostFound::pubLost)
-                    .flatMap(ComponentFactory.lostFound::lostInfo)
+                    .flatMap(componentFactory.lostFound::pubLost)
+                    .flatMap(componentFactory.lostFound::lostInfo)
                     .map(lostInfo -> (ItemInfoResult)constructItemInfo(lostInfo))
                     .orElseGet(() -> {
                         logger.debug("publishLost - failed, userToken: {}, ItemInfoInput: {}", userToken, itemInfo);

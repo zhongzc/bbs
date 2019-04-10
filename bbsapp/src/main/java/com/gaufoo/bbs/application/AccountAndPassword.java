@@ -6,16 +6,18 @@ import com.gaufoo.bbs.components.authenticator.exceptions.AuthenticatorException
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static com.gaufoo.bbs.application.ComponentFactory.componentFactory;
+
 public class AccountAndPassword {
     private static Logger logger = LoggerFactory.getLogger(AccountAndPassword.class);
 
     public static ConfirmPasswordResult confirmPassword(String userToken, String username, String password) {
         try {
             logger.debug("confirmPassword userToken: {}, username: {}", userToken, username);
-            ComponentFactory.authenticator.getLoggedUser(UserToken.of(userToken));
+            componentFactory.authenticator.getLoggedUser(UserToken.of(userToken));
 
-            if (ComponentFactory.authenticator.isAuthenticated(username, password)) {
-                ResetToken resetToken = ComponentFactory.authenticator.reqResetPassword(username);
+            if (componentFactory.authenticator.isAuthenticated(username, password)) {
+                ResetToken resetToken = componentFactory.authenticator.reqResetPassword(username);
                 logger.debug("confirmPassword resetToken: {}", resetToken);
                 return ConfirmPasswordPayload.of(resetToken.value);
             }
@@ -32,13 +34,13 @@ public class AccountAndPassword {
         logger.debug("changePassword userToken: {}, resetToken: {}", userToken, resetToken);
 
         try {
-            ComponentFactory.authenticator.getLoggedUser(UserToken.of(userToken));
+            componentFactory.authenticator.getLoggedUser(UserToken.of(userToken));
         } catch (AuthenticatorException e) {
             return ChangePasswordError.of(e.getMessage());
         }
 
         try {
-            ComponentFactory.authenticator.resetPassword(ResetToken.of(resetToken), newPassword);
+            componentFactory.authenticator.resetPassword(ResetToken.of(resetToken), newPassword);
             return null;
         } catch (AuthenticatorException e) {
             return ChangePasswordError.of(e.getMessage());

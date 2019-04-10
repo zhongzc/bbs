@@ -2,6 +2,8 @@ package com.gaufoo.bbs.gql;
 
 import com.coxautodev.graphql.tools.SchemaParserDictionary;
 import com.gaufoo.bbs.application.*;
+import com.gaufoo.bbs.application.util.StaticResourceConfig;
+import com.gaufoo.bbs.application.util.StaticResourceConfig.FileType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -12,6 +14,10 @@ import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
+import java.util.LinkedList;
+import java.util.List;
+
+import static com.gaufoo.bbs.application.ComponentFactory.componentFactory;
 
 @SpringBootApplication
 public class Application implements WebMvcConfigurer {
@@ -62,15 +68,25 @@ public class Application implements WebMvcConfigurer {
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        ComponentFactory.removeResources();
+        StaticResourceConfig config = StaticResourceConfig.defaultPartialConfig()
+                .addMapping(FileType.UserProfileImage, profileImgMapping)
+                .addMapping(FileType.LostFoundImage, lostFoundMapping).build().get();
 
-        logger.info("profile resource location: {}", ComponentFactory.profilesRcPath.toUri().toString());
-        logger.info("lost and found resource location: {}", ComponentFactory.lostFoundRcPath.toUri().toString());
+        ComponentFactory.componentFactory = new ComponentFactory(config);
 
-        registry.addResourceHandler(profileImgMapping, lostFoundMapping)
-                .addResourceLocations(
-                        ComponentFactory.profilesRcPath.toUri().toString(),
-                        ComponentFactory.lostFoundRcPath.toUri().toString());
+        logger.info("profile resource location: {}", componentFactory.config.folderPathOf(FileType.UserProfileImage));
+        logger.info("lost and found resource location: {}", componentFactory.config.folderPathOf(FileType.LostFoundImage));
+
+
+        List<String> allUrlPrefixes = new LinkedList<>();
+        List<String> allFolderPaths = new LinkedList<>();
+        config.allFileTypes().forEach(fileType -> {
+            allUrlPrefixes.add(config.urlPrefixOf(fileType));
+            allFolderPaths.add(config.folderPathOf(fileType).toString());
+        });
+
+        registry.addResourceHandler(allUrlPrefixes.toArray(new String[0]))
+                .addResourceLocations(allFolderPaths.toArray(new String[0]));
     }
 
 }

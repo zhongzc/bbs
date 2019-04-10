@@ -15,6 +15,8 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Optional;
 
+import static com.gaufoo.bbs.application.ComponentFactory.componentFactory;
+
 public class Authentication {
     private static final Logger log = LoggerFactory.getLogger(Authentication.class);
 
@@ -22,9 +24,9 @@ public class Authentication {
         log.debug("sign up - username: {}, nickname: {}", username, nickname);
 
         try {
-            Attachable needUser = ComponentFactory.authenticator.signUp(username, password);
+            Attachable needUser = componentFactory.authenticator.signUp(username, password);
 
-            Optional<UserId> userId = ComponentFactory.user.createUser(UserInfo.of(nickname, null,
+            Optional<UserId> userId = componentFactory.user.createUser(UserInfo.of(nickname, null,
                     UserInfo.Gender.secret, null, defaultMajorCodeValue(), null));
             if (!userId.isPresent()) {
                 log.debug("sign up - failed, error: {}, username: {}, nickname: {}", "用户创建失败", username, nickname);
@@ -39,7 +41,7 @@ public class Authentication {
         }
 
         try {
-            UserToken token = ComponentFactory.authenticator.login(username, password);
+            UserToken token = componentFactory.authenticator.login(username, password);
             log.debug("sign up - successfully, token: {}, username: {}, nickname: {}", token, username, nickname);
             return SignUpPayload.of(token.value);
         } catch (AuthenticatorException e) {
@@ -50,14 +52,14 @@ public class Authentication {
 
     private static String defaultMajorCodeValue() {
         MajorValue defaultMajorValue =  MajorValue.of(School.无, Major.无);
-        return ComponentFactory.major.generateMajorCode(defaultMajorValue).value;
+        return componentFactory.major.generateMajorCode(defaultMajorValue).value;
     }
 
     public static LogInResult logIn(String username, String password) {
         log.debug("login, username: {}, password: {}", username, password);
 
         try {
-            UserToken token = ComponentFactory.authenticator.login(username, password);
+            UserToken token = componentFactory.authenticator.login(username, password);
             log.debug("login - successfully, token: {}, username: {}", token, username);
             return LogInPayload.of(token.value);
         } catch (AuthenticatorException e) {
@@ -69,13 +71,13 @@ public class Authentication {
     public static LogOutError logOut(String token) {
         log.debug("logOut, token: {}", token);
 
-        ComponentFactory.authenticator.logout(UserToken.of(token));
+        componentFactory.authenticator.logout(UserToken.of(token));
         return null;
     }
 
     public static GetIdResult getLoggedUserId(String token) {
         try {
-            return GetIdPayload.of(ComponentFactory.authenticator.getLoggedUser(UserToken.of(token)).userId);
+            return GetIdPayload.of(componentFactory.authenticator.getLoggedUser(UserToken.of(token)).userId);
         } catch (AuthenticatorException e) {
             return GetIdError.of(e.getMessage());
         }
