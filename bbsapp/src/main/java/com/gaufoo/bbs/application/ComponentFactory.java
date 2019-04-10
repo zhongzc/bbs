@@ -6,6 +6,8 @@ import com.gaufoo.bbs.components._repositories.*;
 import com.gaufoo.bbs.components.authenticator.Authenticator;
 import com.gaufoo.bbs.components.file.FileFactory;
 import com.gaufoo.bbs.components.idGenerator.IdGenerator;
+import com.gaufoo.bbs.components.learningResource.LearningResource;
+import com.gaufoo.bbs.components.learningResource.LearningResourceRepository;
 import com.gaufoo.bbs.components.like.LikeComponent;
 import com.gaufoo.bbs.components.lostfound.LostFound;
 import com.gaufoo.bbs.components.scutMajor.MajorFactory;
@@ -31,7 +33,7 @@ public class ComponentFactory {
     public final LostFound lostFound;
     public final FileFactory lostFoundImages;
     public final  LikeComponent like;
-
+    public final LearningResource learnResource;
     public ComponentFactory(StaticResourceConfig config) {
         this.config = config;
 
@@ -67,6 +69,7 @@ public class ComponentFactory {
                                 lostFoundFolder), IdGenerator.seqInteger("lostImgId"));
 
         like = LikeComponent.defau1t("like", LikeComponentMemoryRepository.get("likeMryRep"), IdGenerator.seqInteger("likeId"));
+        learnResource= LearningResource.defau1t("learnResource",LearningResourceMemoryRepository.get("learnResMryRep"),IdGenerator.seqInteger("resourceId"));
     }
 
     private void clearFolders(List<Path> paths) {
@@ -77,6 +80,6 @@ public class ComponentFactory {
         paths.forEach(path -> path.toFile().mkdirs());
     }
 
-//    public static final LearningResource learningResource=LearningResource.defau1t("learnResource", LearningResourceRepository.)
+
 
 }
