@@ -1,7 +1,7 @@
 
 const fire_all_tests = async () => {
 	await fire_unit_tests();
-	await fire_behav_tests();
+	// await fire_behav_tests();
 }
 
 const remoteAddress = "http://localhost:4000";
@@ -97,6 +97,33 @@ const after_publishLost = (func) =>
 		)
 	});
 
+const after_n_publish = (foundOrLostStr, nTimes, func) => {
+	let isFound = false;
+	if (foundOrLostStr === "lost") isFound = false;
+	else if (foundOrLostStr === "found") isFound = true;
+	else throw new Error("not found or lost");
+
+	return after_signUp(auth => {
+		let chain = Promise.resolve();
+		let pubItems = [];
+		let pubItemIds = [];
+		for (let i = 0; i < nTimes; ++i) {
+			const item = {
+				itemName: "qwert" + i,
+				description: "qwerty" + i,
+				position: "qwertyu" + i,
+				contact: "1121234567" + i,
+				imageBase64: "aGVsbG93b3JsZCE=",
+				time: Date.now(),
+			};
+			pubItems.push(item);
+			chain = chain.then(() => isFound ? publishFound(item, auth) : publishLost(item, auth)
+				.then(result => pubItemIds.push(result.itemId)));
+		}
+
+		return chain.then(() => func(auth, pubItems, pubItemIds));
+	})
+};
 //---------unit test---------
 
 let unitTests = [];
@@ -172,8 +199,8 @@ const assertNonEmpty = (obj) => {
 	}
 }
 
-const fail = () => {
-	throw new Error("test failed");
+const fail = (errMsg) => {
+	throw new Error("test failed: " + errMsg);
 };
 
 // =========================================schema========================================
@@ -719,7 +746,7 @@ const modifyLostItem = (lostId, itemInfo, userToken) => sendGQL({
 	auth: userToken
 });
 
-unit_test("modify lost item", () => 
+unit_test("modify lost item", () =>
 	after_publishLost((auth, lostId, oldItem) => {
 		const newObj = {
 			...oldItem,
@@ -763,7 +790,7 @@ const modifyFoundItem = (foundId, itemInfo, userToken) => sendGQL({
 	auth: userToken
 });
 
-unit_test("modify found item", () => 
+unit_test("modify found item", () =>
 	after_publishFound((auth, foundId, oldItem) => {
 		const newObj = {
 			itemName: "modified",
@@ -933,6 +960,77 @@ unit_test("majorsIn - valid academy", () =>
 	majorsIn("计算机科学与工程学院").then(result => {
 		assertEq(result.majors.length, 3)
 	})
+);
+
+// =============================================
+const LOSTS = `
+	query Losts($skip: Int!, $first: Int!) {
+		losts(skip: $skip, first: $first) {
+			publisher
+			name
+			description
+			position
+			pictureUrl
+			creationTime
+			contact
+			lostTime
+		}
+	}
+`;
+
+const losts = (skip, first) => sendGQL({
+	query: LOSTS,
+	variables: {
+		skip: skip,
+		first: first,
+	}
+});
+
+unit_test("losts", () =>
+	after_n_publish("lost", 5, (auth, pubItems, pubItemIds) =>
+		losts(2, 2).then(listOfLosts => {
+			const names = listOfLosts.map(x => x.name);
+			const originNames = pubItems.slice(2, 4).map(x => x.itemName);
+			assertEq(JSON.stringify(names.sort()), JSON.stringify(originNames.sort()));
+			fail("return data is unordered");
+		})
+	)
+);
+
+// =============================================
+const FOUNDS = `
+	query Founds($skip: Int!, $first: Int!) {
+		founds(skip: $skip, first: $first) {
+			publisher
+			name
+			description
+			position
+			pictureUrl
+			creationTime
+			contact
+			foundTime
+		}
+	}
+`;
+
+const founds = (skip, first) => sendGQL({
+	query: FOUNDS,
+	variables: {
+		skip: skip,
+		first: first,
+	}
+});
+
+unit_test_only("losts", () =>
+	after_n_publish("found", 5, (auth, pubItems, pubItemIds) =>
+		founds(2, 2).then(listOfFounds => {
+			console.log(listOfFounds);
+			const names = listOfFounds.map(x => x.name);
+			const originNames = pubItems.slice(2, 4).map(x => x.itemName);
+			assertEq(JSON.stringify(names.sort()), JSON.stringify(originNames.sort()));
+			fail("return data is unordered");
+		})
+	)
 );
 
 // =============================================

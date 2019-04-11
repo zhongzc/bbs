@@ -8,6 +8,8 @@ type Query {
     allMajors: [String!]!
     majorsIn(academy: String!): MajorsInResult!
 
+    losts(skip: Int!, first: Int!): [LostItemInfo!]!
+    founds(skip: Int!, first: Int!): [FoundItemInfo!]!
     foundItemInfo(foundId: String!): ItemInfoResult!
     lostItemInfo(lostId: String!): ItemInfoResult!
 

@@ -16,6 +16,7 @@ import org.slf4j.LoggerFactory;
 
 import java.time.Instant;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static com.gaufoo.bbs.application.ComponentFactory.componentFactory;
 import static com.gaufoo.bbs.application.util.Utils.notNullOrEmpty;
@@ -45,7 +46,7 @@ public class LostAndFound {
                     notNullOrEmpty(input.itemName) &&
                     notNullOrEmpty(input.position) &&
                     notNullOrEmpty(input.imageBase64) &&
-                    input.time > 0
+                    input.time != null && input.time > 0
     );
 
     public static ItemInfoResult lostItem(String lostId) {
@@ -373,13 +374,36 @@ public class LostAndFound {
         }
     }
 
+    public static List<LostItemInfo> losts(int skip, int first) {
+        logger.debug("losts, skip: {}, first: {}", skip, first);
+        return componentFactory.lostFound.allLosts()
+                .map(lostId -> componentFactory.lostFound.lostInfo(lostId))
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .map(LostAndFound::constructItemInfo).skip(skip).limit(first)
+                .collect(Collectors.toList());
+    }
+
+    public static List<FoundItemInfo> founds(int skip, int first) {
+        logger.debug("founds, skip: {}, first: {}", skip, first);
+        componentFactory.lostFound.allFounds()
+//                .map(foundId -> componentFactory.lostFound.foundInfo(foundId))
+                .forEach(oFi -> logger.info("{}", oFi));
+        return componentFactory.lostFound.allFounds()
+                .map(foundId -> componentFactory.lostFound.foundInfo(foundId))
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .map(LostAndFound::constructItemInfo).skip(skip).limit(first)
+                .collect(Collectors.toList());
+    }
+
     public static class ItemInfoInput {
-        public String itemName;
-        public String description;
-        public String position;
-        public String contact;
-        public String imageBase64;
-        public Long time;
+        String itemName;
+        String description;
+        String position;
+        String contact;
+        String imageBase64;
+        Long time;
 
         public void setItemName(String itemName) {
             this.itemName = itemName;

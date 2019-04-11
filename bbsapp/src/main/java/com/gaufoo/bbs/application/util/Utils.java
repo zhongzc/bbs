@@ -49,10 +49,6 @@ public class Utils {
                 Paths.get(URI.create(uri)).toFile().getName();
     }
 
-    public static<T> List<T> paging(Stream<T> origin, int first, int skip) {
-        return origin.skip(skip).limit(first).collect(Collectors.toList());
-    }
-
     public static boolean notNullOrEmpty(String str) {
         return str != null && !str.isEmpty();
     }

@@ -38,6 +38,14 @@ public class Query implements GraphQLQueryResolver {
                 .orElse(Authentication.GetIdError.of("用户未登录"));
     }
 
+    List<LostAndFound.LostItemInfo> losts(int skip, int first) {
+        return LostAndFound.losts(skip, first);
+    }
+
+    List<LostAndFound.FoundItemInfo> founds(int skip, int first) {
+        return LostAndFound.founds(skip, first);
+    }
+
     LostAndFound.ItemInfoResult foundItemInfo(String foundId) {
         return LostAndFound.foundItem(foundId);
     }
