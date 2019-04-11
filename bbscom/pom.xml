@@ -11,6 +11,13 @@
         <gson.version>2.8.5</gson.version>
     </properties>
 
+    <repositories>
+        <repository>
+            <id>local-maven-repo</id>
+            <url>file:///${project.basedir}/../local_maven_repo</url>
+        </repository>
+    </repositories>
+
     <dependencies>
         <dependency>
             <groupId>com.google.code.gson</groupId>
@@ -18,6 +25,11 @@
             <version>${gson.version}</version>
         </dependency>
 
+        <dependency>
+            <groupId>com.gaufoo</groupId>
+            <artifactId>org.gaufoo.sst</artifactId>
+            <version>0.1.0-SNAPSHOT</version>
+        </dependency>
     </dependencies>
     <build>
         <plugins>

@@ -212,7 +212,7 @@ public class LostAndFound {
         }
     }
 
-    public interface    LostItemInfo extends ItemInfoResult {
+    public interface LostItemInfo extends ItemInfoResult {
         String getPublisher();
         String getName();
         String getDescription();

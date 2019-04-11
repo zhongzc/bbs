@@ -1,13 +1,13 @@
 package com.gaufoo.bbs.application;
 
 import com.gaufoo.bbs.application.util.StaticResourceConfig;
+import com.gaufoo.bbs.application.util.StaticResourceConfig.FileType;
 import com.gaufoo.bbs.application.util.Utils;
 import com.gaufoo.bbs.components._repositories.*;
 import com.gaufoo.bbs.components.authenticator.Authenticator;
 import com.gaufoo.bbs.components.file.FileFactory;
 import com.gaufoo.bbs.components.idGenerator.IdGenerator;
 import com.gaufoo.bbs.components.learningResource.LearningResource;
-import com.gaufoo.bbs.components.learningResource.LearningResourceRepository;
 import com.gaufoo.bbs.components.like.LikeComponent;
 import com.gaufoo.bbs.components.lostfound.LostFound;
 import com.gaufoo.bbs.components.scutMajor.MajorFactory;
@@ -15,11 +15,9 @@ import com.gaufoo.bbs.components.tokenGenerator.TokenGenerator;
 import com.gaufoo.bbs.components.user.UserFactory;
 import com.gaufoo.bbs.components.validator.Validator;
 
-import java.nio.file.*;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.stream.Collectors;
-
-import com.gaufoo.bbs.application.util.StaticResourceConfig.FileType;
 
 public class ComponentFactory {
     public static ComponentFactory componentFactory;
