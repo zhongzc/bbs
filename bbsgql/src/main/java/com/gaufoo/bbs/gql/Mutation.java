@@ -7,7 +7,6 @@ import com.gaufoo.bbs.application.LostAndFound;
 import com.gaufoo.bbs.application.PersonalInformation;
 import com.gaufoo.bbs.gql.util.Utils;
 import graphql.schema.DataFetchingEnvironment;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
@@ -86,16 +85,16 @@ public class Mutation implements GraphQLMutationResolver {
     }
 
 
-    LostAndFound.ItemInfoResult publishFound(LostAndFound.ItemInfoInput itemInfo, DataFetchingEnvironment env) {
+    LostAndFound.PublishItemResult publishFound(LostAndFound.ItemInfoInput itemInfo, DataFetchingEnvironment env) {
         return authenticatedGuard(
                 userToken -> LostAndFound.publishFound(userToken, itemInfo),
-                LostAndFound.ItemInfoError::of, env);
+                LostAndFound.LostFoundError::of, env);
     }
 
-    LostAndFound.ItemInfoResult publishLost(LostAndFound.ItemInfoInput itemInfo, DataFetchingEnvironment env) {
+    LostAndFound.PublishItemResult publishLost(LostAndFound.ItemInfoInput itemInfo, DataFetchingEnvironment env) {
         return authenticatedGuard(
                 userToken -> LostAndFound.publishLost(userToken, itemInfo),
-                LostAndFound.ItemInfoError::of, env);
+                LostAndFound.LostFoundError::of, env);
     }
 
     private static <E> E authenticatedGuard(Function<String, E> transformer, Function<String, E> errorConstructor,

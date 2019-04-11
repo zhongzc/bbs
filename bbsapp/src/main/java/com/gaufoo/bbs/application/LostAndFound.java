@@ -1,5 +1,7 @@
 package com.gaufoo.bbs.application;
 
+import com.gaufoo.bbs.application.util.StaticResourceConfig;
+import com.gaufoo.bbs.application.util.Utils;
 import com.gaufoo.bbs.components.authenticator.common.UserToken;
 import com.gaufoo.bbs.components.authenticator.exceptions.AuthenticatorException;
 import com.gaufoo.bbs.components.file.common.FileId;
@@ -7,26 +9,47 @@ import com.gaufoo.bbs.components.lostfound.common.FoundId;
 import com.gaufoo.bbs.components.lostfound.common.FoundInfo;
 import com.gaufoo.bbs.components.lostfound.common.LostId;
 import com.gaufoo.bbs.components.lostfound.common.LostInfo;
+import com.gaufoo.bbs.components.user.common.UserId;
+import com.gaufoo.bbs.components.validator.Validator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.Instant;
-import java.util.Base64;
-import java.util.UUID;
+import java.util.*;
 
 import static com.gaufoo.bbs.application.ComponentFactory.componentFactory;
+import static com.gaufoo.bbs.application.util.Utils.notNullOrEmpty;
 
 public class LostAndFound {
     private static Logger logger = LoggerFactory.getLogger(LostAndFound.class);
 
-    //lostId
+    private enum Type {
+        Lost, Found
+    }
+    private static class PublishException extends RuntimeException {
+        PublishException(String errMsg) {
+            super(errMsg);
+        }
+    }
+    private interface UndoFunction {
+        void undo();
+    }
+    private static Validator<ItemInfoInput> itemInfoInputNonNull =  Validator.defau1t("itemInfoValidator",
+            input -> notNullOrEmpty(input.contact) &&
+                    notNullOrEmpty(input.description) &&
+                    notNullOrEmpty(input.itemName) &&
+                    notNullOrEmpty(input.position) &&
+                    notNullOrEmpty(input.imageBase64) &&
+                    input.time > 0
+    );
+
     public static ItemInfoResult lostItem(String lostId) {
         logger.debug("lostItem, lostId: {}", lostId);
         return componentFactory.lostFound.lostInfo(LostId.of(lostId))
                 .map(lostInfo -> (ItemInfoResult) constructItemInfo(lostInfo))
                 .orElseGet(() -> {
                     logger.debug("lostItem - failed, error: {}, lostId: {}", "找不到失物", lostId);
-                    return ItemInfoError.of("");
+                    return LostFoundError.of("找不到失物");
                 });
     }
 
@@ -50,9 +73,13 @@ public class LostAndFound {
             }
             @Override
             public String getPictureUrl() {
-                return componentFactory.lostFoundImages.fileURI(FileId.of(lostInfo.imageIdentifier))
-                        .orElse("");
+                return factorOutPictureUrl(lostInfo.imageIdentifier);
             }
+            @Override
+            public String getContact() {
+                return lostInfo.contact;
+            }
+
             @Override
             public Long getCreationTime() {
                 return lostInfo.createTime.toEpochMilli();
@@ -71,7 +98,7 @@ public class LostAndFound {
                 .map(foundInfo -> (ItemInfoResult) constructItemInfo(foundInfo))
                 .orElseGet(() -> {
                     logger.debug("foundItem - failed, error: {}, foundId: {}", "找不到寻物", foundId);
-                    return ItemInfoError.of("");
+                    return LostFoundError.of("");
                 });
     }
 
@@ -95,9 +122,13 @@ public class LostAndFound {
             }
             @Override
             public String getPictureUrl() {
-                return componentFactory.lostFoundImages.fileURI(FileId.of(foundInfo.imageIdentifier))
-                        .orElse("");
+                return factorOutPictureUrl(foundInfo.imageIdentifier);
             }
+            @Override
+            public String getContact() {
+                return foundInfo.contact;
+            }
+
             @Override
             public Long getCreationTime() {
                 return foundInfo.createTime.toEpochMilli();
@@ -108,54 +139,123 @@ public class LostAndFound {
             }
         };
     }
+    private static String factorOutPictureUrl(String imageId) {
+        logger.debug("factorOutPictureUrl, imageId: {}", imageId);
+        return Optional.ofNullable(imageId)
+                .map(FileId::of)
+                .flatMap(componentFactory.lostFoundImages::fileURI)
+                .map(fileUri -> Utils.makeUrl(fileUri, StaticResourceConfig.FileType.LostFoundImage))
+                .orElse("");
+    }
 
-    public static ItemInfoResult publishFound(String userToken, ItemInfoInput itemInfo) {
-        logger.debug("publishFound, userToken: {}, ItemInfoInput: {}", userToken, itemInfo);
+    public static PublishItemResult publishFound(String userToken, ItemInfoInput itemInfo) {
+        return publishItem(userToken, itemInfo, Type.Found);
+    }
+
+    public static PublishItemResult publishLost(String userToken, ItemInfoInput itemInfo) {
+        return publishItem(userToken, itemInfo, Type.Lost);
+    }
+
+    private static PublishItemResult publishItem(String userToken, ItemInfoInput input, Type type) {
+        logger.debug("publishItem, userToken: {}, ItemInfoInput: {}, type: {}", userToken, input, type);
+        List<UndoFunction> undoOperations = new LinkedList<>();
+
         try {
-            String userId = componentFactory.authenticator.getLoggedUser(UserToken.of(userToken)).userId;
+            checkInputValidation(input);
+            UserId userId = fetchUserId(userToken);
 
-            byte[] image = Base64.getDecoder().decode(itemInfo.imageBase64);
-            return componentFactory.lostFoundImages.createFile(image, UUID.randomUUID().toString())
-                    .flatMap(componentFactory.lostFoundImages::fileURI)
-                    .map(imageUri ->
-                            FoundInfo.of(userId, itemInfo.itemName, Instant.ofEpochMilli(itemInfo.time),
-                            itemInfo.position, itemInfo.description, imageUri, itemInfo.contact))
-                    .flatMap(componentFactory.lostFound::pubFound)
-                    .flatMap(componentFactory.lostFound::foundInfo)
-                    .map(foundInfo -> (ItemInfoResult)constructItemInfo(foundInfo))
-                    .orElseGet(() -> {
-                        logger.debug("publishFound - failed, userToken: {}, ItemInfoInput: {}", userToken, itemInfo);
-                        return ItemInfoError.of("寻物发布失败");
-                    });
-        } catch (AuthenticatorException e) {
-            logger.debug("publishFound - failed, error: {}, userToken: {}, ItemInfoInput: {}", e.getMessage(), userToken, itemInfo);
-            return ItemInfoError.of(e.getMessage());
+            FileId fileId = storeLostFoundImage(input.imageBase64);
+            logger.debug("publishItem storeLostFoundImage, fileId: {}", fileId);
+
+            undoOperations.add(() -> deleteLostFoundImage(fileId));
+
+            String itemId = "";
+            switch (type) {
+                case Found: {
+                    FoundInfo foundInfo = buildFoundInfoWith(userId.value, input, fileId);
+                    logger.debug("publishItem buildFoundInfoItem, foundInfo: {}", foundInfo);
+
+                    FoundId foundId = storeFoundInfo(foundInfo);
+                    logger.debug("publishItem after storeFoundInfo, foundId: {}", foundId);
+                    undoOperations.add(() -> deleteFoundInfo(foundId));
+
+                    itemId = foundId.value;
+                    break;
+                }
+                case Lost: {
+                    LostInfo lostInfo = buildLostInfoWith(userId.value, input, fileId);
+                    LostId lostId = storeLostInfo(lostInfo);
+                    undoOperations.add(() -> deleteLostInfo(lostId));
+
+                    itemId = lostId.value;
+                    break;
+                }
+            }
+            return PublishItemSuccess.of(itemId);
+
+        } catch (AuthenticatorException | PublishException e) {
+            undoOperations.forEach(UndoFunction::undo);
+
+            logger.debug("publishItem - failed, error: {}, userToken: {}", e.getMessage(), userToken);
+            return LostFoundError.of(e.getMessage());
         }
     }
 
-    public static ItemInfoResult publishLost(String userToken, ItemInfoInput itemInfo) {
-        logger.debug("publishLost, userToken: {}, ItemInfoInput: {}", userToken, itemInfo);
-        try {
-            String userId = componentFactory.authenticator.getLoggedUser(UserToken.of(userToken)).userId;
-
-            byte[] image = Base64.getDecoder().decode(itemInfo.imageBase64);
-            return componentFactory.lostFoundImages.createFile(image, UUID.randomUUID().toString())
-                    .flatMap(componentFactory.lostFoundImages::fileURI)
-                    .map(imageUri ->
-                            LostInfo.of(userId, itemInfo.itemName, Instant.ofEpochMilli(itemInfo.time),
-                                    itemInfo.position, itemInfo.description, imageUri, itemInfo.contact))
-                    .flatMap(componentFactory.lostFound::pubLost)
-                    .flatMap(componentFactory.lostFound::lostInfo)
-                    .map(lostInfo -> (ItemInfoResult)constructItemInfo(lostInfo))
-                    .orElseGet(() -> {
-                        logger.debug("publishLost - failed, userToken: {}, ItemInfoInput: {}", userToken, itemInfo);
-                        return ItemInfoError.of("失物发布失败");
-                    });
-        } catch (AuthenticatorException e) {
-            logger.debug("publishLost - failed, error: {}, userToken: {}, ItemInfoInput: {}", e.getMessage(), userToken, itemInfo);
-            return ItemInfoError.of(e.getMessage());
+    private static void checkInputValidation(ItemInfoInput input) {
+        if (!itemInfoInputNonNull.validate(input)) {
+            logger.debug("publishItem - failed, error: {}, ItemInfoInput: {}", "信息不完整", input);
+            throw new PublishException("信息不完整");
         }
     }
+    private static UserId fetchUserId(String userToken) throws AuthenticatorException {
+        String userIdStr = componentFactory.authenticator.getLoggedUser(UserToken.of(userToken)).userId;
+        return UserId.of(userIdStr);
+    }
+    private static FileId storeLostFoundImage(String imageBase64) {
+        byte[] image = Base64.getDecoder().decode(imageBase64);
+        return componentFactory.lostFoundImages.createFile(image, UUID.randomUUID().toString())
+                .orElseThrow(() -> {
+                    logger.debug("storeLostFoundImage - failed");
+                    return new PublishException("图片保存失败");
+                });
+    }
+    private static void deleteLostFoundImage(FileId imageId) {
+        componentFactory.lostFoundImages.Remove(imageId);
+    }
+    private static FoundInfo buildFoundInfoWith(String userId, ItemInfoInput input, FileId imageId) {
+        Instant foundTime = Instant.ofEpochMilli(input.time);
+        return FoundInfo.of(userId, input.itemName, foundTime, input.position, input.description, imageId.value, input.contact);
+    }
+    private static LostInfo buildLostInfoWith(String userId, ItemInfoInput input, FileId imageId) {
+        Instant foundTime = Instant.ofEpochMilli(input.time);
+        return LostInfo.of(userId, input.itemName, foundTime, input.position, input.description, imageId.value, input.contact);
+    }
+    private static String fetchFileURI(FileId fileId) {
+        return componentFactory.lostFoundImages.fileURI(fileId).orElseThrow(() -> {
+            logger.debug("buildFoundInfoWith :: fileURI - failed, imageId: {}", fileId);
+            return new PublishException("找不到图片URI");
+        });
+    }
+
+    private static FoundId storeFoundInfo(FoundInfo foundInfo) {
+        return componentFactory.lostFound.pubFound(foundInfo).orElseThrow(() -> {
+            logger.debug("storeFoundInfo - failed, foundInfo: {}", foundInfo);
+            return new PublishException("发布寻物失败");
+        });
+    }
+    private static LostId storeLostInfo(LostInfo lostInfo) {
+        return componentFactory.lostFound.pubLost(lostInfo).orElseThrow(() -> {
+            logger.debug("storeLostInfo - failed, foundInfo: {}", lostInfo);
+            return new PublishException("发布失物失败");
+        });
+    }
+    private static void deleteFoundInfo(FoundId foundId) {
+        componentFactory.lostFound.removeFound(foundId);
+    }
+    private static void deleteLostInfo(LostId lostId) {
+        componentFactory.lostFound.removeLost(lostId);
+    }
+
 
     public static class ItemInfoInput {
         public String itemName;
@@ -196,15 +296,15 @@ public class LostAndFound {
         }
     }
 
-    public static class ItemInfoError implements ItemInfoResult {
+    public static class LostFoundError implements ItemInfoResult, PublishItemResult {
         private String error;
 
-        public ItemInfoError(String error) {
+        public LostFoundError(String error) {
             this.error = error;
         }
 
-        public static ItemInfoError of(String error) {
-            return new ItemInfoError(error);
+        public static LostFoundError of(String error) {
+            return new LostFoundError(error);
         }
 
         public String getError() {
@@ -218,6 +318,7 @@ public class LostAndFound {
         String getDescription();
         String getPosition();
         String getPictureUrl();
+        String getContact();
         Long getCreationTime();
         Long getLostTime();
     }
@@ -228,10 +329,30 @@ public class LostAndFound {
         String getDescription();
         String getPosition();
         String getPictureUrl();
+        String getContact();
         Long getCreationTime();
         Long getFoundTime();
     }
 
     public interface ItemInfoResult {
+    }
+
+    public static class PublishItemSuccess implements PublishItemResult {
+        private String itemId;
+
+        public PublishItemSuccess(String itemId) {
+            this.itemId = itemId;
+        }
+
+        public static PublishItemSuccess of(String itemId) {
+            return new PublishItemSuccess(itemId);
+        }
+
+        public String getItemId() {
+            return itemId;
+        }
+    }
+
+    public interface PublishItemResult {
     }
 }

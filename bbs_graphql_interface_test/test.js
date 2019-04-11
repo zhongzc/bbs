@@ -1,3 +1,9 @@
+
+const fire_all_tests = async () => {
+	await fire_unit_tests();
+	// await fire_behav_tests();
+}
+
 const remoteAddress = "http://localhost:4000";
 
 const sendGQL = (queryPayloadObject) => {
@@ -59,6 +65,35 @@ const provided_userId = (func) =>
 		)
 	);
 
+// [dependencies: signUp, publishFound]
+const after_publishFound = (func) =>
+	after_signUp(auth =>
+		publishFound({
+			itemName: "qwert",
+			description: "qwerty",
+			position: "qwertyu",
+			contact: "1121234567",
+			imageBase64: "aGVsbG93b3JsZCE=",
+			time: Date.now(),
+		}, auth).then(result =>
+			func(result.itemId)
+		)
+	);
+
+// [dependencies: signUp, publishLost]
+const after_publishLost = (func) =>
+	after_signUp(auth =>
+		publishLost({
+			itemName: "qwert",
+			description: "qwerty",
+			position: "qwertyu",
+			contact: "1121234567",
+			imageBase64: "aGVsbG93b3JsZCE=",
+			time: Date.now(),
+		}, auth).then(result =>
+			func(result.itemId)
+		)
+	);
 
 //---------unit test---------
 
@@ -69,8 +104,8 @@ const unit_test = (name, f) => {
 const unit_test_only = (name, f) => {
 	unitTests.push({ name: name, func: f, unique: true });
 }
-const fire_unit_tests = () => {
-	fire_tests("unit test", unitTests);
+const fire_unit_tests = async () => {
+	await fire_tests("unit test", unitTests);
 }
 
 //---------behavior test---------
@@ -82,8 +117,8 @@ const behav_test = (name, f) => {
 const behav_test_only = (name, f) => {
 	behavTests.push({ name: name, func: f, unique: true });
 }
-const fire_behav_tests = () => {
-	fire_tests("behavior test", behavTests);
+const fire_behav_tests = async () => {
+	await fire_tests("behavior test", behavTests);
 }
 
 //---------test firing---------
@@ -582,6 +617,83 @@ unit_test("change major - valid major", () =>
 		})
 	})
 );
+// =============================================
+
+const PUBLISH_FOUND = `
+	mutation PublishFound($itemInfo: ItemInfoInput!) {
+		publishFound(itemInfo: $itemInfo) {
+			... on PublishItemSuccess {
+				itemId
+			}
+			... on LostFoundError {
+				error
+			}
+		}
+	}
+`;
+
+const publishFound = (itemInfo, userToken) => sendGQL({
+	query: PUBLISH_FOUND,
+	variables: {
+		itemInfo: itemInfo,
+	},
+	auth: userToken
+});
+
+unit_test("publish found", () =>
+	after_signUp(auth =>
+		publishFound({
+			itemName: "boyfriend",
+			description: "pretty",
+			position: "your eyes",
+			contact: "1121234567",
+			imageBase64: "aGVsbG93b3JsZCE=",
+			time: Date.now(),
+		}, auth).then(result => {
+			assertNonEmpty(result.itemId);
+		})
+	)
+);
+
+// =============================================
+
+const PUBLISH_LOST = `
+	mutation PublishLost($itemInfo: ItemInfoInput!) {
+		publishLost(itemInfo: $itemInfo) {
+			... on PublishItemSuccess {
+				itemId
+			}
+			... on LostFoundError {
+				error
+			}
+		}
+	}
+`;
+
+const publishLost = (itemInfo, userToken) => sendGQL({
+	query: PUBLISH_LOST,
+	variables: {
+		itemInfo: itemInfo,
+	},
+	auth: userToken
+});
+
+unit_test("publish lost", () =>
+	after_signUp(auth =>
+		publishLost({
+			itemName: "qwert",
+			description: "qwerty",
+			position: "qwertyu",
+			contact: "1121234567",
+			imageBase64: "aGVsbG93b3JsZCE=",
+			time: Date.now(),
+		}, auth).then(result => {
+			assertNonEmpty(result.itemId);
+		})
+	)
+);
+
+
 // =========================================query=========================================
 
 // =============================================
@@ -735,9 +847,110 @@ unit_test("majorsIn - valid academy", () =>
 	})
 );
 
+// =============================================
 
+const FOUND_ITEM_INFO = `
+	query FoundItemInfo($foundId: String!) {
+		foundItemInfo(foundId: $foundId) {
+			... on FoundItemInfo {
+				publisher
+				name
+				description
+				position
+				pictureUrl
+				creationTime
+				contact
+				foundTime
+			}
+			... on LostFoundError {
+				error
+			}
+		}
+	}
+`;
 
-fire_unit_tests();
+const foundItemInfo = (foundId) => sendGQL({
+	query: FOUND_ITEM_INFO,
+	variables: {
+		foundId: foundId,
+	},
+});
+
+unit_test("found item info", () =>
+	after_signUp(auth => {
+		const testObj = {
+			itemName: "qwert",
+			description: "qwerty",
+			position: "qwertyu",
+			contact: "1121234567",
+			imageBase64: "aGVsbG93b3JsZCE=",
+			time: Date.now(),
+		};
+		return publishFound(testObj, auth).then(result => {
+			const itemId = result.itemId;
+			return foundItemInfo(itemId).then(result => {
+				assertEq(result.name, testObj.itemName);
+				assertEq(result.description, testObj.description);
+				assertEq(result.position, testObj.position);
+				assertEq(result.contact, testObj.contact);
+				assertEq(result.foundTime, testObj.time);
+			});
+		});
+	})
+);
+
+// =============================================
+
+const LOST_ITEM_INFO = `
+	query LostItemInfo($lostId: String!) {
+		lostItemInfo(lostId: $lostId) {
+			... on LostItemInfo {
+				publisher
+				name
+				description
+				position
+				pictureUrl
+				creationTime
+				contact
+				lostTime
+			}
+			... on LostFoundError {
+				error
+			}
+		}
+	}
+`;
+
+const lostItemInfo = (lostId) => sendGQL({
+	query: LOST_ITEM_INFO,
+	variables: {
+		lostId: lostId,
+	},
+});
+
+unit_test("lost item info", () =>
+	after_signUp(auth => {
+		const testObj = {
+			itemName: "qwert",
+			description: "qwerty",
+			position: "qwertyu",
+			contact: "1121234567",
+			imageBase64: "aGVsbG93b3JsZCE=",
+			time: Date.now(),
+		};
+		return publishLost(testObj, auth).then(result => {
+			const itemId = result.itemId;
+			return lostItemInfo(itemId).then(result => {
+				assertEq(result.name, testObj.itemName);
+				assertEq(result.description, testObj.description);
+				assertEq(result.position, testObj.position);
+				assertEq(result.contact, testObj.contact);
+				assertEq(result.lostTime, testObj.time);
+			});
+		});
+	})
+);
+
 // =========================================use case========================================
 // =========================================use case========================================
 // =========================================use case========================================
@@ -772,4 +985,4 @@ behav_test_only("upload user profile image and then get url", () =>
 	})
 );
 
-fire_behav_tests();
+fire_all_tests();

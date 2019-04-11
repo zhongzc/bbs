@@ -8,6 +8,9 @@ import java.io.IOException;
 import java.net.URI;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class Utils {
     private static Logger logger = LoggerFactory.getLogger(Utils.class);
@@ -44,5 +47,13 @@ public class Utils {
         if (uri == null || uri.isEmpty()) return "";
         return ComponentFactory.componentFactory.config.urlPrefixOf(fileType) + "/" +
                 Paths.get(URI.create(uri)).toFile().getName();
+    }
+
+    public static<T> List<T> paging(Stream<T> origin, int first, int skip) {
+        return origin.skip(skip).limit(first).collect(Collectors.toList());
+    }
+
+    public static boolean notNullOrEmpty(String str) {
+        return str != null && !str.isEmpty();
     }
 }

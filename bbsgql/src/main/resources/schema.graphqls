@@ -31,8 +31,9 @@ type Mutation {
     changeAcademy(academy: String!): ModifyPersonInfoResult!
     changeMajor(major: String!): ModifyPersonInfoResult!
 
-    publishFound(itemInfo: ItemInfoInput!): ItemInfoResult!
-    publishLost(itemInfo: ItemInfoInput!): ItemInfoResult!
+    publishFound(itemInfo: ItemInfoInput!): PublishItemResult!
+    publishLost(itemInfo: ItemInfoInput!): PublishItemResult!
+#    changeLostItem(lostId: String!, )
 }
 
 schema {

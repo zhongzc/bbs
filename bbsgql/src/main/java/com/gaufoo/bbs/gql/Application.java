@@ -14,12 +14,8 @@ import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-import javax.annotation.PreDestroy;
-import java.nio.file.Paths;
 import java.util.LinkedList;
 import java.util.List;
-
-import static com.gaufoo.bbs.application.ComponentFactory.componentFactory;
 
 @SpringBootApplication
 public class Application implements WebMvcConfigurer {
@@ -57,9 +53,10 @@ public class Application implements WebMvcConfigurer {
                 PersonalInformation.MajorsInPayload.class,
                 PersonalInformation.ModifyPersonInfoSuccess.class,
                 PersonalInformation.ModifyPersonInfoError.class,
-                LostAndFound.ItemInfoError.class,
+                LostAndFound.LostFoundError.class,
                 LostAndFound.FoundItemInfo.class,
                 LostAndFound.LostItemInfo.class,
+                LostAndFound.PublishItemSuccess.class,
         };
         SchemaParserDictionary schemaParserDictionary = new SchemaParserDictionary();
         for(Class<?> clazz: subUnionTypes) {

@@ -1,4 +1,4 @@
-type ItemInfoError {
+type LostFoundError {
     error: String!
 }
 
@@ -9,6 +9,7 @@ type FoundItemInfo {
     position: String!
     pictureUrl: String!
     creationTime: Long!
+    contact: String!
     foundTime: Long!
 }
 
@@ -19,16 +20,23 @@ type LostItemInfo {
     position: String!
     pictureUrl: String!
     creationTime: Long!
+    contact: String!
     lostTime: Long!
 }
 
-union ItemInfoResult = ItemInfoError | FoundItemInfo | LostItemInfo
+union ItemInfoResult = LostFoundError | FoundItemInfo | LostItemInfo
+
+type PublishItemSuccess {
+    itemId: String!
+}
+
+union PublishItemResult = LostFoundError | PublishItemSuccess
 
 input ItemInfoInput {
-    itemName: String!
-    description: String!
-    position: String!
-    contact: String!
-    imageBase64: String!
-    time: Long!
+    itemName: String
+    description: String
+    position: String
+    contact: String
+    imageBase64: String
+    time: Long
 }
