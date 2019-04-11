@@ -57,6 +57,7 @@ public class Application implements WebMvcConfigurer {
                 LostAndFound.FoundItemInfo.class,
                 LostAndFound.LostItemInfo.class,
                 LostAndFound.PublishItemSuccess.class,
+                LostAndFound.ModifyItemSuccess.class,
         };
         SchemaParserDictionary schemaParserDictionary = new SchemaParserDictionary();
         for(Class<?> clazz: subUnionTypes) {

@@ -97,6 +97,18 @@ public class Mutation implements GraphQLMutationResolver {
                 LostAndFound.LostFoundError::of, env);
     }
 
+    LostAndFound.ModifyItemResult modifyLostItem(String lostId, LostAndFound.ItemInfoInput itemInfo, DataFetchingEnvironment env) {
+        return authenticatedGuard(
+                userToken -> LostAndFound.modifyLostItem(userToken, lostId, itemInfo),
+                LostAndFound.LostFoundError::of, env);
+    }
+
+    LostAndFound.ModifyItemResult modifyFoundItem(String foundId, LostAndFound.ItemInfoInput itemInfo, DataFetchingEnvironment env) {
+        return authenticatedGuard(
+                userToken -> LostAndFound.modifyFoundItem(userToken, foundId, itemInfo),
+                LostAndFound.LostFoundError::of, env);
+    }
+
     private static <E> E authenticatedGuard(Function<String, E> transformer, Function<String, E> errorConstructor,
                                             DataFetchingEnvironment env) {
         Optional<String> oToken = Utils.getAuthToken(env);

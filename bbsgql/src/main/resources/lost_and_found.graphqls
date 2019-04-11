@@ -40,3 +40,9 @@ input ItemInfoInput {
     imageBase64: String
     time: Long
 }
+
+type ModifyItemSuccess {
+    ok: Boolean!
+}
+
+union ModifyItemResult = LostFoundError | ModifyItemSuccess

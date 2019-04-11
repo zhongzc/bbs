@@ -31,6 +31,11 @@ public class LostAndFound {
             super(errMsg);
         }
     }
+    private static class ModifyException extends RuntimeException {
+        ModifyException(String errMsg) {
+            super(errMsg);
+        }
+    }
     private interface UndoFunction {
         void undo();
     }
@@ -230,12 +235,6 @@ public class LostAndFound {
         Instant foundTime = Instant.ofEpochMilli(input.time);
         return LostInfo.of(userId, input.itemName, foundTime, input.position, input.description, imageId.value, input.contact);
     }
-    private static String fetchFileURI(FileId fileId) {
-        return componentFactory.lostFoundImages.fileURI(fileId).orElseThrow(() -> {
-            logger.debug("buildFoundInfoWith :: fileURI - failed, imageId: {}", fileId);
-            return new PublishException("找不到图片URI");
-        });
-    }
 
     private static FoundId storeFoundInfo(FoundInfo foundInfo) {
         return componentFactory.lostFound.pubFound(foundInfo).orElseThrow(() -> {
@@ -256,6 +255,123 @@ public class LostAndFound {
         componentFactory.lostFound.removeLost(lostId);
     }
 
+
+    public static ModifyItemResult modifyLostItem(String userToken, String itemId, ItemInfoInput input) {
+        try {
+            UserId userId = fetchUserId(userToken);
+            checkLostPublisher(userId, itemId);
+
+            optionallyUpdateLostItem(itemId, input);
+
+            logger.debug("modifyLostItem - successful, userToken: {}, input: {}", userToken, input);
+            return ModifyItemSuccess.build();
+        } catch (AuthenticatorException | ModifyException e) {
+            logger.debug("modifyLostItem, error: {}, input: {}", e.getMessage(), input);
+            return LostFoundError.of(e.getMessage());
+        }
+    }
+    private static void checkLostPublisher(UserId userId, String itemId) {
+        componentFactory.lostFound.lostInfo(LostId.of(itemId))
+                .map(lostInfo -> {
+                    logger.debug("checkLostPublisher, userId: {}, publisher: {}", userId, itemId);
+                    return lostInfo.publisher;
+                })
+                .filter(userId.value::equals)
+                .orElseThrow(() -> {
+                    logger.debug("checkLostPublisher - failed, userId: {}, itemId: {}", userId, itemId);
+                    return new ModifyException("无更改权限");
+                });
+    }
+    // fixme: partially updated
+    private static void optionallyUpdateLostItem(String itemId, ItemInfoInput input) {
+        LostId lostId = LostId.of(itemId);
+        if (input.itemName != null) {
+            componentFactory.lostFound.changeObjName(lostId, input.itemName);
+        }
+        if (input.contact != null) {
+            componentFactory.lostFound.changeContact(lostId, input.contact);
+        }
+        if (input.time != null) {
+            componentFactory.lostFound.changeLostTime(lostId, Instant.ofEpochMilli(input.time));
+        }
+        if (input.description != null) {
+            componentFactory.lostFound.changeDescription(lostId, input.description);
+        }
+        if (input.position != null) {
+            componentFactory.lostFound.changePosition(lostId, input.position);
+        }
+        if (input.imageBase64 != null) {
+            String oldFileId = componentFactory.lostFound.lostInfo(lostId)
+                    .map(lostInfo -> lostInfo.imageIdentifier)
+                    .orElse("");
+            logger.debug("optionallyUpdateLostItem oldFileId: {}", oldFileId);
+
+            String newFileId = updateImage(oldFileId, input.imageBase64);
+            componentFactory.lostFound.changeImageIdentifier(lostId, newFileId);
+        }
+    }
+    private static String updateImage(String oldFileId, String newImageBase64) {
+        componentFactory.lostFoundImages.Remove(FileId.of(oldFileId));
+
+        byte[] image = Base64.getDecoder().decode(newImageBase64);
+        return componentFactory.lostFoundImages.createFile(image, UUID.randomUUID().toString())
+                .map(fileId -> fileId.value)
+                .orElseThrow(() -> {
+                    logger.debug("updateImage - failed, error: {}", "更新图片失败");
+                    return new ModifyException("更新图片失败");
+                });
+    }
+
+    public static ModifyItemResult modifyFoundItem(String userToken, String itemId, ItemInfoInput input) {
+        try {
+            UserId userId = fetchUserId(userToken);
+            checkFoundPublisher(userId, itemId);
+
+            optionallyUpdateFoundItem(itemId, input);
+
+            logger.debug("modifyFoundItem - successful, userToken: {}, input: {}", userToken, input);
+            return ModifyItemSuccess.build();
+        } catch (AuthenticatorException e) {
+            logger.debug("modifyFoundItem, error: {}, input: {}", e.getMessage(), input);
+            return LostFoundError.of(e.getMessage());
+        }
+    }
+    private static void checkFoundPublisher(UserId userId, String itemId) {
+        componentFactory.lostFound.foundInfo(FoundId.of(itemId))
+                .map(foundInfo -> foundInfo.publisher)
+                .filter(userId.value::equals)
+                .orElseThrow(() -> {
+                    logger.debug("checkFoundPublisher - failed, userId: {}, itemId: {}", userId, itemId);
+                    return new ModifyException("无更改权限");
+                });
+    }
+    private static void optionallyUpdateFoundItem(String itemId, ItemInfoInput input) {
+        FoundId foundId = FoundId.of(itemId);
+        if (input.description != null) {
+            componentFactory.lostFound.changeDescription(foundId, input.description);
+        }
+        if (input.contact != null) {
+            componentFactory.lostFound.changeContact(foundId, input.contact);
+        }
+        if (input.time != null) {
+            componentFactory.lostFound.changeFoundTime(foundId, Instant.ofEpochMilli(input.time));
+        }
+        if (input.itemName != null) {
+            componentFactory.lostFound.changeObjName(foundId, input.itemName);
+        }
+        if (input.position != null) {
+            componentFactory.lostFound.changePosition(foundId, input.position);
+        }
+        if (input.imageBase64 != null) {
+            String oldFileId = componentFactory.lostFound.foundInfo(foundId)
+                    .map(lostInfo -> lostInfo.imageIdentifier)
+                    .orElse("");
+            logger.debug("optionallyUpdateFoundItem oldFileId: {}", oldFileId);
+
+            String newFileId = updateImage(oldFileId, input.imageBase64);
+            componentFactory.lostFound.changeImageIdentifier(foundId, newFileId);
+        }
+    }
 
     public static class ItemInfoInput {
         public String itemName;
@@ -296,7 +412,7 @@ public class LostAndFound {
         }
     }
 
-    public static class LostFoundError implements ItemInfoResult, PublishItemResult {
+    public static class LostFoundError implements ItemInfoResult, PublishItemResult, ModifyItemResult {
         private String error;
 
         public LostFoundError(String error) {
@@ -354,5 +470,24 @@ public class LostAndFound {
     }
 
     public interface PublishItemResult {
+    }
+
+    public static class ModifyItemSuccess implements ModifyItemResult {
+        private Boolean ok;
+
+        public ModifyItemSuccess() {
+            this.ok = true;
+        }
+
+        public static ModifyItemSuccess build() {
+            return new ModifyItemSuccess();
+        }
+
+        public Boolean getOk() {
+            return ok;
+        }
+    }
+
+    public interface ModifyItemResult {
     }
 }

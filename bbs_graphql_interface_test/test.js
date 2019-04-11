@@ -1,7 +1,7 @@
 
 const fire_all_tests = async () => {
 	await fire_unit_tests();
-	// await fire_behav_tests();
+	await fire_behav_tests();
 }
 
 const remoteAddress = "http://localhost:4000";
@@ -67,33 +67,35 @@ const provided_userId = (func) =>
 
 // [dependencies: signUp, publishFound]
 const after_publishFound = (func) =>
-	after_signUp(auth =>
-		publishFound({
+	after_signUp(auth => {
+		const testObj = {
 			itemName: "qwert",
 			description: "qwerty",
 			position: "qwertyu",
 			contact: "1121234567",
 			imageBase64: "aGVsbG93b3JsZCE=",
 			time: Date.now(),
-		}, auth).then(result =>
-			func(result.itemId)
+		};
+		return publishFound(testObj, auth).then(result =>
+			func(auth, result.itemId, testObj)
 		)
-	);
+	});
 
 // [dependencies: signUp, publishLost]
 const after_publishLost = (func) =>
-	after_signUp(auth =>
-		publishLost({
+	after_signUp(auth => {
+		const testObj = {
 			itemName: "qwert",
 			description: "qwerty",
 			position: "qwertyu",
 			contact: "1121234567",
 			imageBase64: "aGVsbG93b3JsZCE=",
 			time: Date.now(),
-		}, auth).then(result =>
-			func(result.itemId)
+		};
+		return publishLost(testObj, auth).then(result =>
+			func(auth, result.itemId, testObj)
 		)
-	);
+	});
 
 //---------unit test---------
 
@@ -693,6 +695,92 @@ unit_test("publish lost", () =>
 	)
 );
 
+// =============================================
+
+const MODIFY_LOST_ITEM = `
+	mutation ModifyLostItem($lostId: String!, $itemInfo: ItemInfoInput!) {
+		modifyLostItem(lostId: $lostId, itemInfo: $itemInfo) {
+			... on LostFoundError {
+				error
+			}
+			... on ModifyItemSuccess {
+				ok
+			}
+		}
+	}
+`;
+
+const modifyLostItem = (lostId, itemInfo, userToken) => sendGQL({
+	query: MODIFY_LOST_ITEM,
+	variables: {
+		lostId: lostId,
+		itemInfo, itemInfo
+	},
+	auth: userToken
+});
+
+unit_test("modify lost item", () => 
+	after_publishLost((auth, lostId, oldItem) => {
+		const newObj = {
+			...oldItem,
+			itemName: "modified",
+			contact: "12345678910"
+		}
+		return modifyLostItem(lostId, newObj, auth).then(result => {
+			assert(result.ok);
+			return lostItemInfo(lostId).then(result => {
+				assertEq(result.name, newObj.itemName);
+				assertEq(result.description, oldItem.description);
+				assertEq(result.position, oldItem.position);
+				assertEq(result.contact, newObj.contact);
+				assertEq(result.lostTime, oldItem.time);
+			});
+		});
+	})
+);
+
+// =============================================
+
+const MODIFY_FOUND_ITEM = `
+	mutation ModifyFoundItem($foundId: String!, $itemInfo: ItemInfoInput!) {
+		modifyFoundItem(foundId: $foundId, itemInfo: $itemInfo) {
+			... on LostFoundError {
+				error
+			}
+			... on ModifyItemSuccess {
+				ok
+			}
+		}
+	}
+`;
+
+const modifyFoundItem = (foundId, itemInfo, userToken) => sendGQL({
+	query: MODIFY_FOUND_ITEM,
+	variables: {
+		foundId: foundId,
+		itemInfo, itemInfo
+	},
+	auth: userToken
+});
+
+unit_test("modify found item", () => 
+	after_publishFound((auth, foundId, oldItem) => {
+		const newObj = {
+			itemName: "modified",
+			contact: "12345678910"
+		}
+		return modifyFoundItem(foundId, newObj, auth).then(result => {
+			assert(result.ok);
+			return foundItemInfo(foundId).then(result => {
+				assertEq(result.name, newObj.itemName);
+				assertEq(result.description, oldItem.description);
+				assertEq(result.position, oldItem.position);
+				assertEq(result.contact, newObj.contact);
+				assertEq(result.foundTime, oldItem.time);
+			});
+		});
+	})
+);
 
 // =========================================query=========================================
 

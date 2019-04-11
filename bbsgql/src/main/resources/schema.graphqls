@@ -33,7 +33,8 @@ type Mutation {
 
     publishFound(itemInfo: ItemInfoInput!): PublishItemResult!
     publishLost(itemInfo: ItemInfoInput!): PublishItemResult!
-#    changeLostItem(lostId: String!, )
+    modifyLostItem(lostId: String!, itemInfo: ItemInfoInput!): ModifyItemResult!
+    modifyFoundItem(foundId: String!, itemInfo: ItemInfoInput!): ModifyItemResult!
 }
 
 schema {
