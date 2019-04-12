@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class ComponentFactory {
-    public static ComponentFactory componentFactory;
+    public static ComponentFactory componentFactory = null;
 
     public final StaticResourceConfig config;
 
@@ -48,7 +48,8 @@ public class ComponentFactory {
                 UserFactoryMemoryRepository.get("usrFtyMryRep"), IdGenerator.seqInteger("usrId"));
 
         authenticator = Authenticator.defau1t("auth",
-                AuthenticatorMemoryRepository.get("authMryRep"),
+//                AuthenticatorMemoryRepository.get("authMryRep"),
+                AuthenticatorSstRepository.get("authSstRep"),
                 Validator.email(), Validator.nonContainsSpace().compose(Validator.minLength(8)).compose(Validator.maxLength(20)),
                 TokenGenerator.defau1t("authToken", TokenGeneratorMemoryRepository.get("authTokenMryRep")));
 
