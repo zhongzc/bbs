@@ -1021,7 +1021,7 @@ const founds = (skip, first) => sendGQL({
 	}
 });
 
-unit_test_only("losts", () =>
+unit_test("losts", () =>
 	after_n_publish("found", 5, (auth, pubItems, pubItemIds) =>
 		founds(2, 2).then(listOfFounds => {
 			console.log(listOfFounds);

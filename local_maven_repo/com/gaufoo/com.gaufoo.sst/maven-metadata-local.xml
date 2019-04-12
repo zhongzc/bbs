@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <metadata>
   <groupId>com.gaufoo</groupId>
-  <artifactId>org.gaufoo.sst</artifactId>
+  <artifactId>com.gaufoo.sst</artifactId>
   <versioning>
     <versions>
       <version>0.1.0-SNAPSHOT</version>
     </versions>
-    <lastUpdated>20190411022331</lastUpdated>
+    <lastUpdated>20190412083733</lastUpdated>
   </versioning>
 </metadata>

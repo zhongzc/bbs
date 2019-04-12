@@ -85,7 +85,6 @@ public class LostAndFound {
             public String getContact() {
                 return lostInfo.contact;
             }
-
             @Override
             public Long getCreationTime() {
                 return lostInfo.createTime.toEpochMilli();
@@ -134,7 +133,6 @@ public class LostAndFound {
             public String getContact() {
                 return foundInfo.contact;
             }
-
             @Override
             public Long getCreationTime() {
                 return foundInfo.createTime.toEpochMilli();
@@ -386,9 +384,6 @@ public class LostAndFound {
 
     public static List<FoundItemInfo> founds(int skip, int first) {
         logger.debug("founds, skip: {}, first: {}", skip, first);
-        componentFactory.lostFound.allFounds()
-//                .map(foundId -> componentFactory.lostFound.foundInfo(foundId))
-                .forEach(oFi -> logger.info("{}", oFi));
         return componentFactory.lostFound.allFounds()
                 .map(foundId -> componentFactory.lostFound.foundInfo(foundId))
                 .filter(Optional::isPresent)
