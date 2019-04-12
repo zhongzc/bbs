@@ -17,5 +17,7 @@ public interface LikeComponentRepository {
 
     void removeLike(LikeId id);
 
+    default void shutdown() {}
+
     String getRepositoryName();
 }

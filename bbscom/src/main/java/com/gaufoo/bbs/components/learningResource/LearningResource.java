@@ -41,6 +41,8 @@ public interface LearningResource {
 
     void removeResource(ResourceId resourceId);
 
+    void shutdown();
+
     String getName();
 
     static LearningResource defau1t(String componentName, LearningResourceRepository repository, IdGenerator idGenerator) {

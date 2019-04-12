@@ -196,6 +196,11 @@ public class LostFoundImpl implements LostFound {
     }
 
     @Override
+    public void shutdown() {
+        repository.shutdown();
+    }
+
+    @Override
     public void removeLost(LostId lostId) {
         repository.deleteLost(lostId);
     }

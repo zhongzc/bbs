@@ -25,6 +25,8 @@ public interface UserFactory {
 
     void remove(UserId userId);
 
+    void shutdown();
+
     String getName();
 
     static UserFactory defau1t(String componentName, UserFactoryRepository repository, IdGenerator idGenerator) {

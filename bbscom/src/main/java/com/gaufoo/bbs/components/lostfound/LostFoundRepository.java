@@ -25,5 +25,7 @@ public interface LostFoundRepository {
 
     void deleteFound(FoundId id);
 
+    default void shutdown() {}
+
     String getRepositoryName();
 }

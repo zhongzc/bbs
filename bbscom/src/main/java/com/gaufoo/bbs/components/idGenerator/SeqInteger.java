@@ -17,6 +17,11 @@ public class SeqInteger implements IdGenerator {
     }
 
     @Override
+    public void shutdown() {
+
+    }
+
+    @Override
     public String getName() {
         return this.componentName;
     }

@@ -12,5 +12,7 @@ public interface UserFactoryRepository {
 
     void deleteUser(UserId userId);
 
+    default void shutdown() {}
+
     String getRepositoryName();
 }

@@ -44,4 +44,9 @@ public class FileFactoryImpl implements FileFactory {
     public String getName() {
         return this.componentName;
     }
+
+    @Override
+    public void shutdown() {
+        repository.shutdown();
+    }
 }

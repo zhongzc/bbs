@@ -116,6 +116,11 @@ class AuthenticatorImpl implements Authenticator {
         return repository.contains(username) && repository.getPassword(username).equals(password);
     }
 
+    @Override
+    public void shutdown() {
+        repository.shutdown();
+    }
+
     public static void main(String[] args) throws AuthenticatorException {
         // 用户名和密码合法性验证器
         Validator<String> usernameV = Validator.email();

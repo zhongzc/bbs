@@ -16,6 +16,8 @@ public interface FileFactory {
 
     String getName();
 
+    void shutdown();
+
     static FileFactory defau1t(String componentName, FileFactoryRepository repository, IdGenerator idGenerator) {
         return new FileFactoryImpl(componentName, repository, idGenerator);
     }

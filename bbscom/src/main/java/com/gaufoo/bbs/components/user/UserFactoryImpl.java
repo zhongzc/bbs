@@ -82,6 +82,11 @@ public class UserFactoryImpl implements UserFactory {
     }
 
     @Override
+    public void shutdown() {
+        repository.shutdown();
+    }
+
+    @Override
     public String getName() {
         return this.componentName;
     }

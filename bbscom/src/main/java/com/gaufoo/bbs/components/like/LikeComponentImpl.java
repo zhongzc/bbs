@@ -4,12 +4,10 @@ import com.gaufoo.bbs.components._repositories.LikeComponentMemoryRepository;
 import com.gaufoo.bbs.components.idGenerator.IdGenerator;
 import com.gaufoo.bbs.components.like.common.LikeId;
 import com.gaufoo.bbs.components.like.common.LikeInfo;
-import com.gaufoo.bbs.util.Util;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class LikeComponentImpl implements LikeComponent {
@@ -80,6 +78,11 @@ public class LikeComponentImpl implements LikeComponent {
     @Override
     public void remove(LikeId likeId) {
         repository.removeLike(likeId);
+    }
+
+    @Override
+    public void shutdown() {
+        repository.shutdown();
     }
 
     @Override

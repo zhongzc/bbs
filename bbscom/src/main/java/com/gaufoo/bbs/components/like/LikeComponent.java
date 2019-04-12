@@ -24,6 +24,8 @@ public interface LikeComponent {
 
     void remove(LikeId likeId);
 
+    void shutdown();
+
     String getName();
 
     static LikeComponent defau1t(String componentName, LikeComponentRepository repository, IdGenerator idGenerator) {

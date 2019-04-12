@@ -16,5 +16,7 @@ public interface LearningResourceRepository {
 
     void deleteResource(ResourceId resourceId);
 
+    default void shutdown() {}
+
     String getRepositoryName();
 }

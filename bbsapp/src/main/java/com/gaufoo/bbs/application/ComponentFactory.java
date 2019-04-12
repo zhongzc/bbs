@@ -1,5 +1,6 @@
 package com.gaufoo.bbs.application;
 
+import com.gaufoo.bbs.application.util.SSTConfig;
 import com.gaufoo.bbs.application.util.StaticResourceConfig;
 import com.gaufoo.bbs.application.util.StaticResourceConfig.FileType;
 import com.gaufoo.bbs.application.util.Utils;
@@ -22,7 +23,7 @@ import java.util.stream.Collectors;
 public class ComponentFactory {
     public static ComponentFactory componentFactory = null;
 
-    public final StaticResourceConfig config;
+    public final StaticResourceConfig staticRcConfig;
 
     public final UserFactory user;
     public final Authenticator authenticator;
@@ -32,24 +33,26 @@ public class ComponentFactory {
     public final FileFactory lostFoundImages;
     public final  LikeComponent like;
     public final LearningResource learnResource;
-    public ComponentFactory(StaticResourceConfig config) {
-        this.config = config;
+    public ComponentFactory(StaticResourceConfig staticRcConfig) {
+        this.staticRcConfig = staticRcConfig;
+        SSTConfig sstConfig = SSTConfig.defau1t();
 
-        List<Path> allFolderPaths = config.allFileTypes().stream()
-                .map(config::folderPathOf)
+        List<Path> allFolderPaths = staticRcConfig.allFileTypes().stream()
+                .map(staticRcConfig::folderPathOf)
                 .collect(Collectors.toList());
         clearFolders(allFolderPaths);
         createFoldersIfAbsent(allFolderPaths);
 
-        Path userProfileFolder = config.folderPathOf(FileType.UserProfileImage);
-        Path lostFoundFolder = config.folderPathOf(FileType.LostFoundImage);
+        Path userProfileFolder = staticRcConfig.folderPathOf(FileType.UserProfileImage);
+        Path lostFoundFolder = staticRcConfig.folderPathOf(FileType.LostFoundImage);
+
+        Path authenticatorFolder = sstConfig.baseDir.resolve(sstConfig.authenticator);
 
         user = UserFactory.defau1t("usrFty",
                 UserFactoryMemoryRepository.get("usrFtyMryRep"), IdGenerator.seqInteger("usrId"));
 
         authenticator = Authenticator.defau1t("auth",
-//                AuthenticatorMemoryRepository.get("authMryRep"),
-                AuthenticatorSstRepository.get("authSstRep"),
+                AuthenticatorSstRepository.get("authSstRep", authenticatorFolder),
                 Validator.email(), Validator.nonContainsSpace().compose(Validator.minLength(8)).compose(Validator.maxLength(20)),
                 TokenGenerator.defau1t("authToken", TokenGeneratorMemoryRepository.get("authTokenMryRep")));
 
@@ -71,6 +74,10 @@ public class ComponentFactory {
         learnResource= LearningResource.defau1t("learnResource",LearningResourceMemoryRepository.get("learnResMryRep"),IdGenerator.seqInteger("resourceId"));
     }
 
+    public void shutdown() {
+        authenticator.shutdown();
+    }
+
     private void clearFolders(List<Path> paths) {
         paths.forEach(Utils::deleteFileRecursively);
     }
@@ -78,7 +85,5 @@ public class ComponentFactory {
     private void createFoldersIfAbsent(List<Path> paths) {
         paths.forEach(path -> path.toFile().mkdirs());
     }
-
-
 
 }

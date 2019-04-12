@@ -8,9 +8,6 @@ import java.io.IOException;
 import java.net.URI;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class Utils {
     private static Logger logger = LoggerFactory.getLogger(Utils.class);
@@ -45,7 +42,7 @@ public class Utils {
 
     public static String makeUrl(String uri, StaticResourceConfig.FileType fileType) {
         if (uri == null || uri.isEmpty()) return "";
-        return ComponentFactory.componentFactory.config.urlPrefixOf(fileType) + "/" +
+        return ComponentFactory.componentFactory.staticRcConfig.urlPrefixOf(fileType) + "/" +
                 Paths.get(URI.create(uri)).toFile().getName();
     }
 

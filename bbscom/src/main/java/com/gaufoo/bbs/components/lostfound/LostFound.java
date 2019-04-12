@@ -95,6 +95,8 @@ public interface LostFound {
                 }).orElse(false));
     }
 
+    void shutdown();
+
     void removeLost(LostId lostId);
 
     void removeFound(FoundId foundId);

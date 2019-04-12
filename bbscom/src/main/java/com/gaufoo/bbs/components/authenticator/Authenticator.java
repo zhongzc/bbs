@@ -33,6 +33,8 @@ public interface Authenticator {
         ADMIN,
     }
 
+    void shutdown();
+
     /**
      * 默认实现
      */

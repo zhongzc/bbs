@@ -32,5 +32,7 @@ public interface AuthenticatorRepository {
 
     void deleteResetToken(ResetToken token);
 
+    default void shutdown() {}
+
     String getRepositoryName();
 }

@@ -10,19 +10,31 @@ import com.gaufoo.sst.SST;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Optional;
 import java.util.function.Function;
+
 import static com.gaufoo.bbs.util.SstUtils.*;
 
 public class AuthenticatorSstRepository implements AuthenticatorRepository {
     private static final Gson gson = new Gson();
     private final String repositoryName;
-    private SST usernameToPasswordAndPermission = SST.of("username-password_permission");
-    private SST tokenToPermission = SST.of("token-permission");
-    private SST resetTokenToUsername = SST.of("resetToken-username");
+    private final SST usernameToPasswordAndPermission;
+    private final SST tokenToPermission;
+    private final SST resetTokenToUsername;
 
-    public AuthenticatorSstRepository(String repositoryName) {
+    private AuthenticatorSstRepository(String repositoryName, Path storingDir) {
         this.repositoryName = repositoryName;
+        String unamePwdPms = "username-password_permission";
+        this.usernameToPasswordAndPermission = SST.of(unamePwdPms, storingDir.resolve(unamePwdPms));
+
+        String tknPms = "token-permission";
+        this.tokenToPermission = SST.of(tknPms, storingDir.resolve(tknPms));
+
+        String rstTknUname = "resetToken-username";
+        this.resetTokenToUsername = SST.of(rstTknUname, storingDir.resolve(rstTknUname));
+
     }
 
     @Override
@@ -123,12 +135,19 @@ public class AuthenticatorSstRepository implements AuthenticatorRepository {
         return gson.fromJson(json, new TypeToken<Tuple<String, Permission>>(){}.getType());
     }
 
-    public static AuthenticatorSstRepository get(String repositoryName) {
-        return new AuthenticatorSstRepository(repositoryName);
+    public static AuthenticatorSstRepository get(String repositoryName, Path storingDir) {
+        return new AuthenticatorSstRepository(repositoryName, storingDir);
+    }
+
+    @Override
+    public void shutdown() {
+        usernameToPasswordAndPermission.shutdown();
+        tokenToPermission.shutdown();
+        resetTokenToUsername.shutdown();
     }
 
     public static void main(String[] args) {
-        AuthenticatorSstRepository authenticatorSstRepository = new AuthenticatorSstRepository("tst");
+        AuthenticatorSstRepository authenticatorSstRepository = new AuthenticatorSstRepository("tst", Paths.get("resources").resolve("tst"));
         UserToken userToken = UserToken.of("1234");
         boolean result = authenticatorSstRepository.saveUserToken(userToken, Permission.of("0000", Authenticator.Role.USER));
         System.out.println("saveUserToken: " + result);

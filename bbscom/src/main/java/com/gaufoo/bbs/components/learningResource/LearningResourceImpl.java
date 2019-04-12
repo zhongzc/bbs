@@ -80,6 +80,11 @@ class LearningResourceImpl implements LearningResource {
     }
 
     @Override
+    public void shutdown() {
+        repository.shutdown();
+    }
+
+    @Override
     public String getName() {
         return this.componentName;
     }

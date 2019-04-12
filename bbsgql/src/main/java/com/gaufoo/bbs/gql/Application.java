@@ -14,6 +14,7 @@ import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
+import javax.annotation.PreDestroy;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -85,6 +86,11 @@ public class Application implements WebMvcConfigurer {
 
         registry.addResourceHandler(allUrlPrefixes.toArray(new String[0]))
                 .addResourceLocations(allFolderPaths.toArray(new String[0]));
+    }
+
+    @PreDestroy
+    public void tearDown() {
+        ComponentFactory.componentFactory.shutdown();
     }
 
 }
