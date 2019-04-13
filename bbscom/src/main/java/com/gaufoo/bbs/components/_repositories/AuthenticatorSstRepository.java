@@ -141,9 +141,11 @@ public class AuthenticatorSstRepository implements AuthenticatorRepository {
 
     @Override
     public void shutdown() {
-        usernameToPasswordAndPermission.shutdown();
-        tokenToPermission.shutdown();
-        resetTokenToUsername.shutdown();
+        waitAllFuturesPar(
+                usernameToPasswordAndPermission.shutdown(),
+                tokenToPermission.shutdown(),
+                resetTokenToUsername.shutdown()
+        );
     }
 
     public static void main(String[] args) {

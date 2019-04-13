@@ -14,7 +14,7 @@ import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-import javax.annotation.PreDestroy;
+import javax.annotation.PostConstruct;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -55,8 +55,6 @@ public class Application implements WebMvcConfigurer {
                 PersonalInformation.ModifyPersonInfoSuccess.class,
                 PersonalInformation.ModifyPersonInfoError.class,
                 LostAndFound.LostFoundError.class,
-                LostAndFound.FoundItemInfo.class,
-                LostAndFound.LostItemInfo.class,
                 LostAndFound.PublishItemSuccess.class,
                 LostAndFound.ModifyItemSuccess.class,
         };
@@ -88,9 +86,12 @@ public class Application implements WebMvcConfigurer {
                 .addResourceLocations(allFolderPaths.toArray(new String[0]));
     }
 
-    @PreDestroy
-    public void tearDown() {
-        ComponentFactory.componentFactory.shutdown();
+    @PostConstruct
+    private void addShutdownHook() {
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            logger.debug("ComponentFactory is shutting down..");
+            ComponentFactory.componentFactory.shutdown();
+        }));
+        logger.debug("added shutdown hook");
     }
-
 }

@@ -51,7 +51,7 @@ public class SstUtils {
         return Optional.empty();
     }
 
-    public static void runFutures(CompletionStage<?>... completionStages) {
+    public static void waitAllFuturesPar(CompletionStage<?>... completionStages) {
         CompletableFuture<?>[] futures = Arrays.stream(completionStages)
                 .map(CompletionStage::toCompletableFuture).toArray(CompletableFuture<?>[]::new);
         try {
