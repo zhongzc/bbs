@@ -1,6 +1,6 @@
 package com.gaufoo.bbs.application;
 
-import com.gaufoo.bbs.application.util.SSTConfig;
+import com.gaufoo.bbs.application.util.SSTPathConfig;
 import com.gaufoo.bbs.application.util.StaticResourceConfig;
 import com.gaufoo.bbs.application.util.StaticResourceConfig.FileType;
 import com.gaufoo.bbs.application.util.Utils;
@@ -35,43 +35,51 @@ public class ComponentFactory {
     public final LearningResource learnResource;
     public ComponentFactory(StaticResourceConfig staticRcConfig) {
         this.staticRcConfig = staticRcConfig;
-        SSTConfig sstConfig = SSTConfig.defau1t();
+        SSTPathConfig sstPathConfig = SSTPathConfig.defau1t();
 
         List<Path> allFolderPaths = staticRcConfig.allFileTypes().stream()
                 .map(staticRcConfig::folderPathOf)
                 .collect(Collectors.toList());
-        clearFolders(allFolderPaths);
-        createFoldersIfAbsent(allFolderPaths);
+        allFolderPaths.addAll(sstPathConfig.allSSTPaths());
 
         Path userProfileFolder = staticRcConfig.folderPathOf(FileType.UserProfileImage);
         Path lostFoundFolder = staticRcConfig.folderPathOf(FileType.LostFoundImage);
 
-        Path authenticatorFolder = sstConfig.baseDir.resolve(sstConfig.authenticator);
+        clearFolders(allFolderPaths);
+        createFoldersIfAbsent(allFolderPaths);
 
         user = UserFactory.defau1t("usrFty",
-                UserFactoryMemoryRepository.get("usrFtyMryRep"), IdGenerator.seqInteger("usrId"));
+                UserFactorySstRepository.get("usrFtySstRep", sstPathConfig.userFactory()),
+                IdGenerator.seqInteger("usrId"));
 
         authenticator = Authenticator.defau1t("auth",
-                AuthenticatorSstRepository.get("authSstRep", authenticatorFolder),
+                AuthenticatorSstRepository.get("authSstRep", sstPathConfig.auth()),
                 Validator.email(), Validator.nonContainsSpace().compose(Validator.minLength(8)).compose(Validator.maxLength(20)),
-                TokenGenerator.defau1t("authToken", TokenGeneratorMemoryRepository.get("authTokenMryRep")));
+                TokenGenerator.defau1t("authToken",
+                        TokenGeneratorSstRepository.get("authTokenSstRep", sstPathConfig.authTokenGen())));
 
         userProfiles = FileFactory.defau1t("userProfiles",
-                FileFactoryFileSystemRepository.get("fileDskRep",
-                        userProfileFolder), IdGenerator.seqInteger("usrImgId"));
+                FileFactoryFileSystemRepository.get("fileDskRep",userProfileFolder),
+                IdGenerator.seqInteger("usrImgId"));
 
         major = MajorFactory.defau1t("major");
 
-        lostFound = LostFound.defau1t("lstFnd", LostFoundMemoryRepository.get("lstFndMryRep"),
-                        IdGenerator.seqInteger("lstId"), IdGenerator.seqInteger("fndId"));
+        lostFound = LostFound.defau1t("lstFnd",
+                LostFoundSstRepository.get("lstFndMryRep", sstPathConfig.lostFound()),
+                IdGenerator.seqInteger("lstId"), IdGenerator.seqInteger("fndId"));
 
         lostFoundImages =
                 FileFactory.defau1t("lostFoundImages",
                         FileFactoryFileSystemRepository.get("lostFileMryRep",
                                 lostFoundFolder), IdGenerator.seqInteger("lostImgId"));
 
-        like = LikeComponent.defau1t("like", LikeComponentMemoryRepository.get("likeMryRep"), IdGenerator.seqInteger("likeId"));
-        learnResource= LearningResource.defau1t("learnResource",LearningResourceMemoryRepository.get("learnResMryRep"),IdGenerator.seqInteger("resourceId"));
+        like = LikeComponent.defau1t("like",
+                LikeComponentSstRepository.get("likeMryRep", sstPathConfig.like()),
+                IdGenerator.seqInteger("likeId"));
+
+        learnResource= LearningResource.defau1t("learnResource",
+                LearningResourceSstRepository.get("learnResMryRep", sstPathConfig.learnResource()),
+                IdGenerator.seqInteger("resourceId"));
     }
 
     public void shutdown() {

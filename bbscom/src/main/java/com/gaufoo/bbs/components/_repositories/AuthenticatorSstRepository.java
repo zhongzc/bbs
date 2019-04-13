@@ -135,10 +135,6 @@ public class AuthenticatorSstRepository implements AuthenticatorRepository {
         return gson.fromJson(json, new TypeToken<Tuple<String, Permission>>(){}.getType());
     }
 
-    public static AuthenticatorSstRepository get(String repositoryName, Path storingDir) {
-        return new AuthenticatorSstRepository(repositoryName, storingDir);
-    }
-
     @Override
     public void shutdown() {
         waitAllFuturesPar(
@@ -146,6 +142,10 @@ public class AuthenticatorSstRepository implements AuthenticatorRepository {
                 tokenToPermission.shutdown(),
                 resetTokenToUsername.shutdown()
         );
+    }
+
+    public static AuthenticatorSstRepository get(String repositoryName, Path storingDir) {
+        return new AuthenticatorSstRepository(repositoryName, storingDir);
     }
 
     public static void main(String[] args) {

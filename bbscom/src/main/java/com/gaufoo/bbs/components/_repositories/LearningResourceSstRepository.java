@@ -7,7 +7,6 @@ import com.gaufoo.sst.SST;
 import com.google.gson.Gson;
 
 import java.nio.file.Path;
-import java.util.LinkedList;
 import java.util.stream.Stream;
 
 import static com.gaufoo.bbs.util.SstUtils.*;
@@ -18,7 +17,7 @@ public class LearningResourceSstRepository implements LearningResourceRepository
     private final String repositoryName;
     private final SST idToInfo;
 
-    public LearningResourceSstRepository(String repositoryName, Path storingPath) {
+    private LearningResourceSstRepository(String repositoryName, Path storingPath) {
         this.repositoryName = repositoryName;
 
         String idInfo = "resourceId-info";
@@ -45,7 +44,7 @@ public class LearningResourceSstRepository implements LearningResourceRepository
         return waitFuture(idToInfo.allKeysAsc()
                 .thenApply(stringStream -> stringStream
                         .map(ResourceId::of))
-        ).orElse(new LinkedList<ResourceId>().stream());
+        ).orElse(Stream.empty());
     }
 
     @Override
@@ -55,12 +54,15 @@ public class LearningResourceSstRepository implements LearningResourceRepository
 
     @Override
     public void shutdown() {
-        idToInfo.shutdown();
+        waitFuture(idToInfo.shutdown());
     }
-
 
     @Override
     public String getRepositoryName() {
         return repositoryName;
+    }
+
+    public static LearningResourceSstRepository get(String repositoryName, Path path) {
+        return new LearningResourceSstRepository(repositoryName, path);
     }
 }
