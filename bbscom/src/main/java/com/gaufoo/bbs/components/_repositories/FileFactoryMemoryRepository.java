@@ -4,12 +4,12 @@ import com.gaufoo.bbs.components.file.FileFactoryRepository;
 import com.gaufoo.bbs.components.file.common.FileId;
 import com.gaufoo.bbs.util.Tuple;
 
-import java.util.Hashtable;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class FileFactoryMemoryRepository implements FileFactoryRepository {
     private final String repositoryName;
-    private final Map<String, Tuple<byte[], String>> map = new Hashtable<>();
+    private final Map<String, Tuple<byte[], String>> map = new ConcurrentHashMap<>();
 
     public FileFactoryMemoryRepository(String repositoryName) {
         this.repositoryName = repositoryName;

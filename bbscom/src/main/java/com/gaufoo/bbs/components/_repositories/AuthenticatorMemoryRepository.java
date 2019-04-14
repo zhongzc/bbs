@@ -6,22 +6,22 @@ import com.gaufoo.bbs.util.Tuple;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
-import java.util.Hashtable;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class AuthenticatorMemoryRepository implements AuthenticatorRepository {
     private static final Gson gson = new Gson();
     private final String repositoryName;
 
     // Username -> Tuple<Password, Permission>
-    private final Map<String, String> usernameToPwdPermission = new Hashtable<>();
+    private final Map<String, String> usernameToPwdPermission = new ConcurrentHashMap<>();
 
     // UserToken -> Permission
-    private final Map<String, String> userTokenToPermission = new Hashtable<>();
+    private final Map<String, String> userTokenToPermission = new ConcurrentHashMap<>();
 
     // ResetToken -> Username
-    private final Map<String, String> resetTokenToUsername = new Hashtable<>();
+    private final Map<String, String> resetTokenToUsername = new ConcurrentHashMap<>();
 
     private AuthenticatorMemoryRepository(String repositoryName) {
         this.repositoryName = repositoryName;

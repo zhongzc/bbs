@@ -11,15 +11,15 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.HashMap;
-import java.util.Hashtable;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class FileFactoryFileSystemRepository implements FileFactoryRepository {
     private static final String STATE_FILE_NAME = "state.json";
     private final Gson gson = new Gson();
     private final String repositoryName;
     private final Path directory;
-    private final Map<String, String> idToFilename = new Hashtable<>();
+    private final Map<String, String> idToFilename = new ConcurrentHashMap<>();
 
     public FileFactoryFileSystemRepository(String repositoryName, Path directory) {
         this.repositoryName = repositoryName;

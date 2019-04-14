@@ -5,15 +5,15 @@ import com.gaufoo.bbs.components.user.common.UserId;
 import com.gaufoo.bbs.components.user.common.UserInfo;
 import com.google.gson.Gson;
 
-import java.util.Hashtable;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class UserFactoryMemoryRepository implements UserFactoryRepository {
     private final static Gson gson = new Gson();
     private final String repositoryName;
 
     // UserId -> UserInfo
-    private final Map<String, String> idToInfo = new Hashtable<>();
+    private final Map<String, String> idToInfo = new ConcurrentHashMap<>();
 
     private UserFactoryMemoryRepository(String repositoryName) {
         this.repositoryName = repositoryName;

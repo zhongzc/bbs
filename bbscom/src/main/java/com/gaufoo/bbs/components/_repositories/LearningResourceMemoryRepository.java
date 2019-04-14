@@ -5,44 +5,54 @@ import com.gaufoo.bbs.components.learningResource.common.ResourceId;
 import com.gaufoo.bbs.components.learningResource.common.ResourceInfo;
 import com.google.gson.Gson;
 
-import java.util.Hashtable;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
 
 public class LearningResourceMemoryRepository implements LearningResourceRepository {
-    private final Gson gson=new Gson();
+    private final Gson gson = new Gson();
     private final String repositoryName;
-    private final Map<String,String>resources=new Hashtable<>();
-    private LearningResourceMemoryRepository(String repositoryName){this.repositoryName=repositoryName;}
+    private final Map<String, String> resources = new ConcurrentHashMap<>();
+
+    private LearningResourceMemoryRepository(String repositoryName) {
+        this.repositoryName = repositoryName;
+    }
+
     @Override
-    public boolean saveResource(ResourceId id, ResourceInfo resourceInfo){
-        if(resources.containsKey(id.value)) return false;
-        resources.put(id.value,gson.toJson(resourceInfo));
+    public boolean saveResource(ResourceId id, ResourceInfo resourceInfo) {
+        if (resources.containsKey(id.value)) return false;
+        resources.put(id.value, gson.toJson(resourceInfo));
         return true;
     }
+
     @Override
-    public boolean updateResource(ResourceId resourceId, ResourceInfo modSharer){
-    if(!resources.containsKey(resourceId.value))return false;
-    resources.put(resourceId.value,gson.toJson(modSharer));
-    return true;
+    public boolean updateResource(ResourceId resourceId, ResourceInfo modSharer) {
+        if (!resources.containsKey(resourceId.value)) return false;
+        resources.put(resourceId.value, gson.toJson(modSharer));
+        return true;
     }
+
     @Override
-    public ResourceInfo getResourceInfo(ResourceId resourceId){
-    return gson.fromJson(resources.get(resourceId.value),ResourceInfo.class);
+    public ResourceInfo getResourceInfo(ResourceId resourceId) {
+        return gson.fromJson(resources.get(resourceId.value), ResourceInfo.class);
     }
+
     @Override
-    public Stream<ResourceId> getAllResources(){
+    public Stream<ResourceId> getAllResources() {
         return resources.keySet().stream().map(ResourceId::of);
     }
+
     @Override
-    public void deleteResource(ResourceId resourceId){
+    public void deleteResource(ResourceId resourceId) {
         resources.remove(resourceId.value);
     }
+
     @Override
-    public String getRepositoryName(){
+    public String getRepositoryName() {
         return this.repositoryName;
     }
-    public static LearningResourceRepository get(String repositoryName){
+
+    public static LearningResourceRepository get(String repositoryName) {
         return new LearningResourceMemoryRepository(repositoryName);
     }
 

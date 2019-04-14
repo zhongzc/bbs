@@ -4,10 +4,16 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class SeqInteger implements IdGenerator {
     private final String componentName;
-    private final AtomicInteger seq = new AtomicInteger();
+    private final AtomicInteger seq;
 
     SeqInteger(String componentName) {
         this.componentName = componentName;
+        this.seq = new AtomicInteger();
+    }
+
+    SeqInteger(String componentName, int from) {
+        this.componentName = componentName;
+        this.seq = new AtomicInteger(from);
     }
 
     @Override

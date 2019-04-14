@@ -5,8 +5,8 @@ import com.gaufoo.bbs.components.like.common.LikeId;
 import com.gaufoo.bbs.components.like.common.LikeInfo;
 import com.google.gson.Gson;
 
-import java.util.Hashtable;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
 
 public class LikeComponentMemoryRepository implements LikeComponentRepository {
@@ -14,7 +14,7 @@ public class LikeComponentMemoryRepository implements LikeComponentRepository {
     private final String repositoryName;
 
     // LikeId -> LikeInfo
-    private final Map<String, String> idToInfo = new Hashtable<>();
+    private final Map<String, String> idToInfo = new ConcurrentHashMap<>();
 
     private LikeComponentMemoryRepository(String repositoryName) {
         this.repositoryName = repositoryName;

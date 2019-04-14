@@ -4,8 +4,9 @@ import com.gaufoo.bbs.components.tokenGenerator.TokenGeneratorRepository;
 import com.google.gson.Gson;
 
 import java.time.Instant;
-import java.util.Hashtable;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
 /*
 *   存放UserToken ResetToken的地方
 */
@@ -14,7 +15,7 @@ public class TokenGeneratorMemoryRepository implements TokenGeneratorRepository 
     private final String repositoryName;
 
     // Token -> Instant
-    private final Map<String, String> tokenToExpireTime = new Hashtable<>();
+    private final Map<String, String> tokenToExpireTime = new ConcurrentHashMap<>();
 
     private TokenGeneratorMemoryRepository(String repositoryName) {
         this.repositoryName = repositoryName;

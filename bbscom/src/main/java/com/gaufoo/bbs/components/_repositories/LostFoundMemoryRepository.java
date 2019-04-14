@@ -4,8 +4,8 @@ import com.gaufoo.bbs.components.lostfound.LostFoundRepository;
 import com.gaufoo.bbs.components.lostfound.common.*;
 import com.google.gson.Gson;
 
-import java.util.Hashtable;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
 
 public class LostFoundMemoryRepository implements LostFoundRepository {
@@ -13,10 +13,10 @@ public class LostFoundMemoryRepository implements LostFoundRepository {
     private final String repositoryName;
 
     // LostId -> LostInfo
-    private final Map<String, String> losts = new Hashtable<>();
+    private final Map<String, String> losts = new ConcurrentHashMap<>();
 
     // FoundId -> FoundInfo
-    private final Map<String, String> founds = new Hashtable<>();
+    private final Map<String, String> founds = new ConcurrentHashMap<>();
 
     private LostFoundMemoryRepository(String repositoryName) {
         this.repositoryName = repositoryName;
