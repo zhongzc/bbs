@@ -97,7 +97,8 @@ const after_publishLost = (func) =>
 		)
 	});
 
-const after_n_publish = (foundOrLostStr, nTimes, func) => {
+// [dependencies: signUp, publishLost | publishFound]
+const after_n_lost_or_found_publish = (foundOrLostStr, nTimes, func) => {
 	let isFound = false;
 	if (foundOrLostStr === "lost") isFound = false;
 	else if (foundOrLostStr === "found") isFound = true;
@@ -124,6 +125,31 @@ const after_n_publish = (foundOrLostStr, nTimes, func) => {
 		return chain.then(() => func(auth, pubItems, pubItemIds));
 	})
 };
+
+// [dependencies: signUp, createPosts, deletePosts]
+const after_n_post_create = (nTimes, func) => {
+	return after_signUp(auth => {
+		let chain = Promise.resolve();
+		let pubPosts = [];
+		let pubPostIds = [];
+		for (let i = 0; i < nTimes; ++i) {
+			const post = {
+				title: "title" + i,
+				content: "content" + i
+			}
+			pubPosts.push(post);
+			chain = chain.then(() => createPost(post, auth)
+				.then(result => pubPostIds.push(result.postId)));
+		}
+
+		return chain.then(() => func(auth, pubPosts, pubPostIds)).then(() => {
+			for (let i = 0; i < pubPostIds.length; ++i) {
+				deletePost(pubPostIds[i], auth);
+			}
+		});
+	});
+}
+
 //---------unit test---------
 
 let unitTests = [];
@@ -809,6 +835,70 @@ unit_test("modify found item", () =>
 	})
 );
 
+// =============================================
+const CREATE_POST = `
+	mutation CreatePost($postInfo: PostInfoInput!) {
+		createPost(postInfo: $postInfo) {
+			... on SchoolHeatError {
+				error
+			}
+			... on CreatePostSuccess{
+				postId
+			}
+		}
+	}
+`;
+
+const createPost = (postInfo, userToken) => sendGQL({
+	query: CREATE_POST,
+	variables: {
+		postInfo: postInfo,
+	},
+	auth: userToken
+});
+
+unit_test("create post", () => 
+	after_signUp(auth => {
+		const testPostInfo = {
+			title: "nice day",
+			content: "have a cup of coffee?",
+		};
+		return createPost(testPostInfo, auth).then(result => {
+			assertNonEmpty(result.postId);
+		});
+	})
+);
+
+// =============================================
+const DELETE_POST = `
+	mutation DeletePost($postId: String!) {
+		deletePost(postId: $postId) {
+			... on SchoolHeatError {
+				error
+			}
+			... on SchoolHeatSuccess {
+				ok
+			}
+		}
+	}
+`;
+
+const deletePost = (postId, userToken) => sendGQL({
+	query: DELETE_POST,
+	variables: {
+		postId: postId,
+	},
+	auth: userToken
+});
+
+unit_test("delete post", () => 
+	after_n_post_create(1, (auth, postInfos, postIds) => 
+		deletePost(postIds[0], auth).then(result => 
+			assert(result.ok)
+		)
+	)
+);
+
 // =========================================query=========================================
 
 // =============================================
@@ -987,7 +1077,7 @@ const losts = (skip, first) => sendGQL({
 });
 
 unit_test("losts", () =>
-	after_n_publish("lost", 5, (auth, pubItems, pubItemIds) =>
+	after_n_lost_or_found_publish("lost", 5, (auth, pubItems, pubItemIds) =>
 		losts(2, 2).then(listOfLosts => {
 			const names = listOfLosts.map(x => x.name);
 			const originNames = pubItems.slice(2, 4).map(x => x.itemName);
@@ -1022,9 +1112,8 @@ const founds = (skip, first) => sendGQL({
 });
 
 unit_test("losts", () =>
-	after_n_publish("found", 5, (auth, pubItems, pubItemIds) =>
+	after_n_lost_or_found_publish("found", 5, (auth, pubItems, pubItemIds) =>
 		founds(2, 2).then(listOfFounds => {
-			console.log(listOfFounds);
 			const names = listOfFounds.map(x => x.name);
 			const originNames = pubItems.slice(2, 4).map(x => x.itemName);
 			assertEq(JSON.stringify(names.sort()), JSON.stringify(originNames.sort()));
@@ -1135,6 +1224,53 @@ unit_test("lost item info", () =>
 			});
 		});
 	})
+);
+
+// =============================================
+// 注: commentTo === null时表示回复层主，非空时表示回复某个userId
+// SortedBy = {TimeAsc | TimeDes | HeatAsc | HeatDes}
+const ALL_POSTS = `
+	query AllPosts($skip: Int!, $first: Int!, $sortedBy: SortedBy) {
+		allPosts(skip: $skip, first: $first, sortedBy: $sortedBy) {
+			postId
+			title
+    		content
+    		author
+    		latestReplier
+			latestActiveTime
+			createTime
+    		heat
+    		allReplies {
+				replyId
+				content
+				author
+				allComments {
+					content
+					commentTo
+					author
+				}
+			}
+		}
+	}
+`;
+
+const allPosts = (skip, first, sortedBy) => sendGQL({
+	query: ALL_POSTS,
+	variables: {
+		skip: skip,
+		first: first,
+		sortedBy: sortedBy
+	}
+});
+
+unit_test("all posts", () => 
+	after_n_post_create(10, (auth, postInfos, postIds) =>
+		allPosts(3, 5, "TimeAsc").then(result => {
+			const resultPostIds = result.map(r => r.postId);
+			const originPostIds = postIds.slice(3, 8);
+			assertEq(JSON.stringify(resultPostIds), JSON.stringify(originPostIds));
+		})
+	)
 );
 
 // =========================================use case========================================

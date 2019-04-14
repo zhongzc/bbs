@@ -4,12 +4,11 @@ import com.coxautodev.graphql.tools.GraphQLQueryResolver;
 import com.gaufoo.bbs.application.Authentication;
 import com.gaufoo.bbs.application.LostAndFound;
 import com.gaufoo.bbs.application.PersonalInformation;
+import com.gaufoo.bbs.application.SchoolHeats;
 import com.gaufoo.bbs.gql.util.Utils;
 import graphql.schema.DataFetchingEnvironment;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import java.net.NetworkInterface;
 import java.util.List;
 
 @Component
@@ -52,5 +51,9 @@ public class Query implements GraphQLQueryResolver {
 
     LostAndFound.ItemInfoResult lostItemInfo(String lostId) {
         return LostAndFound.lostItem(lostId);
+    }
+
+    List<SchoolHeats.PostItemInfo> allPosts(int skip, int first, SchoolHeats.SortedBy sortedBy) {
+        return SchoolHeats.allPosts(skip, first, sortedBy);
     }
 }

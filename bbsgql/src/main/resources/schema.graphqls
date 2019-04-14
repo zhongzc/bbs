@@ -13,6 +13,7 @@ type Query {
     foundItemInfo(foundId: String!): ItemInfoResult!
     lostItemInfo(lostId: String!): ItemInfoResult!
 
+    allPosts(skip: Int!, first: Int!, sortedBy: SortedBy): [PostItemInfo!]!
 }
 
 type Mutation {
@@ -37,6 +38,9 @@ type Mutation {
     publishLost(itemInfo: ItemInfoInput!): PublishItemResult!
     modifyLostItem(lostId: String!, itemInfo: ItemInfoInput!): ModifyItemResult!
     modifyFoundItem(foundId: String!, itemInfo: ItemInfoInput!): ModifyItemResult!
+
+    createPost(postInfo: PostInfoInput!): CreatePostResult!
+    deletePost(postId: String!): ModifyPostResult!
 }
 
 schema {

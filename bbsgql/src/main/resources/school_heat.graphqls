@@ -1,0 +1,52 @@
+input PostInfoInput {
+    title: String!
+    content: String!
+}
+
+type CommentItemInfo {
+    content: String!
+    commentTo: String
+    author: String!
+}
+
+type ReplyItemInfo {
+    replyId: String!
+    content: String!
+    author: String!
+    allComments: [CommentItemInfo!]!
+}
+
+type PostItemInfo {
+    postId: String!
+    title: String!
+    content: String!
+    author: String!
+    latestReplier: String!
+    latestActiveTime: Long!
+    createTime: Long!
+    heat: Int!
+    allReplies: [ReplyItemInfo!]!
+}
+
+type SchoolHeatError {
+    error: String!
+}
+
+type CreatePostSuccess {
+    postId: String!
+}
+
+union CreatePostResult = SchoolHeatError | CreatePostSuccess
+
+type SchoolHeatSuccess {
+    ok: Boolean!
+}
+
+union ModifyPostResult = SchoolHeatError | SchoolHeatSuccess
+
+enum SortedBy {
+    TimeAsc
+    TimeDes
+    HeatAsc
+    HeatDes
+}

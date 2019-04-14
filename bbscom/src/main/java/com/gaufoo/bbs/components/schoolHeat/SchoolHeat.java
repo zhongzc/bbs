@@ -10,6 +10,8 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 public interface SchoolHeat {
+    // use comparators in common.PostComparators
+    // fixme: not easy to use correctly
     Stream<PostId> allPosts(Comparator<PostInfo> comparator);
 
     Optional<PostInfo> postInfo(PostId postId);

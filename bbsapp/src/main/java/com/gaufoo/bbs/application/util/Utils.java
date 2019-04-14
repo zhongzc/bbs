@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.Optional;
 
 public class Utils {
     private static Logger logger = LoggerFactory.getLogger(Utils.class);
@@ -48,5 +49,9 @@ public class Utils {
 
     public static boolean notNullOrEmpty(String str) {
         return str != null && !str.isEmpty();
+    }
+
+    public static String nilStrToEmpty(String src) {
+        return Optional.ofNullable(src).orElse("");
     }
 }

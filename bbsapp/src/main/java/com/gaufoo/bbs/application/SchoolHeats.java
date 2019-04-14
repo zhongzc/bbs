@@ -1,16 +1,25 @@
 package com.gaufoo.bbs.application;
 
+import com.gaufoo.bbs.application.util.Utils;
 import com.gaufoo.bbs.components.authenticator.common.UserToken;
 import com.gaufoo.bbs.components.authenticator.exceptions.AuthenticatorException;
+import com.gaufoo.bbs.components.reply.common.ReplyId;
+import com.gaufoo.bbs.components.reply.common.ReplyInfo;
+import com.gaufoo.bbs.components.schoolHeat.common.PostComparators;
 import com.gaufoo.bbs.components.schoolHeat.common.PostId;
 import com.gaufoo.bbs.components.schoolHeat.common.PostInfo;
 import com.gaufoo.bbs.components.user.common.UserId;
+import com.gaufoo.bbs.util.Tuple;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.Instant;
+import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static com.gaufoo.bbs.application.ComponentFactory.componentFactory;
 
@@ -104,14 +113,15 @@ public class SchoolHeats {
 
 
     public static ModifyPostResult deletePost(String userToken, String postId) {
-        logger.debug("updatePost, userToken: {}, postId: {}", userToken, postId);
+        logger.debug("deletePost, userToken: {}, postId: {}", userToken, postId);
         try {
             UserId userId = fetchUserId(userToken);
 
             PostInfo postToDel = fetchPostInfo(PostId.of(postId));
             checkPostPermission(postToDel, userId);
 
-            componentFactory.schoolHeat.removePost(PostId.of(postId));
+            removePostAndReplies(postId, postToDel);
+
             return SchoolHeatSuccess.build();
 
         } catch (AuthenticatorException | PostNonExistException e) {
@@ -120,36 +130,162 @@ public class SchoolHeats {
         }
     }
 
+    private static void removePostAndReplies(String postId, PostInfo postInfo) {
+        componentFactory.schoolHeat.removePost(PostId.of(postId));
+        postInfo.replyIdentifiers.forEach(replyIdentifier ->
+                componentFactory.reply.removeReply(ReplyId.of(replyIdentifier))
+        );
+    }
 
-    public interface CommentInfo {
+
+
+    public static List<PostItemInfo> allPosts(int skip, int first, SortedBy sortedBy) {
+        Comparator<PostInfo> comparator = null;
+        switch (sortedBy) {
+            case TimeAsc: comparator = PostComparators.comparingTime; break;
+            case TimeDes: comparator = PostComparators.comparingTimeReversed; break;
+            case HeatAsc: comparator = PostComparators.comparingHeat; break;
+            case HeatDes: comparator = PostComparators.comparingHeatReversed; break;
+        }
+        Stream<PostId> postIds = componentFactory.schoolHeat.allPosts(comparator);
+
+        return convertIdsToItemInfo(postIds)
+                .skip(skip).limit(first)
+                .collect(Collectors.toList());
+    }
+
+    private static Stream<PostItemInfo> convertIdsToItemInfo(Stream<PostId> postIdStream) {
+        return postIdStream.map(postId -> Tuple.of(postId, componentFactory.schoolHeat.postInfo(postId)))
+                .filter(idInfoTup -> idInfoTup.right.isPresent())
+                .map(idInfoTup -> Tuple.of(idInfoTup.left, idInfoTup.right.get()))
+                .map(idPostInfoTuple -> constructPostItemInfo(idPostInfoTuple.left, idPostInfoTuple.right));
+    }
+
+    private static PostItemInfo constructPostItemInfo(PostId postId, PostInfo postInfo) {
+        return new PostItemInfo() {
+            @Override
+            public String getPostId() {
+                return postId.value;
+            }
+            @Override
+            public String getTitle() {
+                return Utils.nilStrToEmpty(postInfo.title);
+            }
+            @Override
+            public String getContent() {
+                return Utils.nilStrToEmpty(postInfo.content);
+            }
+            @Override
+            public String getAuthor() {
+                return postInfo.author;
+            }
+            @Override
+            public String getLatestReplier() {
+                return Utils.nilStrToEmpty(postInfo.latestReplier);
+            }
+            @Override
+            public Long getLatestActiveTime() {
+                return postInfo.latestActiveTime.toEpochMilli();
+            }
+            @Override
+            public Long getCreateTime() {
+                return postInfo.createTime.toEpochMilli();
+            }
+            @Override
+            public Integer getHeat() {
+                return postInfo.heat;
+            }
+            @Override
+            public List<ReplyItemInfo> getAllReplies() {
+                return postInfo.replyIdentifiers.stream()
+                        .map(ReplyId::of)
+                        .map(componentFactory.reply::replyInfo)
+                        .filter(Optional::isPresent)
+                        .map(Optional::get)
+                        .map(SchoolHeats::constructReplyItemInfo)
+                        .collect(Collectors.toList());
+
+            }
+        };
+    }
+
+    private static ReplyItemInfo constructReplyItemInfo(ReplyInfo replyInfo) {
+        return new ReplyItemInfo() {
+            @Override
+            public String getReplyId() {
+                return replyInfo.subject;
+            }
+            @Override
+            public String getContent() {
+                return Utils.nilStrToEmpty(replyInfo.content);
+            }
+            @Override
+            public String getAuthor() {
+                return replyInfo.replier;
+            }
+            @Override
+            public List<CommentItemInfo> getAllComments() {
+                return replyInfo.comments.stream()
+                        .map(SchoolHeats::constructCommentItemInfo)
+                        .collect(Collectors.toList());
+            }
+        };
+    }
+
+    private static CommentItemInfo constructCommentItemInfo(ReplyInfo.Comment comment) {
+        return new CommentItemInfo() {
+            @Override
+            public String getContent() {
+                return Utils.nilStrToEmpty(comment.content);
+            }
+            @Override
+            public String getCommentTo() {
+                return comment.commentTo;
+            }
+            @Override
+            public String getAuthor() {
+                return comment.commentator;
+            }
+        };
+    }
+
+    public enum SortedBy {
+        TimeAsc,
+        TimeDes,
+        HeatAsc,
+        HeatDes,
+    }
+
+    public interface CommentItemInfo {
         String getContent();
         String getCommentTo();
         String getAuthor();
     }
 
-    public interface ReplyInfo {
+    public interface ReplyItemInfo {
+        String getReplyId();
         String getContent();
-        String getReplier();
-        List<CommentInfo> getAllComments();
+        String getAuthor();
+        List<CommentItemInfo> getAllComments();
     }
 
     public interface PostItemInfo {
+        String getPostId();
         String getTitle();
         String getContent();
         String getAuthor();
         String getLatestReplier();
+        Long getLatestActiveTime();
+        Long getCreateTime();
         Integer getHeat();
-        Integer getLatestActiveTime();
-        List<ReplyInfo> getAllReplies();
+        List<ReplyItemInfo> getAllReplies();
     }
 
     public static class PostInfoInput {
         private String title;
         private String content;
 
-        public PostInfoInput(String title, String content) {
-            this.title = title;
-            this.content = content;
+        public PostInfoInput() {
         }
 
         public void setTitle(String title) {
