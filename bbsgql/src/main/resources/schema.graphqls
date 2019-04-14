@@ -13,6 +13,7 @@ type Query {
     foundItemInfo(foundId: String!): ItemInfoResult!
     lostItemInfo(lostId: String!): ItemInfoResult!
 
+    searchResource(resourceId: String!): LearnResourceInfoResult!
 }
 
 type Mutation {
@@ -37,6 +38,8 @@ type Mutation {
     publishLost(itemInfo: ItemInfoInput!): PublishItemResult!
     modifyLostItem(lostId: String!, itemInfo: ItemInfoInput!): ModifyItemResult!
     modifyFoundItem(foundId: String!, itemInfo: ItemInfoInput!): ModifyItemResult!
+
+    publishLearnResource(resourceInfo: LearnResourceInput!): LearnResourceInfoResult!
 }
 
 schema {
