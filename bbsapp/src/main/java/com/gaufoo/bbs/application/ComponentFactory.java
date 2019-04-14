@@ -31,7 +31,7 @@ public class ComponentFactory {
     public final MajorFactory major;
     public final LostFound lostFound;
     public final FileFactory lostFoundImages;
-    public final  LikeComponent like;
+    public final LikeComponent like;
     public final LearningResource learnResource;
     public ComponentFactory(StaticResourceConfig staticRcConfig) {
         this.staticRcConfig = staticRcConfig;

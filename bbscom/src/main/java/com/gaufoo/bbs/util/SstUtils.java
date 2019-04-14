@@ -8,6 +8,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Function;
+import java.util.stream.Stream;
 
 public class SstUtils {
 
@@ -38,6 +39,23 @@ public class SstUtils {
                         .ifPresent(matchedKey -> waitFuture(kvMap.delete(matchedKey)))
                 )
         );
+    }
+
+    public static <T> Stream<T> allValuesAsc(SST kvMap, Function<String, T> shaper) {
+        return allValues(kvMap, kvMap.allKeysAsc(), shaper);
+    }
+    public static <T> Stream<T> allValuesDes(SST kvMap, Function<String, T> shaper) {
+        return allValues(kvMap, kvMap.allKeysDes(), shaper);
+    }
+
+    private static <T> Stream<T> allValues(SST kvMap, CompletionStage<Stream<String>> kvMapKeySet, Function<String, T> shaper) {
+        return waitFuture(kvMapKeySet
+                .thenApply(stringStream -> stringStream
+                        .map(key -> waitFuture(kvMap.get(key)).orElse(Optional.empty()))
+                        .filter(Optional::isPresent)
+                        .map(Optional::get)
+                        .map(shaper))
+        ).orElse(Stream.empty());
     }
 
     public static <T> Optional<T> waitFuture(CompletionStage<T> completableFuture) {
