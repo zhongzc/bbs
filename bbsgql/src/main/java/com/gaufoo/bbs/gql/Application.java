@@ -60,6 +60,8 @@ public class Application implements WebMvcConfigurer {
                 SchoolHeats.SchoolHeatError.class,
                 SchoolHeats.SchoolHeatSuccess.class,
                 SchoolHeats.CreatePostSuccess.class,
+                LearnResource.LearnResourceInfo.class,
+                LearnResource.LearnResourceInfoError.class,
         };
         SchemaParserDictionary schemaParserDictionary = new SchemaParserDictionary();
         for(Class<?> clazz: subUnionTypes) {

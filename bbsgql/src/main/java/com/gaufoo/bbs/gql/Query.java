@@ -2,6 +2,7 @@ package com.gaufoo.bbs.gql;
 
 import com.coxautodev.graphql.tools.GraphQLQueryResolver;
 import com.gaufoo.bbs.application.Authentication;
+import com.gaufoo.bbs.application.LearnResource;
 import com.gaufoo.bbs.application.LostAndFound;
 import com.gaufoo.bbs.application.PersonalInformation;
 import com.gaufoo.bbs.application.SchoolHeats;
@@ -55,5 +56,8 @@ public class Query implements GraphQLQueryResolver {
 
     List<SchoolHeats.PostItemInfo> allPosts(int skip, int first, SchoolHeats.SortedBy sortedBy) {
         return SchoolHeats.allPosts(skip, first, sortedBy);
+    }
+    LearnResource.LearnResourceInfoResult searchResource(String resourceId){
+        return LearnResource.searchResource(resourceId);
     }
 }

@@ -14,6 +14,7 @@ type Query {
     lostItemInfo(lostId: String!): ItemInfoResult!
 
     allPosts(skip: Int!, first: Int!, sortedBy: SortedBy): [PostItemInfo!]!
+    searchResource(resourceId: String!): LearnResourceInfoResult!
 }
 
 type Mutation {
@@ -41,6 +42,7 @@ type Mutation {
 
     createPost(postInfo: PostInfoInput!): CreatePostResult!
     deletePost(postId: String!): ModifyPostResult!
+    publishLearnResource(resourceInfo: LearnResourceInput!): LearnResourceInfoResult!
 }
 
 schema {

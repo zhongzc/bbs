@@ -2,6 +2,7 @@ package com.gaufoo.bbs.gql;
 
 import com.coxautodev.graphql.tools.GraphQLMutationResolver;
 import com.gaufoo.bbs.application.*;
+
 import com.gaufoo.bbs.gql.util.Utils;
 import graphql.schema.DataFetchingEnvironment;
 import org.springframework.stereotype.Component;
@@ -95,6 +96,7 @@ public class Mutation implements GraphQLMutationResolver {
     }
 
     LostAndFound.ModifyItemResult modifyLostItem(String lostId, LostAndFound.ItemInfoInput itemInfo, DataFetchingEnvironment env) {
+
         return authenticatedGuard(
                 userToken -> LostAndFound.modifyLostItem(userToken, lostId, itemInfo),
                 LostAndFound.LostFoundError::of, env);
@@ -116,6 +118,11 @@ public class Mutation implements GraphQLMutationResolver {
         return authenticatedGuard(
                 userToken -> SchoolHeats.deletePost(userToken, postId),
                 SchoolHeats.SchoolHeatError::of, env);
+    }
+    LearnResource.LearnResourceInfoResult publishLearnResource(LearnResource.LearnResourceInput resourceInfo,DataFetchingEnvironment env){
+        return authenticatedGuard(
+                userToken->LearnResource.publishLearnResource(userToken,resourceInfo),
+                LearnResource.LearnResourceInfoError::of,env);
     }
 
     private static <E> E authenticatedGuard(Function<String, E> transformer, Function<String, E> errorConstructor,

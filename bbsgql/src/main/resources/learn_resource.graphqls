@@ -1,0 +1,21 @@
+type LearnResourceInfoError {
+    error: String!
+}
+
+type LearnResourceInfo{
+        sharer: String!
+        majorCode: String!
+        content: String!
+        attachedFileIdentifier: String!
+        creationTime: Long!
+}
+
+union LearnResourceInfoResult=LearnResourceInfo|LearnResourceInfoError
+
+input LearnResourceInput{
+    sharer: String!
+    majorCode: String!
+    content: String!
+    attachedFileIdentifier: String!
+    time: Long!
+}
