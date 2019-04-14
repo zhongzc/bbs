@@ -26,13 +26,13 @@ public class AuthenticatorSstRepository implements AuthenticatorRepository {
 
     private AuthenticatorSstRepository(String repositoryName, Path storingDir) {
         this.repositoryName = repositoryName;
-        String unamePwdPms = "username-password_permission";
+        String unamePwdPms = repositoryName + "username-password_permission";
         this.usernameToPasswordAndPermission = SST.of(unamePwdPms, storingDir.resolve(unamePwdPms));
 
-        String tknPms = "token-permission";
+        String tknPms = repositoryName + "token-permission";
         this.tokenToPermission = SST.of(tknPms, storingDir.resolve(tknPms));
 
-        String rstTknUname = "resetToken-username";
+        String rstTknUname = repositoryName + "resetToken-username";
         this.resetTokenToUsername = SST.of(rstTknUname, storingDir.resolve(rstTknUname));
 
     }

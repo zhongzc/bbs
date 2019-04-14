@@ -17,9 +17,7 @@ public class LikeComponentSstRepository implements LikeComponentRepository {
 
     private LikeComponentSstRepository(String repositoryName, Path storingDir) {
         this.repositoryName = repositoryName;
-
-        String idInfo = "likeId-info";
-        idToInfo = SST.of(idInfo, storingDir.resolve(idInfo));
+        idToInfo = SST.of(repositoryName, storingDir.resolve(repositoryName));
     }
 
 

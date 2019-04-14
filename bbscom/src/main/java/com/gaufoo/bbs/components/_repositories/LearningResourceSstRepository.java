@@ -19,9 +19,7 @@ public class LearningResourceSstRepository implements LearningResourceRepository
 
     private LearningResourceSstRepository(String repositoryName, Path storingPath) {
         this.repositoryName = repositoryName;
-
-        String idInfo = "resourceId-info";
-        this.idToInfo = SST.of(idInfo, storingPath.resolve(idInfo));
+        this.idToInfo = SST.of(repositoryName, storingPath.resolve(repositoryName));
     }
 
     @Override

@@ -22,10 +22,10 @@ public class LostFoundSstRepository implements LostFoundRepository {
     private LostFoundSstRepository(String repositoryName, Path storingDir) {
         this.repositoryName = repositoryName;
 
-        String lstIdInfo = "lostId-Info";
+        String lstIdInfo = repositoryName + "lostId-Info";
         losts = SST.of(lstIdInfo, storingDir.resolve(lstIdInfo));
 
-        String fndIdInfo = "foundId-Info";
+        String fndIdInfo = repositoryName + "foundId-Info";
         founds = SST.of(fndIdInfo, storingDir.resolve(fndIdInfo));
     }
 

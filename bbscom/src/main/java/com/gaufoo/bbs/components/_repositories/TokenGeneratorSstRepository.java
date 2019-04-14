@@ -16,9 +16,7 @@ public class TokenGeneratorSstRepository implements TokenGeneratorRepository {
 
     private TokenGeneratorSstRepository(String repositoryName, Path storingDir) {
         this.repositoryName = repositoryName;
-
-        String tknTime = "token-time";
-        tknToTime = SST.of(tknTime, storingDir.resolve(tknTime));
+        tknToTime = SST.of(repositoryName, storingDir.resolve(repositoryName));
     }
 
 

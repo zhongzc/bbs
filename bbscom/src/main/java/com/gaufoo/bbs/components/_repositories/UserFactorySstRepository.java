@@ -17,9 +17,7 @@ public class UserFactorySstRepository implements UserFactoryRepository {
 
     private UserFactorySstRepository(String repositoryName, Path storingDir) {
         this.repositoryName = repositoryName;
-
-        String idInfo = "userId-info";
-        idToInfo = SST.of(idInfo, storingDir.resolve(idInfo));
+        idToInfo = SST.of(repositoryName, storingDir.resolve(repositoryName));
     }
 
     @Override

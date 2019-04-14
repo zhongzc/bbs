@@ -22,13 +22,13 @@ public class HeatSstRepository implements HeatRepository {
     private HeatSstRepository(String repositoryName, Path storingPath) {
         this.repositoryName = repositoryName;
 
-        String postIdToIdByTime = "time-id";
+        String postIdToIdByTime = repositoryName + "time-id";
         idByTime = SST.of(postIdToIdByTime, storingPath.resolve(postIdToIdByTime));
 
-        String postIdToIdByHeat = "heat-id";
+        String postIdToIdByHeat = repositoryName + "heat-id";
         idByHeat = SST.of(postIdToIdByHeat, storingPath.resolve(postIdToIdByHeat));
 
-        String postIdToInfo = "postId-info";
+        String postIdToInfo = repositoryName + "postId-info";
         idToInfo = SST.of(postIdToInfo, storingPath.resolve(postIdToInfo));
     }
 
