@@ -11,6 +11,8 @@ import com.gaufoo.bbs.components.idGenerator.IdGenerator;
 import com.gaufoo.bbs.components.learningResource.LearningResource;
 import com.gaufoo.bbs.components.like.LikeComponent;
 import com.gaufoo.bbs.components.lostfound.LostFound;
+import com.gaufoo.bbs.components.reply.Reply;
+import com.gaufoo.bbs.components.schoolHeat.SchoolHeat;
 import com.gaufoo.bbs.components.scutMajor.MajorFactory;
 import com.gaufoo.bbs.components.tokenGenerator.TokenGenerator;
 import com.gaufoo.bbs.components.user.UserFactory;
@@ -33,6 +35,9 @@ public class ComponentFactory {
     public final FileFactory lostFoundImages;
     public final LikeComponent like;
     public final LearningResource learnResource;
+    public final SchoolHeat schoolHeat;
+    public final Reply reply;
+
     public ComponentFactory(StaticResourceConfig staticRcConfig) {
         this.staticRcConfig = staticRcConfig;
         SSTPathConfig sstPathConfig = SSTPathConfig.defau1t();
@@ -68,8 +73,7 @@ public class ComponentFactory {
                 LostFoundSstRepository.get("lstFndMryRep", sstPathConfig.lostFound()),
                 IdGenerator.seqInteger("lstId"), IdGenerator.seqInteger("fndId"));
 
-        lostFoundImages =
-                FileFactory.defau1t("lostFoundImages",
+        lostFoundImages = FileFactory.defau1t("lostFoundImages",
                         FileFactoryFileSystemRepository.get("lostFileMryRep",
                                 lostFoundFolder), IdGenerator.seqInteger("lostImgId"));
 
@@ -77,13 +81,28 @@ public class ComponentFactory {
                 LikeComponentSstRepository.get("likeMryRep", sstPathConfig.like()),
                 IdGenerator.seqInteger("likeId"));
 
-        learnResource= LearningResource.defau1t("learnResource",
+        learnResource = LearningResource.defau1t("learnResource",
                 LearningResourceSstRepository.get("learnResMryRep", sstPathConfig.learnResource()),
                 IdGenerator.seqInteger("resourceId"));
+
+        schoolHeat = SchoolHeat.defau1t("schoolHeat",
+                HeatSstRepository.get("schoolHeatRep", sstPathConfig.schoolHeat()),
+                IdGenerator.seqInteger("postId"));
+
+        reply = Reply.defau1t("reply",
+                IdGenerator.seqInteger("replyId"),
+                ReplyMemoryRepository.get("rplyMryRep"));
     }
 
     public void shutdown() {
+        user.shutdown();
         authenticator.shutdown();
+        userProfiles.shutdown();
+        lostFound.shutdown();
+        lostFoundImages.shutdown();
+        like.shutdown();
+        learnResource.shutdown();
+        schoolHeat.shutdown();
     }
 
     private void clearFolders(List<Path> paths) {

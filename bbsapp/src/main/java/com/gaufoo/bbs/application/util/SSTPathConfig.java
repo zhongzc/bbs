@@ -13,8 +13,9 @@ public class SSTPathConfig {
     private final String lostFound;
     private final String like;
     private final String learnResource;
+    private final String schoolHeat;
 
-    private SSTPathConfig(Path baseDir, String authenticator, String authenticatorTokenGenerator, String userFactory, String lostFound, String like, String learnResource) {
+    private SSTPathConfig(Path baseDir, String authenticator, String authenticatorTokenGenerator, String userFactory, String lostFound, String like, String learnResource, String schoolHeat) {
         this.baseDir = baseDir;
         this.authenticator = authenticator;
         this.authenticatorTokenGenerator = authenticatorTokenGenerator;
@@ -22,6 +23,7 @@ public class SSTPathConfig {
         this.lostFound = lostFound;
         this.like = like;
         this.learnResource = learnResource;
+        this.schoolHeat = schoolHeat;
     }
 
     public Path auth() {
@@ -48,6 +50,10 @@ public class SSTPathConfig {
         return baseDir.resolve(learnResource);
     }
 
+    public Path schoolHeat() {
+        return baseDir.resolve(schoolHeat);
+    }
+
     public List<Path> allSSTPaths() {
         Path[] paths = new Path[]{
                 auth(),
@@ -55,7 +61,8 @@ public class SSTPathConfig {
                 userFactory(),
                 lostFound(),
                 like(),
-                learnResource()
+                learnResource(),
+                schoolHeat(),
         };
         return Arrays.asList(paths);
     }
@@ -70,6 +77,7 @@ public class SSTPathConfig {
                 "userFactory",
                 "lostFound",
                 "like",
-                "learnResource");
+                "learnResource",
+                "schoolHeat");
     }
 }

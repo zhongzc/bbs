@@ -1,5 +1,6 @@
 package com.gaufoo.bbs.components.schoolHeat;
 
+import com.gaufoo.bbs.components.idGenerator.IdGenerator;
 import com.gaufoo.bbs.components.schoolHeat.common.PostId;
 import com.gaufoo.bbs.components.schoolHeat.common.PostInfo;
 
@@ -42,4 +43,8 @@ public interface SchoolHeat {
     void shutdown();
 
     String getName();
+
+    static SchoolHeat defau1t(String componentName, HeatRepository heatRepository, IdGenerator idGenerator) {
+        return SchoolHeatImpl.get(componentName, heatRepository, idGenerator);
+    }
 }
