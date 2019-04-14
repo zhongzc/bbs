@@ -1,19 +1,18 @@
 package com.gaufoo.bbs.components.idGenerator;
 
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class SeqInteger implements IdGenerator {
     private final String componentName;
+    private final IdRepository repository;
     private final AtomicInteger seq;
 
-    SeqInteger(String componentName) {
+    SeqInteger(String componentName, IdRepository repository) {
         this.componentName = componentName;
-        this.seq = new AtomicInteger();
-    }
-
-    SeqInteger(String componentName, int from) {
-        this.componentName = componentName;
-        this.seq = new AtomicInteger(from);
+        this.repository = repository;
+        this.seq = Optional.ofNullable(repository.getLastId(componentName))
+                .map(AtomicInteger::new).orElse(new AtomicInteger());
     }
 
     @Override
@@ -24,7 +23,7 @@ public class SeqInteger implements IdGenerator {
 
     @Override
     public void shutdown() {
-
+        repository.saveLastId(componentName, seq.get());
     }
 
     @Override

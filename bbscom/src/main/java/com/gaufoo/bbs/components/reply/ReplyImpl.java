@@ -2,6 +2,7 @@ package com.gaufoo.bbs.components.reply;
 
 import com.gaufoo.bbs.components._repositories.ReplyMemoryRepository;
 import com.gaufoo.bbs.components.idGenerator.IdGenerator;
+import com.gaufoo.bbs.components.idGenerator.IdRepository;
 import com.gaufoo.bbs.components.reply.common.ReplyId;
 import com.gaufoo.bbs.components.reply.common.ReplyInfo;
 
@@ -53,7 +54,7 @@ public class ReplyImpl implements Reply {
     }
 
     public static void main(String[] args) {
-        IdGenerator idGenerator = IdGenerator.seqInteger("");
+        IdGenerator idGenerator = IdGenerator.seqInteger("", IdRepository.fakeIdRepository());
         ReplyRepository repository = ReplyMemoryRepository.get("");
         Reply reply = Reply.defau1t("", idGenerator, repository);
         ReplyId id = reply.reply(ReplyInfo.of("subj1", "hello", "user1")).get();

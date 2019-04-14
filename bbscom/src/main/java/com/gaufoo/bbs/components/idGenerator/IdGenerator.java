@@ -7,7 +7,11 @@ public interface IdGenerator {
 
     String getName();
 
+    static IdGenerator seqInteger(String componentName, IdRepository idRepository) {
+        return new SeqInteger(componentName, idRepository);
+    }
+
     static IdGenerator seqInteger(String componentName) {
-        return new SeqInteger(componentName);
+        return new SeqInteger(componentName, IdRepository.fakeIdRepository());
     }
 }
