@@ -1,6 +1,6 @@
 package com.gaufoo.bbs.application;
 
-import com.gaufoo.bbs.application.util.StaticResourceConfig;
+import com.gaufoo.bbs.application.util.StaticResourceConfig.FileType;
 import com.gaufoo.bbs.application.util.Utils;
 import com.gaufoo.bbs.components.authenticator.common.UserToken;
 import com.gaufoo.bbs.components.authenticator.exceptions.AuthenticatorException;
@@ -13,7 +13,6 @@ import com.gaufoo.bbs.components.user.UserFactory;
 import com.gaufoo.bbs.components.user.common.UserId;
 import com.gaufoo.bbs.components.user.common.UserInfo;
 import com.gaufoo.bbs.components.user.common.UserInfo.Gender;
-import com.gaufoo.bbs.application.util.StaticResourceConfig.FileType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,16 +29,21 @@ public class PersonalInformation {
 
     public static PersonalInfoResult userInfo(String userId) {
         logger.debug("userInfo, userId: {}", userId);
+
         return componentFactory.user.userInfo(UserId.of(userId))
-                .map(PersonalInformation::constructUserInfo)
+                .map(userInfo -> constructUserInfo(UserId.of(userId), userInfo))
                 .orElseGet(() -> {
                     logger.debug("userInfo - failed, error: {}, userId: {}", "找不到用户", userId);
                     return PersonalInfoError.of("找不到用户");
                 });
     }
 
-    private static PersonalInfoResult constructUserInfo(UserInfo info) {
+    private static PersonalInfoResult constructUserInfo(UserId userId, UserInfo info) {
         return new PersonalInfo() {
+            @Override
+            public String getUserId() {
+                return userId.value;
+            }
             @Override
             public String getPictureUrl() {
                 logger.debug("userInfo :: getPictureUrl, nickname: {}", info.nickname);
@@ -280,6 +284,7 @@ public class PersonalInformation {
     }
 
     public interface PersonalInfo extends PersonalInfoResult {
+        String getUserId();
         String getPictureUrl();
         String getUsername();
         String getGender();

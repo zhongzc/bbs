@@ -142,11 +142,7 @@ const after_n_post_create = (nTimes, func) => {
 				.then(result => pubPostIds.push(result.postId)));
 		}
 
-		return chain.then(() => func(auth, pubPosts, pubPostIds)).then(() => {
-			for (let i = 0; i < pubPostIds.length; ++i) {
-				deletePost(pubPostIds[i], auth);
-			}
-		});
+		return chain.then(() => func(auth, pubPosts, pubPostIds));
 	});
 }
 
@@ -192,13 +188,34 @@ const fire_tests = async (kind, tests) => {
 				passTestCounter++;
 				return console.log("SUCCESS # " + kind + ": " + f.name)
 			})
-			.then(() => new Promise(resolve => setTimeout(resolve, 20)))  // visual enjoyment
+			.then(() => new Promise(resolve => setTimeout(resolve, 10)))  // visual enjoyment
+			.then(() => cleanUpRoutine())
+			.then(() => new Promise(resolve => setTimeout(resolve, 10)))
 			.catch(error => {
 				console.error("=== (" + f.name + ") " + kind + " FAILED ===");
 				console.error(error);
 			});
 	}
 	console.log(kind + " pass/run: " + passTestCounter + "/" + testsToRun.length);
+}
+
+const cleanUpRoutine = () => {
+	const resetLostFound = `
+		mutation {
+			resetLostFound
+		}
+	`;
+	sendGQL({
+		query: resetLostFound,
+	})
+	const resetPost = `
+		mutation {
+			resetPost
+		}
+	`;
+	sendGQL({
+		query: resetPost,
+	})
 }
 
 // ---------assertions---------
@@ -938,6 +955,7 @@ const USER_INFO = `
 				error
 			}
 			... on PersonalInfo {
+				userId
 				pictureUrl
 				username
 				gender
@@ -963,6 +981,7 @@ unit_test("userInfo", () =>
 		userInfo(userId).then(result => {
 			assertEq(result.error, undefined);
 			const expected = {
+				userId: userId,
 				pictureUrl: "",
 				username: nickname,
 				gender: "secret",
@@ -1082,7 +1101,6 @@ unit_test("losts", () =>
 			const names = listOfLosts.map(x => x.name);
 			const originNames = pubItems.slice(2, 4).map(x => x.itemName);
 			assertEq(JSON.stringify(names.sort()), JSON.stringify(originNames.sort()));
-			fail("return data is unordered");
 		})
 	)
 );
@@ -1111,13 +1129,12 @@ const founds = (skip, first) => sendGQL({
 	}
 });
 
-unit_test("losts", () =>
+unit_test("founds", () =>
 	after_n_lost_or_found_publish("found", 5, (auth, pubItems, pubItemIds) =>
 		founds(2, 2).then(listOfFounds => {
 			const names = listOfFounds.map(x => x.name);
 			const originNames = pubItems.slice(2, 4).map(x => x.itemName);
 			assertEq(JSON.stringify(names.sort()), JSON.stringify(originNames.sort()));
-			fail("return data is unordered");
 		})
 	)
 );

@@ -19,6 +19,8 @@ type Query {
 
 type Mutation {
     test(testStr: String!): String!
+    resetLostFound: Boolean!
+    resetPost: Boolean!
 
     signUp(username: String!, password: String!, nickname: String!): SignUpResult!
     logIn(username: String!, password: String!): LogInResult!

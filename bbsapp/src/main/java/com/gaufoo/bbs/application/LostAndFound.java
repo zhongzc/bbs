@@ -392,6 +392,22 @@ public class LostAndFound {
                 .collect(Collectors.toList());
     }
 
+    public static void reset() {
+        logger.debug("reset");
+        componentFactory.lostFound.allFounds().forEach(foundId -> {
+            FoundInfo info = componentFactory.lostFound.foundInfo(foundId).orElse(null);
+            componentFactory.lostFound.removeFound(foundId);
+            if (info == null) return;
+            componentFactory.lostFoundImages.Remove(FileId.of(info.imageIdentifier));
+        });
+        componentFactory.lostFound.allLosts().forEach(lostId -> {
+            LostInfo info = componentFactory.lostFound.lostInfo(lostId).orElse(null);
+            componentFactory.lostFound.removeLost(lostId);
+            if (info == null) return;
+            componentFactory.lostFoundImages.Remove(FileId.of(info.imageIdentifier));
+        });
+    }
+
     public static class ItemInfoInput {
         String itemName;
         String description;

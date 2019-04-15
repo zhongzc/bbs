@@ -138,7 +138,12 @@ public class SchoolHeats {
     }
 
 
-
+    public enum SortedBy {
+        TimeAsc,
+        TimeDes,
+        HeatAsc,
+        HeatDes,
+    }
     public static List<PostItemInfo> allPosts(int skip, int first, SortedBy sortedBy) {
         Comparator<PostInfo> comparator = null;
         switch (sortedBy) {
@@ -249,11 +254,17 @@ public class SchoolHeats {
         };
     }
 
-    public enum SortedBy {
-        TimeAsc,
-        TimeDes,
-        HeatAsc,
-        HeatDes,
+    public static void reset() {
+        componentFactory.schoolHeat.allPosts(PostComparators.comparingTime).forEach(postId -> {
+            PostInfo postInfo = componentFactory.schoolHeat.postInfo(postId).orElse(null);
+            componentFactory.schoolHeat.removePost(postId);
+
+            if (postInfo == null) return;
+            postInfo.replyIdentifiers.forEach(replyId -> {
+                componentFactory.reply.removeReply(ReplyId.of(replyId));
+            });
+        });
+
     }
 
     public interface CommentItemInfo {

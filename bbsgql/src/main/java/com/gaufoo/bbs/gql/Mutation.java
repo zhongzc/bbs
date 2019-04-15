@@ -2,7 +2,6 @@ package com.gaufoo.bbs.gql;
 
 import com.coxautodev.graphql.tools.GraphQLMutationResolver;
 import com.gaufoo.bbs.application.*;
-
 import com.gaufoo.bbs.gql.util.Utils;
 import graphql.schema.DataFetchingEnvironment;
 import org.springframework.stereotype.Component;
@@ -15,6 +14,16 @@ public class Mutation implements GraphQLMutationResolver {
     String test(String testStr, DataFetchingEnvironment env) {
         return testStr;
     }
+    Boolean resetLostFound() {
+        LostAndFound.reset();
+        return true;
+    }
+
+    Boolean resetPost() {
+        SchoolHeats.reset();
+        return true;
+    }
+
 
     Authentication.SignUpResult signUp(String username, String password, String nickname, DataFetchingEnvironment env) {
         return Authentication.signUp(username, password, nickname);
@@ -119,11 +128,14 @@ public class Mutation implements GraphQLMutationResolver {
                 userToken -> SchoolHeats.deletePost(userToken, postId),
                 SchoolHeats.SchoolHeatError::of, env);
     }
+
     LearnResource.LearnResourceInfoResult publishLearnResource(LearnResource.LearnResourceInput resourceInfo,DataFetchingEnvironment env){
         return authenticatedGuard(
                 userToken->LearnResource.publishLearnResource(userToken,resourceInfo),
                 LearnResource.LearnResourceInfoError::of,env);
     }
+
+
 
     private static <E> E authenticatedGuard(Function<String, E> transformer, Function<String, E> errorConstructor,
                                             DataFetchingEnvironment env) {

@@ -3,6 +3,7 @@ type PersonalInfoError {
 }
 
 type PersonalInfo {
+    userId: String!
     pictureUrl: String!
     username: String!
     gender: String!
