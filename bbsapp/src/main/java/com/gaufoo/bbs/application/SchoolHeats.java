@@ -261,6 +261,21 @@ public class SchoolHeats {
     }
 
 
+
+    public static PostInfoResult postInfo(String postIdStr) {
+        logger.debug("allPost, postId: {}", postIdStr);
+        try {
+            PostId postId = PostId.of(postIdStr);
+            PostInfo postInfo = fetchPostInfo(postId);
+            return PostInfoSuccess.of(constructPostItemInfo(postId, postInfo));
+        } catch (PostNonExistException e) {
+            logger.debug("allPost - failed, error: {}, postId: {}", e.getMessage(), postIdStr);
+            return SchoolHeatError.of(e.getMessage());
+        }
+    }
+
+
+
     private interface UndoFunction {
         void undo();
     }
@@ -436,7 +451,7 @@ public class SchoolHeats {
     }
 
     public static class SchoolHeatError implements CreatePostResult, ModifyPostResult,
-            CreateReplyResult, CreateCommentResult {
+            CreateReplyResult, CreateCommentResult, PostInfoResult {
         private String error;
 
         public SchoolHeatError(String error) {
@@ -450,6 +465,25 @@ public class SchoolHeats {
         public String getError() {
             return error;
         }
+    }
+
+    public static class PostInfoSuccess implements PostInfoResult {
+        private PostItemInfo postInfo;
+
+        public PostInfoSuccess(PostItemInfo postInfo) {
+            this.postInfo = postInfo;
+        }
+
+        public static PostInfoSuccess of(PostItemInfo postInfo) {
+            return new PostInfoSuccess(postInfo);
+        }
+
+        public PostItemInfo getPostInfo() {
+            return postInfo;
+        }
+    }
+
+    public interface PostInfoResult {
     }
 
     public static class CreatePostSuccess implements CreatePostResult {

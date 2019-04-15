@@ -13,8 +13,8 @@ type Query {
     foundItemInfo(foundId: String!): ItemInfoResult!
     lostItemInfo(lostId: String!): ItemInfoResult!
 
-    allPosts(skip: Int!, first: Int!, sortedBy: SortedBy): [PostItemInfo!]!
-
+    allPosts(skip: Int!, first: Int!, sortedBy: SortedBy!): [PostItemInfo!]!
+    postInfo(postId: String!): PostItemResult!
 
     searchResource(resourceId: String!): LearnResourceInfoResult!
 }

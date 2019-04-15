@@ -103,15 +103,20 @@ public class ComponentFactory {
 
     public void shutdown() {
         ExecutorService executor = Executors.newCachedThreadPool();
-        executor.execute(user::shutdown);
-        executor.execute(authenticator::shutdown);
-        executor.execute(userProfiles::shutdown);
-        executor.execute(lostFound::shutdown);
-        executor.execute(lostFoundImages::shutdown);
-        executor.execute(like::shutdown);
-        executor.execute(learnResource::shutdown);
-        executor.execute(schoolHeat::shutdown);
-        executor.execute(idRepository::shutdown);
+        Runnable[] shutdowns = {
+                user::shutdown,
+                authenticator::shutdown,
+                userProfiles::shutdown,
+                lostFound::shutdown,
+                lostFoundImages::shutdown,
+                like::shutdown,
+                learnResource::shutdown,
+                schoolHeat::shutdown,
+                idRepository::shutdown,
+        };
+        for (Runnable s : shutdowns) {
+            executor.execute(s);
+        }
         executor.shutdown();
         try {
             executor.awaitTermination(Integer.MAX_VALUE, TimeUnit.MINUTES);

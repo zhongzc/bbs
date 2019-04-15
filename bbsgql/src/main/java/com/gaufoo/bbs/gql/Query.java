@@ -57,6 +57,11 @@ public class Query implements GraphQLQueryResolver {
     List<SchoolHeats.PostItemInfo> allPosts(int skip, int first, SchoolHeats.SortedBy sortedBy) {
         return SchoolHeats.allPosts(skip, first, sortedBy);
     }
+
+    SchoolHeats.PostInfoResult postInfo(String postId) {
+        return SchoolHeats.postInfo(postId);
+    }
+
     LearnResource.LearnResourceInfoResult searchResource(String resourceId){
         return LearnResource.searchResource(resourceId);
     }

@@ -426,7 +426,9 @@ const UPLOAD_USER_PROFILE = `
 	mutation UploadUserProfile($base64Image: String!) {
 		uploadUserProfile(base64Image: $base64Image) {
 			... on ModifyPersonInfoSuccess {
-				ok
+				personalInfo {
+					userId
+				}
 			}
 			... on ModifyPersonInfoError {
 				error
@@ -471,7 +473,7 @@ unit_test("upload user profile", () =>
 	after_signUp(auth => {
 		const base64Image = getBase64Image(document.getElementById("test-img"));
 		return uploadUserProfile(base64Image, auth).then(result => {
-			assert(result.ok);
+			assertNonEmpty(result.personalInfo.userId);
 		});
 	})
 );
@@ -482,7 +484,9 @@ const CHANGE_GENDER = `
 	mutation ChangeGender($gender: String!) {
 		changeGender(gender: $gender) {
 			... on ModifyPersonInfoSuccess {
-				ok
+				personalInfo {
+					userId
+				}
 			}
 			... on ModifyPersonInfoError {
 				error
@@ -511,7 +515,7 @@ unit_test("change gender - invalid gender", () =>
 unit_test("change gender - valid gender", () =>
 	after_signUp(auth => {
 		changeGender("male", auth).then(result => {
-			assert(result.ok);
+			assertNonEmpty(result.personalInfo.userId);
 		})
 	})
 );
@@ -521,7 +525,9 @@ const CHANGE_GRADE = `
 	mutation ChangeGrade($grade: String!) {
 		changeGrade(grade: $grade) {
 			... on ModifyPersonInfoSuccess {
-				ok
+				personalInfo {
+					userId
+				}
 			}
 			... on ModifyPersonInfoError {
 				error
@@ -543,7 +549,7 @@ const changeGrade = (grade, userToken) => {
 unit_test("change grade", () =>
 	after_signUp(auth => {
 		changeGrade("2017级", auth).then(result => {
-			assert(result.ok);
+			assert(result.personalInfo.userId);
 		})
 	})
 );
@@ -553,7 +559,9 @@ const CHANGE_INTRODUCTION = `
 	mutation ChangeIntroduction($introduction: String!) {
 		changeIntroduction(introduction: $introduction) {
 			... on ModifyPersonInfoSuccess {
-				ok
+				personalInfo {
+					userId
+				}
 			}
 			... on ModifyPersonInfoError {
 				error
@@ -575,7 +583,7 @@ const changeIntroduction = (introduction, userToken) => {
 unit_test("change introduction", () =>
 	after_signUp(auth => {
 		changeIntroduction("个人介绍", auth).then(result => {
-			assert(result.ok);
+			assertNonEmpty(result.personalInfo.userId);
 		})
 	})
 );
@@ -585,7 +593,9 @@ const CHANGE_NICKNAME = `
 	mutation ChangeNickname($nickname: String!) {
 		changeNickname(nickname: $nickname) {
 			... on ModifyPersonInfoSuccess {
-				ok
+				personalInfo {
+					userId
+				}
 			}
 			... on ModifyPersonInfoError {
 				error
@@ -607,7 +617,7 @@ const changeNickname = (nickname, userToken) => {
 unit_test("change nickname", () =>
 	after_signUp(auth => {
 		changeNickname("昵称", auth).then(result => {
-			assert(result.ok);
+			assertNonEmpty(result.personalInfo.userId);
 		})
 	})
 );
@@ -617,7 +627,9 @@ const CHANGE_ACADEMY = `
 	mutation ChangeAcademy($academy: String!) {
 		changeAcademy(academy: $academy) {
 			... on ModifyPersonInfoSuccess {
-				ok
+				personalInfo {
+					userId
+				}
 			}
 			... on ModifyPersonInfoError {
 				error
@@ -646,7 +658,7 @@ unit_test("change academy - invalid academy", () =>
 unit_test("change academy - valid academy", () =>
 	after_signUp(auth => {
 		changeAcademy("计算机科学与工程学院", auth).then(result => {
-			assert(result.ok);
+			assertNonEmpty(result.personalInfo.userId);
 		})
 	})
 );
@@ -656,7 +668,9 @@ const CHANGE_MAJOR = `
 	mutation ChangeMajor($major: String!) {
 		changeMajor(major: $major) {
 			... on ModifyPersonInfoSuccess {
-				ok
+				personalInfo {
+					userId
+				}
 			}
 			... on ModifyPersonInfoError {
 				error
@@ -685,7 +699,7 @@ unit_test("change major - invalid major", () =>
 unit_test("change major - valid major", () =>
 	after_signUp(auth => {
 		changeMajor("网络工程", auth).then(result => {
-			assert(result.ok);
+			assertNonEmpty(result.personalInfo.userId);
 		})
 	})
 );
@@ -1352,7 +1366,7 @@ unit_test("lost item info", () =>
 // 注: commentTo === null时表示回复层主，非空时表示回复某个userId
 // SortedBy = {TimeAsc | TimeDes | HeatAsc | HeatDes}
 const ALL_POSTS = `
-	query AllPosts($skip: Int!, $first: Int!, $sortedBy: SortedBy) {
+	query AllPosts($skip: Int!, $first: Int!, $sortedBy: SortedBy!) {
 		allPosts(skip: $skip, first: $first, sortedBy: $sortedBy) {
 			postId
 			title
@@ -1401,6 +1415,42 @@ unit_test("all posts", () =>
 			const resultPostIds = result.map(r => r.postId);
 			const originPostIds = postIds;
 			assertEq(JSON.stringify(resultPostIds), JSON.stringify(originPostIds));
+		})
+	)
+);
+
+// =============================================
+const POST_INFO = `
+	query PostInfo($postId: String!) {
+		postInfo(postId: $postId) {
+			... on SchoolHeatError {
+				error
+			}
+			... on PostInfoSuccess {
+				postInfo {
+					postId
+					title
+					content
+				}
+			}
+		}
+	}
+`;
+
+const postInfo = (postId) => sendGQL({
+	query: POST_INFO,
+	variables: {
+		postId: postId
+	}
+});
+
+unit_test("post info", () => 
+	after_n_post_create(1, (auth, postInfos, postIds) => 
+		postInfo(postIds[0]).then(result => {
+			const originPostInfo = postInfos[0];
+			assertEq(result.postInfo.postId, postIds[0]);
+			assertEq(result.postInfo.title, originPostInfo.title);
+			assertEq(result.postInfo.content, originPostInfo.content);
 		})
 	)
 );
