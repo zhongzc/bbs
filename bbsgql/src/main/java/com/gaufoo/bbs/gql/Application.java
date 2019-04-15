@@ -4,6 +4,7 @@ import com.coxautodev.graphql.tools.SchemaParserDictionary;
 import com.gaufoo.bbs.application.*;
 import com.gaufoo.bbs.application.util.StaticResourceConfig;
 import com.gaufoo.bbs.application.util.StaticResourceConfig.FileType;
+import com.gaufoo.bbs.components.schoolHeat.SchoolHeat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -59,8 +60,9 @@ public class Application implements WebMvcConfigurer {
                 LostAndFound.ModifyItemSuccess.class,
                 LostAndFound.FoundItemInfo.class,
                 LostAndFound.LostItemInfo.class,
-                LostAndFound.AllLostSuccess.class,
-                LostAndFound.AllFoundSuccess.class,
+                SchoolHeats.PostItemInfo.class,
+                SchoolHeats.ReplyItemInfo.class,
+                SchoolHeats.CommentItemInfo.class,
                 SchoolHeats.SchoolHeatError.class,
                 LearnResource.LearnResourceInfo.class,
                 LearnResource.LearnResourceInfoError.class,

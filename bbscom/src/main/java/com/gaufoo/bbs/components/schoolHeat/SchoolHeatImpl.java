@@ -7,17 +7,20 @@ import com.gaufoo.bbs.components.schoolHeat.common.PostInfo;
 
 import java.util.Comparator;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Stream;
 
 public class SchoolHeatImpl implements SchoolHeat {
     private final String componentName;
     private final SchoolHeatRepository repository;
     private final IdGenerator idGenerator;
+    private final AtomicLong count;
 
     private SchoolHeatImpl(String componentName, SchoolHeatRepository repository, IdGenerator idGenerator) {
         this.componentName = componentName;
         this.repository = repository;
         this.idGenerator = idGenerator;
+        this.count = new AtomicLong(repository.getAllPosts().count());
     }
 
     @Override
@@ -37,14 +40,17 @@ public class SchoolHeatImpl implements SchoolHeat {
     @Override
     public Optional<PostId> publishPost(PostInfo postInfo) {
         PostId newPostId = PostId.of(idGenerator.generateId());
-
-        return repository.savePostInfo(newPostId, postInfo) ?
-                Optional.of(newPostId) :
-                Optional.empty();
+        if (repository.savePostInfo(newPostId, postInfo)) {
+            count.incrementAndGet();
+            return Optional.of(newPostId);
+        } else {
+            return Optional.empty();
+        }
     }
 
     @Override
     public void removePost(PostId postId) {
+        count.decrementAndGet();
         repository.deletePostInfo(postId);
     }
 
@@ -60,6 +66,11 @@ public class SchoolHeatImpl implements SchoolHeat {
         PostInfo postInfo = repository.getPostInfo(postId);
         if (postInfo == null) return;
         updatePost(postId, postInfo.modLatestReplier(replier));
+    }
+
+    @Override
+    public Long allPostsCount() {
+        return count.get();
     }
 
     @Override

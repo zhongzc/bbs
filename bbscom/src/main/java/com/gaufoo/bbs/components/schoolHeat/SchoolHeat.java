@@ -24,6 +24,8 @@ public interface SchoolHeat {
 
     void setLatestReplier(PostId postId, String replier);
 
+    Long allPostsCount();
+
     default void addReply(PostId postId, String replyIdentifier) {
         postInfo(postId).ifPresent(oldPostInfo -> {
             List<String> replyIds = oldPostInfo.replyIdentifiers;

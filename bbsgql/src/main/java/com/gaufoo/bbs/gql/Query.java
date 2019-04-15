@@ -54,7 +54,7 @@ public class Query implements GraphQLQueryResolver {
         return LostAndFound.lostItem(lostId);
     }
 
-    List<SchoolHeats.PostItemInfo> allPosts(int skip, int first, SchoolHeats.SortedBy sortedBy) {
+    SchoolHeats.AllPostResult allPosts(int skip, int first, SchoolHeats.SortedBy sortedBy) {
         return SchoolHeats.allPosts(skip, first, sortedBy);
     }
 

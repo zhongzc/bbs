@@ -1170,23 +1170,18 @@ unit_test("majorsIn - valid academy", () =>
 const ALL_LOSTS = `
 	query AllLosts($skip: Int!, $first: Int!) {
 		allLosts(skip: $skip, first: $first) {
-			... on LostFoundError {
-				error
-			}
-			... on AllLostSuccess {
-				totalCount
-				lostInfos {
-					publisher {
-						username
-					}
-					name
-					description
-					position
-					pictureUrl
-					creationTime
-					contact
-					lostTime
+			totalCount
+			lostInfos {
+				publisher {
+					username
 				}
+				name
+				description
+				position
+				pictureUrl
+				creationTime
+				contact
+				lostTime
 			}
 		}
 	}
@@ -1216,23 +1211,18 @@ unit_test("losts", () =>
 const ALL_FOUNDS = `
 	query ALLFounds($skip: Int!, $first: Int!) {
 		allFounds(skip: $skip, first: $first) {
-			... on LostFoundError {
-				error
-			}
-			... on AllFoundSuccess {
-				totalCount
-				foundInfos {
-					publisher {
-						username
-					}
-					name
-					description
-					position
-					pictureUrl
-					creationTime
-					contact
-					foundTime
+			totalCount
+			foundInfos {
+				publisher {
+					username
 				}
+				name
+				description
+				position
+				pictureUrl
+				creationTime
+				contact
+				foundTime
 			}
 		}
 	}
@@ -1372,31 +1362,33 @@ unit_test("lost item info", () =>
 const ALL_POSTS = `
 	query AllPosts($skip: Int!, $first: Int!, $sortedBy: SortedBy!) {
 		allPosts(skip: $skip, first: $first, sortedBy: $sortedBy) {
-			postId
-			title
-    		content
-    		author {
-				username
-			}
-    		latestReplier {
-				username
-			}
-			latestActiveTime
-			createTime
-    		heat
-    		allReplies {
-				replyId
-				content
-				author {
+			postInfos {
+				postId
+				title
+					content
+					author {
 					username
 				}
-				allComments {
+					latestReplier {
+					username
+				}
+				latestActiveTime
+				createTime
+					heat
+					allReplies {
+					replyId
 					content
-					commentTo {
-						username
-					}
 					author {
 						username
+					}
+					allComments {
+						content
+						commentTo {
+							username
+						}
+						author {
+							username
+						}
 					}
 				}
 			}
@@ -1416,7 +1408,7 @@ const allPosts = (skip, first, sortedBy) => sendGQL({
 unit_test("all posts", () => 
 	after_n_post_create(10, (auth, postInfos, postIds) =>
 		allPosts(0, 10, "TimeAsc").then(result => {
-			const resultPostIds = result.map(r => r.postId);
+			const resultPostIds = result.postInfos.map(r => r.postId);
 			const originPostIds = postIds;
 			assertEq(JSON.stringify(resultPostIds), JSON.stringify(originPostIds));
 		})

@@ -35,7 +35,7 @@ public class SchoolHeats {
 
             return constructPostItemInfo(result, itemInfo);
 
-        } catch (AuthenticatorException | PostInputNullException | CreatePostException  e) {
+        } catch (AuthenticatorException | PostInputNullException | CreatePostException e) {
             logger.debug("createPost - failed, error: {}, userToken: {}, input: {}", e.getMessage(), userToken, input);
             return SchoolHeatError.of(e.getMessage());
         }
@@ -43,7 +43,7 @@ public class SchoolHeats {
 
     private static void ensurePostInputNonNull(PostInfoInput input) {
         if (input.title == null || input.content == null ||
-            input.title.isEmpty() || input.content.isEmpty()) {
+                input.title.isEmpty() || input.content.isEmpty()) {
             throw new PostInputNullException();
         }
     }
@@ -61,11 +61,10 @@ public class SchoolHeats {
     private static PostId publishPost(PostInfo postInfo) {
         return componentFactory.schoolHeat.publishPost(postInfo)
                 .orElseThrow(() -> {
-                    logger.debug("publishPost - failed, error: {}, postInfo: {}", "创建帖子失败",  postInfo);
+                    logger.debug("publishPost - failed, error: {}, postInfo: {}", "创建帖子失败", postInfo);
                     return new CreatePostException();
                 });
     }
-
 
 
     public static ModifyPostResult updatePost(String userToken, String postId, PostInfoInput input) {
@@ -108,7 +107,6 @@ public class SchoolHeats {
     }
 
 
-
     public static ModifyPostResult deletePost(String userToken, String postId) {
         logger.debug("deletePost, userToken: {}, postId: {}", userToken, postId);
         try {
@@ -141,19 +139,29 @@ public class SchoolHeats {
         HeatAsc,
         HeatDes,
     }
-    public static List<PostItemInfo> allPosts(int skip, int first, SortedBy sortedBy) {
-        Comparator<PostInfo> comparator = null;
-        switch (sortedBy) {
-            case TimeAsc: comparator = PostComparators.comparingTime; break;
-            case TimeDes: comparator = PostComparators.comparingTimeReversed; break;
-            case HeatAsc: comparator = PostComparators.comparingHeat; break;
-            case HeatDes: comparator = PostComparators.comparingHeatReversed; break;
-        }
-        Stream<PostId> postIds = componentFactory.schoolHeat.allPosts(comparator);
 
-        return convertIdsToItemInfo(postIds)
-                .skip(skip).limit(first)
-                .collect(Collectors.toList());
+    public static AllPostResult allPosts(int skip, int first, SortedBy sortedBy) {
+        return new AllPostResult() {
+            @Override
+            public Long getTotalCount() {
+                return componentFactory.schoolHeat.allPostsCount();
+            }
+
+            @Override
+            public List<PostItemInfo> getPostInfos() {
+                Comparator<PostInfo> comparator = null;
+                switch (sortedBy) {
+                    case TimeAsc: comparator = PostComparators.comparingTime;         break;
+                    case TimeDes: comparator = PostComparators.comparingTimeReversed; break;
+                    case HeatAsc: comparator = PostComparators.comparingHeat;         break;
+                    case HeatDes: comparator = PostComparators.comparingHeatReversed; break;
+                }
+                Stream<PostId> postIds = componentFactory.schoolHeat.allPosts(comparator);
+                return convertIdsToItemInfo(postIds)
+                        .skip(skip).limit(first)
+                        .collect(Collectors.toList());
+            }
+        };
     }
 
     private static Stream<PostItemInfo> convertIdsToItemInfo(Stream<PostId> postIdStream) {
@@ -218,19 +226,23 @@ public class SchoolHeats {
             public String getReplyId() {
                 return replyId.value;
             }
+
             @Override
             public String getPostIdReplying() {
                 return replyInfo.subject;
             }
+
             @Override
             public String getContent() {
                 return Utils.nilStrToEmpty(replyInfo.content);
             }
+
             @Override
             public PersonalInformation.PersonalInfo getAuthor() {
                 return PersonalInformation.personalInfo(UserId.of(replyInfo.replier))
                         .orElse(null);
             }
+
             @Override
             public List<CommentItemInfo> getAllComments() {
                 return replyInfo.comments.stream()
@@ -246,12 +258,14 @@ public class SchoolHeats {
             public String getContent() {
                 return Utils.nilStrToEmpty(comment.content);
             }
+
             @Override
             public PersonalInformation.PersonalInfo getCommentTo() {
                 if (comment.commentTo == null) return null;
                 return PersonalInformation.personalInfo(UserId.of(comment.commentTo))
                         .orElse(null);
             }
+
             @Override
             public PersonalInformation.PersonalInfo getAuthor() {
                 return PersonalInformation.personalInfo(UserId.of(comment.commentator))
@@ -259,7 +273,6 @@ public class SchoolHeats {
             }
         };
     }
-
 
 
     public static PostInfoResult postInfo(String postIdStr) {
@@ -273,7 +286,6 @@ public class SchoolHeats {
             return SchoolHeatError.of(e.getMessage());
         }
     }
-
 
 
     private interface UndoFunction {
@@ -312,7 +324,6 @@ public class SchoolHeats {
     }
 
 
-
     public static CreateCommentResult createComment(String userToken, CommentInfoInput input) {
         logger.debug("createComment, input: {}", input);
         try {
@@ -343,7 +354,6 @@ public class SchoolHeats {
                     return new ReplyNonExistException();
                 });
     }
-
 
 
     // for test
@@ -447,6 +457,11 @@ public class SchoolHeats {
         public String toString() {
             return "replyIdToComment: " + replyIdToComment + ", content: " + content;
         }
+    }
+
+    public interface AllPostResult {
+        Long getTotalCount();
+        List<PostItemInfo> getPostInfos();
     }
 
     public static class SchoolHeatError implements CreatePostResult, ModifyPostResult, CreateReplyResult, CreateCommentResult, PostInfoResult {

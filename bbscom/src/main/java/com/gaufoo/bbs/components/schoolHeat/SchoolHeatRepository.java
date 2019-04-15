@@ -8,6 +8,7 @@ import java.util.stream.Stream;
 
 public interface SchoolHeatRepository {
     Stream<PostId> getAllPosts(Comparator<PostInfo> comparator);
+    Stream<PostId> getAllPosts();
 
     Stream<PostId> allPostsByTimeAsc();
     Stream<PostId> allPostsByTimeDes();

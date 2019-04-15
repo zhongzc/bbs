@@ -1,6 +1,7 @@
 package com.gaufoo.bbs.components._repositories;
 
 import com.gaufoo.bbs.components.schoolHeat.SchoolHeatRepository;
+import com.gaufoo.bbs.components.schoolHeat.common.PostComparators;
 import com.gaufoo.bbs.components.schoolHeat.common.PostId;
 import com.gaufoo.bbs.components.schoolHeat.common.PostInfo;
 import com.gaufoo.bbs.util.SstUtils;
@@ -48,6 +49,11 @@ public class SchoolHeatSstRepository implements SchoolHeatRepository {
                         .sorted((tup1, tup2) -> comparator.compare(tup1.right, tup2.right))
                         .map(tup -> PostId.of(tup.left)))
         ).orElse(Stream.empty());
+    }
+
+    @Override
+    public Stream<PostId> getAllPosts() {
+        return getAllPosts(PostComparators.comparingTime);
     }
 
     @Override

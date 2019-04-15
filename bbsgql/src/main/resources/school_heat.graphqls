@@ -53,6 +53,11 @@ union CreateCommentResult = SchoolHeatError | CommentItemInfo
 
 union PostItemResult      = SchoolHeatError | PostItemInfo
 
+type AllPostResult {
+    totalCount: Long!
+    postInfos: [PostItemInfo!]!
+}
+
 enum SortedBy {
     TimeAsc
     TimeDes

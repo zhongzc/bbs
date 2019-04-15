@@ -375,33 +375,42 @@ public class LostAndFound {
 
     public static AllLostResult allLosts(int skip, int first) {
         logger.debug("allLosts, skip: {}, first: {}", skip, first);
-        try {
-            List<LostItemInfo> allLosts = componentFactory.lostFound.allLosts()
-                    .map(lostId -> componentFactory.lostFound.lostInfo(lostId))
-                    .map(Optional::get)
-                    .map(LostAndFound::constructItemInfo).skip(skip).limit(first)
-                    .collect(Collectors.toList());
-            return AllLostSuccess.of(componentFactory.lostFound.allLostCounts(), allLosts);
-        } catch (NoSuchElementException e) {
-            logger.debug("allLosts - failed, error: {}, skip: {}, first: {}", "获取所有失物失败", skip, first);
-            return LostFoundError.of("获取所有失物失败");
-        }
 
+        return new AllLostResult() {
+            @Override
+            public Long getTotalCount() {
+                return componentFactory.lostFound.allLostCounts();
+            }
+
+            @Override
+            public List<LostItemInfo> getLostInfos() {
+                return componentFactory.lostFound.allLosts()
+                        .map(lostId -> componentFactory.lostFound.lostInfo(lostId))
+                        .map(Optional::get)
+                        .map(LostAndFound::constructItemInfo).skip(skip).limit(first)
+                        .collect(Collectors.toList());
+            }
+        };
     }
 
     public static AllFoundResult allFounds(int skip, int first) {
         logger.debug("allFounds, skip: {}, first: {}", skip, first);
-        try {
-            List<FoundItemInfo> allFounds = componentFactory.lostFound.allFounds()
-                    .map(foundId -> componentFactory.lostFound.foundInfo(foundId))
-                    .map(Optional::get)
-                    .map(LostAndFound::constructItemInfo).skip(skip).limit(first)
-                    .collect(Collectors.toList());
-            return AllFoundSuccess.of(componentFactory.lostFound.allFoundCounts(), allFounds);
-        } catch (NoSuchElementException e) {
-            logger.debug("allFounds - failed, error: {}, skip: {}, first: {}", "获取所有寻物失败", skip, first);
-            return LostFoundError.of("获取所有寻物失败");
-        }
+
+        return new AllFoundResult() {
+            @Override
+            public Long getTotalCount() {
+                return componentFactory.lostFound.allFoundCounts();
+            }
+
+            @Override
+            public List<FoundItemInfo> getFoundInfos() {
+                return componentFactory.lostFound.allFounds()
+                        .map(foundId -> componentFactory.lostFound.foundInfo(foundId))
+                        .map(Optional::get)
+                        .map(LostAndFound::constructItemInfo).skip(skip).limit(first)
+                        .collect(Collectors.toList());
+            }
+        };
     }
 
     // for test
@@ -460,8 +469,7 @@ public class LostAndFound {
         }
     }
 
-    public static class LostFoundError implements LostInfoResult, FoundInfoResult , PublishItemResult,
-            ModifyItemResult, AllLostResult, AllFoundResult {
+    public static class LostFoundError implements LostInfoResult, FoundInfoResult , PublishItemResult, ModifyItemResult {
         private String error;
 
         public LostFoundError(String error) {
@@ -544,53 +552,13 @@ public class LostAndFound {
     public interface ModifyItemResult {
     }
 
-    public static class AllLostSuccess implements AllLostResult {
-        private Long totalCount;
-        private List<LostItemInfo> lostInfos;
-
-        public AllLostSuccess(Long totalCount, List<LostItemInfo> lostInfos) {
-            this.totalCount = totalCount;
-            this.lostInfos = lostInfos;
-        }
-
-        public static AllLostSuccess of(Long totalCount, List<LostItemInfo> lostInfos) {
-            return new AllLostSuccess(totalCount, lostInfos);
-        }
-
-        public Long getTotalCount() {
-            return totalCount;
-        }
-
-        public List<LostItemInfo> getLostInfos() {
-            return lostInfos;
-        }
-    }
-
     public interface AllLostResult {
-    }
-
-    public static class AllFoundSuccess implements AllFoundResult {
-        private Long totalCount;
-        private List<FoundItemInfo> foundInfos;
-
-        public AllFoundSuccess(Long totalCount, List<FoundItemInfo> foundInfos) {
-            this.totalCount = totalCount;
-            this.foundInfos = foundInfos;
-        }
-
-        public static AllFoundSuccess of(Long totalCount, List<FoundItemInfo> foundInfos) {
-            return new AllFoundSuccess(totalCount, foundInfos);
-        }
-
-        public Long getTotalCount() {
-            return totalCount;
-        }
-
-        public List<FoundItemInfo> getFoundInfos() {
-            return foundInfos;
-        }
+        Long getTotalCount();
+        List<LostItemInfo> getLostInfos();
     }
 
     public interface AllFoundResult {
+        Long getTotalCount();
+        List<FoundItemInfo> getFoundInfos();
     }
 }

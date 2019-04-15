@@ -28,19 +28,15 @@ union LostInfoResult = LostFoundError | LostItemInfo
 
 union FoundInfoResult = LostFoundError | FoundItemInfo
 
-type AllLostSuccess {
+type AllLostResult {
     totalCount: Long!
     lostInfos: [LostItemInfo!]!
 }
 
-union AllLostResult = LostFoundError | AllLostSuccess
-
-type AllFoundSuccess {
+type AllFoundResult {
     totalCount: Long!
     foundInfos: [FoundItemInfo!]!
 }
-
-union AllFoundResult = LostFoundError | AllFoundSuccess
 
 type PublishItemSuccess {
     itemId: String!
