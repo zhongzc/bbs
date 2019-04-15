@@ -10,7 +10,7 @@ public class IdSstRepository implements IdRepository {
     private final String repositoryName;
     private final SST lastIds;
 
-    public IdSstRepository(String repositoryName, Path storingPath) {
+    private IdSstRepository(String repositoryName, Path storingPath) {
         this.repositoryName = repositoryName;
         this.lastIds = SST.of(repositoryName, storingPath.resolve(repositoryName));
     }

@@ -18,13 +18,12 @@ public class SeqInteger implements IdGenerator {
     @Override
     public String generateId() {
         int id = seq.getAndIncrement();
+        repository.saveLastId(componentName, seq.get());
         return String.format("%08d", id);
     }
 
     @Override
-    public void shutdown() {
-        repository.saveLastId(componentName, seq.get());
-    }
+    public void shutdown() { }
 
     @Override
     public String getName() {

@@ -8,6 +8,7 @@ import com.gaufoo.bbs.components._repositories.*;
 import com.gaufoo.bbs.components.authenticator.Authenticator;
 import com.gaufoo.bbs.components.file.FileFactory;
 import com.gaufoo.bbs.components.idGenerator.IdGenerator;
+import com.gaufoo.bbs.components.idGenerator.IdRepository;
 import com.gaufoo.bbs.components.learningResource.LearningResource;
 import com.gaufoo.bbs.components.like.LikeComponent;
 import com.gaufoo.bbs.components.lostfound.LostFound;
@@ -20,6 +21,9 @@ import com.gaufoo.bbs.components.validator.Validator;
 
 import java.nio.file.Path;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 public class ComponentFactory {
@@ -37,6 +41,7 @@ public class ComponentFactory {
     public final LearningResource learnResource;
     public final SchoolHeat schoolHeat;
     public final Reply reply;
+    public final IdRepository idRepository;
 
     public ComponentFactory(StaticResourceConfig staticRcConfig) {
         this.staticRcConfig = staticRcConfig;
@@ -53,9 +58,11 @@ public class ComponentFactory {
         clearFolders(allFolderPaths);
         createFoldersIfAbsent(allFolderPaths);
 
+        idRepository = IdSstRepository.get("idSstRep", sstPathConfig.id());
+
         user = UserFactory.defau1t("usrFty",
                 UserFactorySstRepository.get("usrFtySstRep", sstPathConfig.userFactory()),
-                IdGenerator.seqInteger("usrId"));
+                IdGenerator.seqInteger("usrId", idRepository));
 
         authenticator = Authenticator.defau1t("auth",
                 AuthenticatorSstRepository.get("authSstRep", sstPathConfig.auth()),
@@ -65,44 +72,52 @@ public class ComponentFactory {
 
         userProfiles = FileFactory.defau1t("userProfiles",
                 FileFactoryFileSystemRepository.get("fileDskRep",userProfileFolder),
-                IdGenerator.seqInteger("usrImgId"));
+                IdGenerator.seqInteger("usrImgId", idRepository));
 
         major = MajorFactory.defau1t("major");
 
         lostFound = LostFound.defau1t("lstFnd",
                 LostFoundSstRepository.get("lstFndMryRep", sstPathConfig.lostFound()),
-                IdGenerator.seqInteger("lstId"), IdGenerator.seqInteger("fndId"));
+                IdGenerator.seqInteger("lstId", idRepository), IdGenerator.seqInteger("fndId", idRepository));
 
         lostFoundImages = FileFactory.defau1t("lostFoundImages",
                         FileFactoryFileSystemRepository.get("lostFileMryRep",
-                                lostFoundFolder), IdGenerator.seqInteger("lostImgId"));
+                                lostFoundFolder), IdGenerator.seqInteger("lostImgId", idRepository));
 
         like = LikeComponent.defau1t("like",
                 LikeComponentSstRepository.get("likeMryRep", sstPathConfig.like()),
-                IdGenerator.seqInteger("likeId"));
+                IdGenerator.seqInteger("likeId", idRepository));
 
         learnResource = LearningResource.defau1t("learnResource",
                 LearningResourceSstRepository.get("learnResMryRep", sstPathConfig.learnResource()),
-                IdGenerator.seqInteger("resourceId"));
+                IdGenerator.seqInteger("resourceId", idRepository));
 
         schoolHeat = SchoolHeat.defau1t("schoolHeat",
                 HeatSstRepository.get("schoolHeatRep", sstPathConfig.schoolHeat()),
-                IdGenerator.seqInteger("postId"));
+                IdGenerator.seqInteger("postId", idRepository));
 
         reply = Reply.defau1t("reply",
-                IdGenerator.seqInteger("replyId"),
+                IdGenerator.seqInteger("replyId", idRepository),
                 ReplyMemoryRepository.get("rplyMryRep"));
     }
 
     public void shutdown() {
-        user.shutdown();
-        authenticator.shutdown();
-        userProfiles.shutdown();
-        lostFound.shutdown();
-        lostFoundImages.shutdown();
-        like.shutdown();
-        learnResource.shutdown();
-        schoolHeat.shutdown();
+        ExecutorService executor = Executors.newCachedThreadPool();
+        executor.execute(user::shutdown);
+        executor.execute(authenticator::shutdown);
+        executor.execute(userProfiles::shutdown);
+        executor.execute(lostFound::shutdown);
+        executor.execute(lostFoundImages::shutdown);
+        executor.execute(like::shutdown);
+        executor.execute(learnResource::shutdown);
+        executor.execute(schoolHeat::shutdown);
+        executor.execute(idRepository::shutdown);
+        executor.shutdown();
+        try {
+            executor.awaitTermination(Integer.MAX_VALUE, TimeUnit.MINUTES);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
     private void clearFolders(List<Path> paths) {
