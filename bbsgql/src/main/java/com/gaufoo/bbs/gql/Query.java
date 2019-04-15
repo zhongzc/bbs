@@ -38,19 +38,19 @@ public class Query implements GraphQLQueryResolver {
                 .orElse(Authentication.GetIdError.of("用户未登录"));
     }
 
-    List<LostAndFound.LostItemInfo> losts(int skip, int first) {
-        return LostAndFound.losts(skip, first);
+    LostAndFound.AllLostResult allLosts(int skip, int first) {
+        return LostAndFound.allLosts(skip, first);
     }
 
-    List<LostAndFound.FoundItemInfo> founds(int skip, int first) {
-        return LostAndFound.founds(skip, first);
+    LostAndFound.AllFoundResult allFounds(int skip, int first) {
+        return LostAndFound.allFounds(skip, first);
     }
 
-    LostAndFound.ItemInfoResult foundItemInfo(String foundId) {
+    LostAndFound.FoundInfoResult foundItemInfo(String foundId) {
         return LostAndFound.foundItem(foundId);
     }
 
-    LostAndFound.ItemInfoResult lostItemInfo(String lostId) {
+    LostAndFound.LostInfoResult lostItemInfo(String lostId) {
         return LostAndFound.lostItem(lostId);
     }
 
