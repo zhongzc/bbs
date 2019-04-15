@@ -873,7 +873,7 @@ const CREATE_POST = `
 			... on SchoolHeatError {
 				error
 			}
-			... on CreatePostSuccess{
+			... on PostItemInfo {
 				postId
 			}
 		}
@@ -907,8 +907,8 @@ const DELETE_POST = `
 			... on SchoolHeatError {
 				error
 			}
-			... on SchoolHeatSuccess {
-				ok
+			... on PostItemInfo {
+				postId
 			}
 		}
 	}
@@ -924,8 +924,8 @@ const deletePost = (postId, userToken) => sendGQL({
 
 unit_test("delete post", () => 
 	after_n_post_create(1, (auth, postInfos, postIds) => 
-		deletePost(postIds[0], auth).then(result => 
-			assert(result.ok)
+		deletePost(postIds[0], auth).then(result =>
+			assertEq(result.postId, postIds[0])
 		)
 	)
 );
@@ -937,15 +937,9 @@ const CREATE_REPLY = `
 			... on SchoolHeatError {
 				error
 			}
-			... on CreateReplySuccess {
-				postInfo {
-					postId
-					title
-					content
-					allReplies {
-						replyId
-					}
-				}
+			... on ReplyItemInfo {
+				replyId
+				content
 			}
 		}
 }
@@ -966,9 +960,8 @@ unit_test("create reply", () =>
 			content: "lololololo"
 		};
 		return createReply(replyInfo, auth).then(result => {
-			const postInfo = result.postInfo;
-			assertEq(postIds[0], postInfo.postId);
-			assertEq(postInfos[0].content, postInfo.content);
+			assertNonEmpty(result.replyId);
+			assertEq("lololololo", result.content);
 		});
 	})
 );
@@ -981,17 +974,8 @@ const CREATE_COMMENT = `
 			... on SchoolHeatError {
 				error
 			}
-			... on CreateCommentSuccess {
-				postInfo {
-					postId
-					title
-					content
-					allReplies {
-						allComments {
-							content
-						}
-					}
-				}
+			... on CommentItemInfo {
+				content
 			}
 		}
 }
@@ -1012,14 +996,14 @@ unit_test("create comment", () =>
 			content: "lololololo"
 		};
 		return createReply(replyInfo, auth).then(result => {
-			const replyId = result.postInfo.allReplies[0].replyId;
+			const replyId = result.replyId;
 			
 			const commentInfo = {
 				replyIdToComment: replyId,
 				content: "this is a comment!"
 			};
 			return createComment(commentInfo, auth).then(result => {
-				const content = result.postInfo.allReplies[0].allComments[0].content;
+				const content = result.content;
 				assertEq(content, commentInfo.content);
 			});
 		});
@@ -1426,12 +1410,10 @@ const POST_INFO = `
 			... on SchoolHeatError {
 				error
 			}
-			... on PostInfoSuccess {
-				postInfo {
-					postId
-					title
-					content
-				}
+			... on PostItemInfo {
+				postId
+				title
+				content
 			}
 		}
 	}
@@ -1448,9 +1430,9 @@ unit_test("post info", () =>
 	after_n_post_create(1, (auth, postInfos, postIds) => 
 		postInfo(postIds[0]).then(result => {
 			const originPostInfo = postInfos[0];
-			assertEq(result.postInfo.postId, postIds[0]);
-			assertEq(result.postInfo.title, originPostInfo.title);
-			assertEq(result.postInfo.content, originPostInfo.content);
+			assertEq(result.postId, postIds[0]);
+			assertEq(result.title, originPostInfo.title);
+			assertEq(result.content, originPostInfo.content);
 		})
 	)
 );

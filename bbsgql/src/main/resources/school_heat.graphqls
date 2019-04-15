@@ -43,17 +43,15 @@ type SchoolHeatError {
     error: String!
 }
 
-type CreatePostSuccess {
-    postId: String!
-}
+union CreatePostResult    = SchoolHeatError | PostItemInfo
 
-union CreatePostResult = SchoolHeatError | CreatePostSuccess
+union ModifyPostResult    = SchoolHeatError | PostItemInfo
 
-type SchoolHeatSuccess {
-    ok: Boolean!
-}
+union CreateReplyResult   = SchoolHeatError | ReplyItemInfo
 
-union ModifyPostResult = SchoolHeatError | SchoolHeatSuccess
+union CreateCommentResult = SchoolHeatError | CommentItemInfo
+
+union PostItemResult      = SchoolHeatError | PostItemInfo
 
 enum SortedBy {
     TimeAsc
@@ -62,20 +60,3 @@ enum SortedBy {
     HeatDes
 }
 
-type CreateReplySuccess {
-    postInfo: PostItemInfo!
-}
-
-union CreateReplyResult = SchoolHeatError | CreateReplySuccess
-
-type CreateCommentSuccess {
-    postInfo: PostItemInfo!
-}
-
-union CreateCommentResult = SchoolHeatError | CreateCommentSuccess
-
-type PostInfoSuccess {
-    postInfo: PostItemInfo!
-}
-
-union PostItemResult = SchoolHeatError | PostInfoSuccess

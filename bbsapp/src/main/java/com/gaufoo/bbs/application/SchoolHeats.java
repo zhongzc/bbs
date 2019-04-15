@@ -33,7 +33,7 @@ public class SchoolHeats {
 
             PostId result = publishPost(itemInfo);
 
-            return CreatePostSuccess.of(result.value);
+            return constructPostItemInfo(result, itemInfo);
 
         } catch (AuthenticatorException | PostInputNullException | CreatePostException  e) {
             logger.debug("createPost - failed, error: {}, userToken: {}, input: {}", e.getMessage(), userToken, input);
@@ -79,7 +79,7 @@ public class SchoolHeats {
 
             componentFactory.schoolHeat.updatePost(PostId.of(postId), newPostInfo);
 
-            return SchoolHeatSuccess.build();
+            return constructPostItemInfo(PostId.of(postId), newPostInfo);
 
         } catch (AuthenticatorException | PostNonExistException e) {
             logger.debug("updatePost - failed, error: {}, userToken: {}, input: {}", e.getMessage(), userToken, input);
@@ -119,7 +119,7 @@ public class SchoolHeats {
 
             removePostAndReplies(postId, postToDel);
 
-            return SchoolHeatSuccess.build();
+            return constructPostItemInfo(PostId.of(postId), postToDel);
 
         } catch (AuthenticatorException | PostNonExistException e) {
             logger.debug("deletePost - failed, error: {}, userToken: {}, postId: {}", e.getMessage(), userToken, postId);
@@ -267,7 +267,7 @@ public class SchoolHeats {
         try {
             PostId postId = PostId.of(postIdStr);
             PostInfo postInfo = fetchPostInfo(postId);
-            return PostInfoSuccess.of(constructPostItemInfo(postId, postInfo));
+            return constructPostItemInfo(postId, postInfo);
         } catch (PostNonExistException e) {
             logger.debug("allPost - failed, error: {}, postId: {}", e.getMessage(), postIdStr);
             return SchoolHeatError.of(e.getMessage());
@@ -298,8 +298,7 @@ public class SchoolHeats {
             componentFactory.schoolHeat.addReply(postId, replyId.get().value);
             undoFunctions.add(() -> componentFactory.schoolHeat.removeReply(postId, replyId.get().value));
 
-            PostItemInfo postItemInfo = constructPostItemInfo(postId, fetchPostInfo(postId));
-            return CreateReplySuccess.of(postItemInfo);
+            return constructReplyItemInfo(replyId.get(), replyInfo);
 
         } catch (AuthenticatorException e) {
             logger.debug("createReply - failed, error: {}, input: {}", e.getMessage(), input);
@@ -329,7 +328,7 @@ public class SchoolHeats {
 
             PostItemInfo postItemInfo = constructPostItemInfo(postId, postInfo);
 
-            return CreateCommentSuccess.of(postItemInfo);
+            return constructCommentItemInfo(comment);
 
         } catch (AuthenticatorException | ReplyNonExistException e) {
             logger.debug("createComment - failed, error: {}, input: {}", e.getMessage(), input);
@@ -361,13 +360,13 @@ public class SchoolHeats {
 
     }
 
-    public interface CommentItemInfo {
+    public interface CommentItemInfo extends CreateCommentResult {
         String getContent();
         PersonalInformation.PersonalInfo getCommentTo();
         PersonalInformation.PersonalInfo getAuthor();
     }
 
-    public interface ReplyItemInfo {
+    public interface ReplyItemInfo extends CreateReplyResult {
         String getReplyId();
         String getPostIdReplying();
         String getContent();
@@ -375,7 +374,7 @@ public class SchoolHeats {
         List<CommentItemInfo> getAllComments();
     }
 
-    public interface PostItemInfo {
+    public interface PostItemInfo extends CreatePostResult, ModifyPostResult, PostInfoResult {
         String getPostId();
         String getTitle();
         String getContent();
@@ -450,8 +449,7 @@ public class SchoolHeats {
         }
     }
 
-    public static class SchoolHeatError implements CreatePostResult, ModifyPostResult,
-            CreateReplyResult, CreateCommentResult, PostInfoResult {
+    public static class SchoolHeatError implements CreatePostResult, ModifyPostResult, CreateReplyResult, CreateCommentResult, PostInfoResult {
         private String error;
 
         public SchoolHeatError(String error) {
@@ -467,97 +465,16 @@ public class SchoolHeats {
         }
     }
 
-    public static class PostInfoSuccess implements PostInfoResult {
-        private PostItemInfo postInfo;
-
-        public PostInfoSuccess(PostItemInfo postInfo) {
-            this.postInfo = postInfo;
-        }
-
-        public static PostInfoSuccess of(PostItemInfo postInfo) {
-            return new PostInfoSuccess(postInfo);
-        }
-
-        public PostItemInfo getPostInfo() {
-            return postInfo;
-        }
-    }
-
     public interface PostInfoResult {
     }
 
-    public static class CreatePostSuccess implements CreatePostResult {
-        private String postId;
-
-        public CreatePostSuccess(String postId) {
-            this.postId = postId;
-        }
-
-        public static CreatePostSuccess of(String postId) {
-            return new CreatePostSuccess(postId);
-        }
-
-        public String getPostId() {
-            return postId;
-        }
-    }
-
-
     public interface CreatePostResult {
-    }
-
-    public static class SchoolHeatSuccess implements ModifyPostResult {
-        private Boolean ok;
-
-        public SchoolHeatSuccess() {
-            this.ok = true;
-        }
-
-        public static SchoolHeatSuccess build() {
-            return new SchoolHeatSuccess();
-        }
-
-        public Boolean getOk() {
-            return ok;
-        }
     }
 
     public interface ModifyPostResult {
     }
 
-    public static class CreateReplySuccess implements CreateReplyResult {
-        private PostItemInfo postInfo;
-
-        public CreateReplySuccess(PostItemInfo postInfo) {
-            this.postInfo = postInfo;
-        }
-
-        public static CreateReplySuccess of(PostItemInfo postInfo) {
-            return new CreateReplySuccess(postInfo);
-        }
-
-        public PostItemInfo getPostInfo() {
-            return postInfo;
-        }
-    }
-
     public interface CreateReplyResult {
-    }
-
-    public static class CreateCommentSuccess implements CreateCommentResult {
-        private PostItemInfo postInfo;
-
-        public CreateCommentSuccess(PostItemInfo postInfo) {
-            this.postInfo = postInfo;
-        }
-
-        public static CreateCommentSuccess of(PostItemInfo postInfo) {
-            return new CreateCommentSuccess(postInfo);
-        }
-
-        public PostItemInfo getPostInfo() {
-            return postInfo;
-        }
     }
 
     public interface CreateCommentResult {

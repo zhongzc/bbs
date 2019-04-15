@@ -58,11 +58,6 @@ public class Application implements WebMvcConfigurer {
                 LostAndFound.PublishItemSuccess.class,
                 LostAndFound.ModifyItemSuccess.class,
                 SchoolHeats.SchoolHeatError.class,
-                SchoolHeats.SchoolHeatSuccess.class,
-                SchoolHeats.CreatePostSuccess.class,
-                SchoolHeats.CreateReplySuccess.class,
-                SchoolHeats.CreateCommentSuccess.class,
-                SchoolHeats.PostInfoSuccess.class,
                 LearnResource.LearnResourceInfo.class,
                 LearnResource.LearnResourceInfoError.class,
         };
