@@ -3,7 +3,7 @@ type LostFoundError {
 }
 
 type FoundItemInfo {
-    publisher: String!
+    publisher: PersonalInfo!
     name: String!
     description: String!
     position: String!
@@ -14,7 +14,7 @@ type FoundItemInfo {
 }
 
 type LostItemInfo {
-    publisher: String!
+    publisher: PersonalInfo!
     name: String!
     description: String!
     position: String!

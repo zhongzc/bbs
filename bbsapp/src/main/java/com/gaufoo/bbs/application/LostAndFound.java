@@ -62,8 +62,9 @@ public class LostAndFound {
     private static LostItemInfo constructItemInfo(LostInfo lostInfo) {
         return new LostItemInfo() {
             @Override
-            public String getPublisher() {
-                return lostInfo.publisher;
+            public PersonalInformation.PersonalInfo getPublisher() {
+                return PersonalInformation.personalInfo(UserId.of(lostInfo.publisher))
+                        .orElse(null);
             }
             @Override
             public String getName() {
@@ -110,8 +111,9 @@ public class LostAndFound {
     private static FoundItemInfo constructItemInfo(FoundInfo foundInfo) {
         return new FoundItemInfo() {
             @Override
-            public String getPublisher() {
-                return foundInfo.publisher;
+            public PersonalInformation.PersonalInfo getPublisher() {
+                return PersonalInformation.personalInfo(UserId.of(foundInfo.publisher))
+                        .orElse(null);
             }
             @Override
             public String getName() {
@@ -392,6 +394,7 @@ public class LostAndFound {
                 .collect(Collectors.toList());
     }
 
+    // for test
     public static void reset() {
         logger.debug("reset");
         componentFactory.lostFound.allFounds().forEach(foundId -> {
@@ -464,7 +467,7 @@ public class LostAndFound {
     }
 
     public interface LostItemInfo extends ItemInfoResult {
-        String getPublisher();
+        PersonalInformation.PersonalInfo getPublisher();
         String getName();
         String getDescription();
         String getPosition();
@@ -475,7 +478,7 @@ public class LostAndFound {
     }
 
     public interface FoundItemInfo extends ItemInfoResult {
-        String getPublisher();
+        PersonalInformation.PersonalInfo getPublisher();
         String getName();
         String getDescription();
         String getPosition();

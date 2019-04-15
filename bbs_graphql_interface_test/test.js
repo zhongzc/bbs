@@ -138,8 +138,8 @@ const after_n_post_create = (nTimes, func) => {
 				content: "content" + i
 			}
 			pubPosts.push(post);
-			chain = chain.then(() => createPost(post, auth)
-				.then(result => pubPostIds.push(result.postId)));
+			chain = chain.then(() => createPost(post, auth))
+				.then(result => pubPostIds.push(result.postId));
 		}
 
 		return chain.then(() => func(auth, pubPosts, pubPostIds));
@@ -1075,7 +1075,9 @@ unit_test("majorsIn - valid academy", () =>
 const LOSTS = `
 	query Losts($skip: Int!, $first: Int!) {
 		losts(skip: $skip, first: $first) {
-			publisher
+			publisher {
+				username
+			}
 			name
 			description
 			position
@@ -1109,7 +1111,9 @@ unit_test("losts", () =>
 const FOUNDS = `
 	query Founds($skip: Int!, $first: Int!) {
 		founds(skip: $skip, first: $first) {
-			publisher
+			publisher {
+				username
+			}
 			name
 			description
 			position
@@ -1145,7 +1149,9 @@ const FOUND_ITEM_INFO = `
 	query FoundItemInfo($foundId: String!) {
 		foundItemInfo(foundId: $foundId) {
 			... on FoundItemInfo {
-				publisher
+				publisher {
+					username
+				}
 				name
 				description
 				position
@@ -1197,7 +1203,9 @@ const LOST_ITEM_INFO = `
 	query LostItemInfo($lostId: String!) {
 		lostItemInfo(lostId: $lostId) {
 			... on LostItemInfo {
-				publisher
+				publisher {
+					username
+				}
 				name
 				description
 				position
@@ -1252,19 +1260,29 @@ const ALL_POSTS = `
 			postId
 			title
     		content
-    		author
-    		latestReplier
+    		author {
+				username
+			}
+    		latestReplier {
+				username
+			}
 			latestActiveTime
 			createTime
     		heat
     		allReplies {
 				replyId
 				content
-				author
+				author {
+					username
+				}
 				allComments {
 					content
-					commentTo
-					author
+					commentTo {
+						username
+					}
+					author {
+						username
+					}
 				}
 			}
 		}
@@ -1282,9 +1300,12 @@ const allPosts = (skip, first, sortedBy) => sendGQL({
 
 unit_test("all posts", () => 
 	after_n_post_create(10, (auth, postInfos, postIds) =>
-		allPosts(3, 5, "TimeAsc").then(result => {
+		allPosts(0, 10, "TimeAsc").then(result => {
+			console.log(result);
+			console.log(postIds);
 			const resultPostIds = result.map(r => r.postId);
-			const originPostIds = postIds.slice(3, 8);
+			// const originPostIds = postIds.slice(3, 8);
+			const originPostIds = postIds;
 			assertEq(JSON.stringify(resultPostIds), JSON.stringify(originPostIds));
 		})
 	)

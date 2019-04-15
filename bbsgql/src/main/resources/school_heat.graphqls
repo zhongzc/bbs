@@ -5,14 +5,14 @@ input PostInfoInput {
 
 type CommentItemInfo {
     content: String!
-    commentTo: String
-    author: String!
+    commentTo: PersonalInfo
+    author: PersonalInfo!
 }
 
 type ReplyItemInfo {
     replyId: String!
     content: String!
-    author: String!
+    author: PersonalInfo!
     allComments: [CommentItemInfo!]!
 }
 
@@ -20,8 +20,8 @@ type PostItemInfo {
     postId: String!
     title: String!
     content: String!
-    author: String!
-    latestReplier: String!
+    author: PersonalInfo!
+    latestReplier: PersonalInfo
     latestActiveTime: Long!
     createTime: Long!
     heat: Int!

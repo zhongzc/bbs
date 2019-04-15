@@ -181,12 +181,15 @@ public class SchoolHeats {
                 return Utils.nilStrToEmpty(postInfo.content);
             }
             @Override
-            public String getAuthor() {
-                return postInfo.author;
+            public PersonalInformation.PersonalInfo getAuthor() {
+                return PersonalInformation.personalInfo(UserId.of(postInfo.author))
+                        .orElse(null);
             }
             @Override
-            public String getLatestReplier() {
-                return Utils.nilStrToEmpty(postInfo.latestReplier);
+            public PersonalInformation.PersonalInfo getLatestReplier() {
+                if (postInfo.latestReplier == null) return null;
+                return PersonalInformation.personalInfo(UserId.of(postInfo.latestReplier))
+                        .orElse(null);
             }
             @Override
             public Long getLatestActiveTime() {
@@ -225,8 +228,9 @@ public class SchoolHeats {
                 return Utils.nilStrToEmpty(replyInfo.content);
             }
             @Override
-            public String getAuthor() {
-                return replyInfo.replier;
+            public PersonalInformation.PersonalInfo getAuthor() {
+                return PersonalInformation.personalInfo(UserId.of(replyInfo.replier))
+                        .orElse(null);
             }
             @Override
             public List<CommentItemInfo> getAllComments() {
@@ -244,16 +248,20 @@ public class SchoolHeats {
                 return Utils.nilStrToEmpty(comment.content);
             }
             @Override
-            public String getCommentTo() {
-                return comment.commentTo;
+            public PersonalInformation.PersonalInfo getCommentTo() {
+                if (comment.commentTo == null) return null;
+                return PersonalInformation.personalInfo(UserId.of(comment.commentTo))
+                        .orElse(null);
             }
             @Override
-            public String getAuthor() {
-                return comment.commentator;
+            public PersonalInformation.PersonalInfo getAuthor() {
+                return PersonalInformation.personalInfo(UserId.of(comment.commentator))
+                        .orElse(null);
             }
         };
     }
 
+    // for test
     public static void reset() {
         componentFactory.schoolHeat.allPosts(PostComparators.comparingTime).forEach(postId -> {
             PostInfo postInfo = componentFactory.schoolHeat.postInfo(postId).orElse(null);
@@ -269,14 +277,14 @@ public class SchoolHeats {
 
     public interface CommentItemInfo {
         String getContent();
-        String getCommentTo();
-        String getAuthor();
+        PersonalInformation.PersonalInfo getCommentTo();
+        PersonalInformation.PersonalInfo getAuthor();
     }
 
     public interface ReplyItemInfo {
         String getReplyId();
         String getContent();
-        String getAuthor();
+        PersonalInformation.PersonalInfo getAuthor();
         List<CommentItemInfo> getAllComments();
     }
 
@@ -284,8 +292,8 @@ public class SchoolHeats {
         String getPostId();
         String getTitle();
         String getContent();
-        String getAuthor();
-        String getLatestReplier();
+        PersonalInformation.PersonalInfo getAuthor();
+        PersonalInformation.PersonalInfo getLatestReplier();
         Long getLatestActiveTime();
         Long getCreateTime();
         Integer getHeat();

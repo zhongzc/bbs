@@ -30,15 +30,20 @@ public class PersonalInformation {
     public static PersonalInfoResult userInfo(String userId) {
         logger.debug("userInfo, userId: {}", userId);
 
-        return componentFactory.user.userInfo(UserId.of(userId))
-                .map(userInfo -> constructUserInfo(UserId.of(userId), userInfo))
+        return personalInfo(UserId.of(userId))
+                .map(r -> (PersonalInfoResult)r)
                 .orElseGet(() -> {
                     logger.debug("userInfo - failed, error: {}, userId: {}", "找不到用户", userId);
                     return PersonalInfoError.of("找不到用户");
                 });
     }
 
-    private static PersonalInfoResult constructUserInfo(UserId userId, UserInfo info) {
+    protected static Optional<PersonalInfo> personalInfo(UserId userId) {
+        return componentFactory.user.userInfo(userId)
+                .map(userInfo -> constructUserInfo(userId, userInfo));
+    }
+
+    private static PersonalInfo constructUserInfo(UserId userId, UserInfo info) {
         return new PersonalInfo() {
             @Override
             public String getUserId() {
