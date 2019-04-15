@@ -2,10 +2,14 @@ package com.gaufoo.bbs.components.lostfound;
 
 import com.gaufoo.bbs.components._repositories.LostFoundMemoryRepository;
 import com.gaufoo.bbs.components.idGenerator.IdGenerator;
-import com.gaufoo.bbs.components.lostfound.common.*;
+import com.gaufoo.bbs.components.lostfound.common.FoundId;
+import com.gaufoo.bbs.components.lostfound.common.FoundInfo;
+import com.gaufoo.bbs.components.lostfound.common.LostId;
+import com.gaufoo.bbs.components.lostfound.common.LostInfo;
 
 import java.time.Instant;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Stream;
 
 public class LostFoundImpl implements LostFound {
@@ -13,12 +17,16 @@ public class LostFoundImpl implements LostFound {
     private final LostFoundRepository repository;
     private final IdGenerator lostIds;
     private final IdGenerator foundIds;
+    private final AtomicLong lostCounts;
+    private final AtomicLong foundCounts;
 
     LostFoundImpl(String componentName, LostFoundRepository repository, IdGenerator lostIds, IdGenerator foundIds) {
         this.componentName = componentName;
         this.repository = repository;
         this.lostIds = lostIds;
         this.foundIds = foundIds;
+        this.lostCounts = new AtomicLong(repository.getAllLosts().count());
+        this.foundCounts = new AtomicLong(repository.getAllFounds().count());
     }
 
     @Override
@@ -26,6 +34,7 @@ public class LostFoundImpl implements LostFound {
         LostId id = LostId.of(lostIds.generateId());
 
         if (repository.saveLost(id, lostInfo)) {
+            lostCounts.incrementAndGet();
             return Optional.of(id);
         } else {
             return Optional.empty();
@@ -37,6 +46,7 @@ public class LostFoundImpl implements LostFound {
         FoundId id = FoundId.of(foundIds.generateId());
 
         if (repository.saveFound(id, foundInfo)) {
+            foundCounts.incrementAndGet();
             return Optional.of(id);
         } else {
             return Optional.empty();
@@ -171,8 +181,18 @@ public class LostFoundImpl implements LostFound {
     }
 
     @Override
+    public Long allLostCounts() {
+        return lostCounts.get();
+    }
+
+    @Override
     public Stream<FoundId> allFounds() {
         return repository.getAllFounds();
+    }
+
+    @Override
+    public Long allFoundCounts() {
+        return foundCounts.get();
     }
 
     @Override
@@ -202,11 +222,13 @@ public class LostFoundImpl implements LostFound {
 
     @Override
     public void removeLost(LostId lostId) {
+        lostCounts.decrementAndGet();
         repository.deleteLost(lostId);
     }
 
     @Override
     public void removeFound(FoundId foundId) {
+        foundCounts.decrementAndGet();
         repository.deleteFound(foundId);
     }
 

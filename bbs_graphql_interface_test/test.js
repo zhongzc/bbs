@@ -1183,25 +1183,33 @@ unit_test("majorsIn - valid academy", () =>
 );
 
 // =============================================
-const LOSTS = `
-	query Losts($skip: Int!, $first: Int!) {
-		losts(skip: $skip, first: $first) {
-			publisher {
-				username
+const ALL_LOSTS = `
+	query AllLosts($skip: Int!, $first: Int!) {
+		allLosts(skip: $skip, first: $first) {
+			... on LostFoundError {
+				error
 			}
-			name
-			description
-			position
-			pictureUrl
-			creationTime
-			contact
-			lostTime
+			... on AllLostSuccess {
+				totalCount
+				lostInfos {
+					publisher {
+						username
+					}
+					name
+					description
+					position
+					pictureUrl
+					creationTime
+					contact
+					lostTime
+				}
+			}
 		}
 	}
 `;
 
-const losts = (skip, first) => sendGQL({
-	query: LOSTS,
+const allLosts = (skip, first) => sendGQL({
+	query: ALL_LOSTS,
 	variables: {
 		skip: skip,
 		first: first,
@@ -1210,7 +1218,9 @@ const losts = (skip, first) => sendGQL({
 
 unit_test("losts", () =>
 	after_n_lost_or_found_publish("lost", 5, (auth, pubItems, pubItemIds) =>
-		losts(2, 2).then(listOfLosts => {
+		allLosts(2, 2).then(result => {
+			assertEq(result.totalCount, 5);
+			const listOfLosts = result.lostInfos;
 			const names = listOfLosts.map(x => x.name);
 			const originNames = pubItems.slice(2, 4).map(x => x.itemName);
 			assertEq(JSON.stringify(names.sort()), JSON.stringify(originNames.sort()));
@@ -1219,25 +1229,33 @@ unit_test("losts", () =>
 );
 
 // =============================================
-const FOUNDS = `
-	query Founds($skip: Int!, $first: Int!) {
-		founds(skip: $skip, first: $first) {
-			publisher {
-				username
+const ALL_FOUNDS = `
+	query ALLFounds($skip: Int!, $first: Int!) {
+		allFounds(skip: $skip, first: $first) {
+			... on LostFoundError {
+				error
 			}
-			name
-			description
-			position
-			pictureUrl
-			creationTime
-			contact
-			foundTime
+			... on AllFoundSuccess {
+				totalCount
+				foundInfos {
+					publisher {
+						username
+					}
+					name
+					description
+					position
+					pictureUrl
+					creationTime
+					contact
+					foundTime
+				}
+			}
 		}
 	}
 `;
 
-const founds = (skip, first) => sendGQL({
-	query: FOUNDS,
+const allFounds = (skip, first) => sendGQL({
+	query: ALL_FOUNDS,
 	variables: {
 		skip: skip,
 		first: first,
@@ -1246,7 +1264,9 @@ const founds = (skip, first) => sendGQL({
 
 unit_test("founds", () =>
 	after_n_lost_or_found_publish("found", 5, (auth, pubItems, pubItemIds) =>
-		founds(2, 2).then(listOfFounds => {
+		allFounds(2, 2).then(result => {
+			assertEq(result.totalCount, 5);
+			const listOfFounds = result.foundInfos;
 			const names = listOfFounds.map(x => x.name);
 			const originNames = pubItems.slice(2, 4).map(x => x.itemName);
 			assertEq(JSON.stringify(names.sort()), JSON.stringify(originNames.sort()));

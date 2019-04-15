@@ -53,7 +53,11 @@ public interface LostFound {
 
     Stream<LostId> allLosts();
 
+    Long allLostCounts();
+
     Stream<FoundId> allFounds();
+
+    Long allFoundCounts();
 
     boolean claimLost(LostId lostId, String claimant);
 
