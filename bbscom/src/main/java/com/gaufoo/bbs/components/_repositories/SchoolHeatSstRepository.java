@@ -9,7 +9,11 @@ import com.gaufoo.sst.SST;
 import com.google.gson.Gson;
 
 import java.nio.file.Path;
+import java.time.Instant;
 import java.util.Comparator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.concurrent.CompletionStage;
 import java.util.stream.Stream;
 
 public class SchoolHeatSstRepository implements SchoolHeatRepository {
@@ -74,9 +78,12 @@ public class SchoolHeatSstRepository implements SchoolHeatRepository {
 
     @Override
     public boolean savePostInfo(PostId postId, PostInfo postInfo) {
-        return SstUtils.setEntry(idToInfo, postId.value, gson.toJson(postInfo)) &&
-                SstUtils.setEntry(idByTime, gson.toJson(postInfo.latestActiveTime), postId.value) &&
-                SstUtils.setEntry(idByHeat, gson.toJson(postInfo.heat), postId.value);
+        List<CompletionStage<Boolean>> stages = new LinkedList<>();
+        stages.add(SstUtils.setEntryAsync(idToInfo, postId.value, gson.toJson(postInfo)));
+        stages.add(SstUtils.setEntryAsync(idByTime, format(postInfo.latestActiveTime), postId.value));
+        stages.add(SstUtils.setEntryAsync(idByHeat, format(postInfo.heat), postId.value));
+
+        return SstUtils.waitAllFutureParT(stages, true, (r1, r2) -> r1 && r2);
     }
 
     @Override
@@ -84,9 +91,12 @@ public class SchoolHeatSstRepository implements SchoolHeatRepository {
         PostInfo oldPostInfo = SstUtils.getEntry(idToInfo, postId.value,
                 postInfo -> gson.fromJson(postInfo, PostInfo.class));
         if (oldPostInfo == null) return;
-        SstUtils.removeEntryWithKey(idToInfo, postId.value);
-        SstUtils.removeEntryWithKey(idByTime, gson.toJson(oldPostInfo.latestActiveTime));
-        SstUtils.removeEntryWithKey(idByHeat, gson.toJson(oldPostInfo.heat));
+
+        SstUtils.waitAllFuturesPar(
+                idToInfo.delete(postId.value),
+                idByTime.delete(format(oldPostInfo.latestActiveTime)),
+                idByHeat.delete(format(oldPostInfo.heat))
+        );
     }
 
     @Override
@@ -108,7 +118,15 @@ public class SchoolHeatSstRepository implements SchoolHeatRepository {
         return repositoryName;
     }
 
+    private static String format(Instant instant) {
+        return String.format("%012d", instant.toEpochMilli());
+    }
+    private static String format(Integer integer) {
+        return String.format("%012d", integer);
+    }
+
     public static SchoolHeatSstRepository get(String repositoryName, Path storingPath) {
         return new SchoolHeatSstRepository(repositoryName, storingPath);
     }
+
 }

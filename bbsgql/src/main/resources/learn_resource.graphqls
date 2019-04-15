@@ -3,14 +3,14 @@ type LearnResourceInfoError {
 }
 
 type LearnResourceInfo{
-        sharer: String!
-        majorCode: String!
-        content: String!
-        attachedFileIdentifier: String!
-        creationTime: Long!
+    sharer: String!
+    majorCode: String!
+    content: String!
+    attachedFileIdentifier: String!
+    creationTime: Long!
 }
 
-union LearnResourceInfoResult=LearnResourceInfo|LearnResourceInfoError
+union LearnResourceInfoResult= LearnResourceInfo| LearnResourceInfoError
 
 input LearnResourceInput{
     sharer: String!

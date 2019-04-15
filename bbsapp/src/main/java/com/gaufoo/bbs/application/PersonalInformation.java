@@ -139,41 +139,60 @@ public class PersonalInformation {
     public static ModifyPersonInfoResult uploadUserProfile(String userToken, String base64Image) {
         logger.debug("uploadUserProfile, userToken: {}, base64Image: {}", userToken, base64Image);
         try {
-            String userId = componentFactory.authenticator.getLoggedUser(UserToken.of(userToken)).userId;
-            byte[] decodedImg = Base64.getDecoder().decode(base64Image);
+            UserId userId = fetchUserId(userToken);
 
             removeOldProfileIfPresent(userId);
 
-            return componentFactory.userProfiles.createFile(decodedImg, "user-profile-" + userId)
-                    .map(fileId -> {
-                        boolean success = componentFactory.user.changeProfilePicIdentifier(UserId.of(userId), fileId.value);
-                        if (success) {
-                            logger.debug("uploadUserProfile - success, userId: {}, fileId: {}", userId, fileId.value);
-                            return ModifyPersonInfoSuccess.build();
-                        }
-                        logger.debug("uploadUserProfile - failed, error: {}, userId: {}, fileId: {}", "更改图片失败", userId, fileId.value);
-                        return ModifyPersonInfoError.of("更改图片失败");
-                    }).orElseGet(() -> {
-                        logger.debug("uploadUserProfile - failed, error: {}, userId: {}", "创建图片失败", userId);
-                        return ModifyPersonInfoError.of("创建图片失败");
-                    });
+            FileId fileId = createImageFile(base64Image, userId);
+            updateProfileImageId(userId, fileId);
 
+            PersonalInfo personalInfo = fetchPersonalInfo(userId);
+            return ModifyPersonInfoSuccess.of(personalInfo);
 
-        } catch (AuthenticatorException e) {
+        } catch (AuthenticatorException | CreateImageFileException e) {
             logger.debug("uploadUserProfile - failed, error: {}, userToken: {}", e.getMessage(), userToken);
             return ModifyPersonInfoError.of(e.getMessage());
         }
     }
 
-    private static void removeOldProfileIfPresent(String userId) {
-        oldProfileImageId(userId).ifPresent(oldFileId ->
-                componentFactory.userProfiles.Remove(FileId.of(oldFileId)));
+    private static UserId fetchUserId(String userToken) throws AuthenticatorException {
+        String userIdStr = componentFactory.authenticator.getLoggedUser(UserToken.of(userToken)).userId;
+        return UserId.of(userIdStr);
     }
 
-    private static Optional<String> oldProfileImageId(String userId) {
-        return componentFactory.user.userInfo(UserId.of(userId))
-                .map(userInfo -> userInfo.profilePicIdentifier);
+    private static void removeOldProfileIfPresent(UserId userId) {
+        String oldImageId = componentFactory.user.userInfo(userId)
+                .map(userInfo -> userInfo.profilePicIdentifier)
+                .orElse(null);
+        if (oldImageId == null) return;
+        componentFactory.userProfiles.Remove(FileId.of(oldImageId));
     }
+
+    private static FileId createImageFile(String base64Image, UserId userId) {
+        byte[] decodedImg = Base64.getDecoder().decode(base64Image);
+        return componentFactory.userProfiles.createFile(decodedImg, "user-profile-" + userId.value)
+                .orElseThrow(() -> {
+                    logger.debug("createImageFile - failed, userId: {}", userId);
+                    return new CreateImageFileException();
+                });
+    }
+
+    private static void updateProfileImageId(UserId userId, FileId fileId) {
+        boolean success = componentFactory.user.changeProfilePicIdentifier(userId, fileId.value);
+        if (!success) {
+            logger.debug("uploadUserProfile - failed, error: {}, userId: {}, fileId: {}", "更改图片失败", userId, fileId.value);
+            throw new ChangeProfileImageIdException();
+        }
+    }
+
+    private static PersonalInfo fetchPersonalInfo(UserId userId) {
+        return personalInfo(userId).orElseThrow(() -> {
+            logger.debug("fetchPersonalInfo, userId: {}", userId);
+            return new PersonalInfoNotFoundException();
+        });
+    }
+
+
 
     public static ModifyPersonInfoResult changeAcademy(String userToken, String academy) {
         return parseAcademy(academy).map(school ->
@@ -255,17 +274,17 @@ public class PersonalInformation {
                                                        String errMsg, BiFunction<UserFactory, UserId, Boolean> compFunc) {
         logger.debug("{}, userToken: {}, {}: {}", methodName, userToken, field, payload);
         try {
-            String userId = componentFactory.authenticator.getLoggedUser(UserToken.of(userToken)).userId;
-            boolean success = compFunc.apply(componentFactory.user, UserId.of(userId));
+            UserId userId = fetchUserId(userToken);
+            boolean success = compFunc.apply(componentFactory.user, userId);
 
             if (success) {
                 logger.debug("{} - success, userToken: {}, {}: {}", methodName, userToken, field, payload);
-                return ModifyPersonInfoSuccess.build();
+                return ModifyPersonInfoSuccess.of(fetchPersonalInfo(userId));
             } else {
                 logger.debug("{} - failed, error: {} userToken: {}, {}: {}", methodName, errMsg, userToken, field, payload);
                 return ModifyPersonInfoError.of(errMsg);
             }
-        } catch (AuthenticatorException e) {
+        } catch (AuthenticatorException | PersonalInfoNotFoundException e) {
             logger.debug("{} - failed, error: {} userToken: {}, {}: {}", methodName, e.getMessage(), userToken, field, payload);
             return ModifyPersonInfoError.of(e.getMessage());
         }
@@ -319,21 +338,19 @@ public class PersonalInformation {
     }
 
     public static class ModifyPersonInfoSuccess implements ModifyPersonInfoResult {
-        private Boolean ok;
+        private PersonalInfo personalInfo;
 
-
-        public ModifyPersonInfoSuccess() {
-            this.ok = true;
+        public ModifyPersonInfoSuccess(PersonalInfo personalInfo) {
+            this.personalInfo = personalInfo;
         }
 
-        public static ModifyPersonInfoSuccess build() {
-            return new ModifyPersonInfoSuccess();
+        public static ModifyPersonInfoSuccess of(PersonalInfo personalInfo) {
+            return new ModifyPersonInfoSuccess(personalInfo);
         }
 
-        public Boolean getOk() {
-            return ok;
+        public PersonalInfo getPersonalInfo() {
+            return personalInfo;
         }
-
     }
 
     public interface ModifyPersonInfoResult {
@@ -372,5 +389,21 @@ public class PersonalInformation {
     }
 
     public interface MajorsInResult {
+    }
+
+    private static class CreateImageFileException extends RuntimeException {
+        CreateImageFileException() {
+            super("创建图片文件失败");
+        }
+    }
+    private static class ChangeProfileImageIdException extends RuntimeException {
+        ChangeProfileImageIdException() {
+            super("更改图片失败");
+        }
+    }
+    private static class PersonalInfoNotFoundException extends RuntimeException {
+        PersonalInfoNotFoundException() {
+            super("找不到个人信息");
+        }
     }
 }

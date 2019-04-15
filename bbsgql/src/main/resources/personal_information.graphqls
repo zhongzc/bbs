@@ -20,7 +20,7 @@ type ModifyPersonInfoError {
 }
 
 type ModifyPersonInfoSuccess {
-    ok: Boolean!
+    personalInfo: PersonalInfo!
 }
 
 union ModifyPersonInfoResult = ModifyPersonInfoError | ModifyPersonInfoSuccess

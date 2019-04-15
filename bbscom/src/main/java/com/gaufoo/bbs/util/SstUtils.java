@@ -3,10 +3,12 @@ package com.gaufoo.bbs.util;
 import com.gaufoo.sst.SST;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ExecutionException;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
@@ -23,6 +25,10 @@ public class SstUtils {
     public static boolean setEntry(SST kvMap, String key, String value) {
         return waitFuture(kvMap.set(key, value)
                 .thenApply(value::equals)).orElse(false);
+    }
+
+    public static CompletionStage<Boolean> setEntryAsync(SST kvMap, String key, String value) {
+        return kvMap.set(key, value).thenApply(value::equals);
     }
 
     public static void removeEntryWithKey(SST kvMap, String key) {
@@ -67,6 +73,20 @@ public class SstUtils {
             e.printStackTrace();
         }
         return Optional.empty();
+    }
+
+    public static <T> T waitAllFutureParT(List<CompletionStage<T>> completionStages, T identity, BiFunction<T, T, T> combinator) {
+        CompletableFuture<T> cf = CompletableFuture.completedFuture(identity);
+        try {
+            return completionStages.stream().reduce(cf,
+                    (stageA, stageB) -> stageA.thenCombineAsync(stageB, combinator)
+            ).toCompletableFuture().get();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        }
+        return identity;
     }
 
     public static void waitAllFuturesPar(CompletionStage<?>... completionStages) {

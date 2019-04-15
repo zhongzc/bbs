@@ -73,3 +73,9 @@ type CreateCommentSuccess {
 }
 
 union CreateCommentResult = SchoolHeatError | CreateCommentSuccess
+
+type PostInfoSuccess {
+    postInfo: PostItemInfo!
+}
+
+union PostItemResult = SchoolHeatError | PostInfoSuccess

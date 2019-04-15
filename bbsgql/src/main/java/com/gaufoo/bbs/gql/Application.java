@@ -62,6 +62,7 @@ public class Application implements WebMvcConfigurer {
                 SchoolHeats.CreatePostSuccess.class,
                 SchoolHeats.CreateReplySuccess.class,
                 SchoolHeats.CreateCommentSuccess.class,
+                SchoolHeats.PostInfoSuccess.class,
                 LearnResource.LearnResourceInfo.class,
                 LearnResource.LearnResourceInfoError.class,
         };
