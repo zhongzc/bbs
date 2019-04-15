@@ -6,7 +6,7 @@ import com.gaufoo.bbs.components.schoolHeat.common.PostInfo;
 import java.util.Comparator;
 import java.util.stream.Stream;
 
-public interface HeatRepository {
+public interface SchoolHeatRepository {
     Stream<PostId> getAllPosts(Comparator<PostInfo> comparator);
 
     Stream<PostId> allPostsByTimeAsc();

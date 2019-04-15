@@ -14,10 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.Instant;
-import java.util.Comparator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -65,7 +62,7 @@ public class SchoolHeats {
         return componentFactory.schoolHeat.publishPost(postInfo)
                 .orElseThrow(() -> {
                     logger.debug("publishPost - failed, error: {}, postInfo: {}", "创建帖子失败",  postInfo);
-                    return new CreatePostException("创建帖子失败");
+                    return new CreatePostException();
                 });
     }
 
@@ -205,22 +202,24 @@ public class SchoolHeats {
             }
             @Override
             public List<ReplyItemInfo> getAllReplies() {
-                return postInfo.replyIdentifiers.stream()
-                        .map(ReplyId::of)
-                        .map(componentFactory.reply::replyInfo)
-                        .filter(Optional::isPresent)
-                        .map(Optional::get)
-                        .map(SchoolHeats::constructReplyItemInfo)
-                        .collect(Collectors.toList());
-
+                return postInfo.replyIdentifiers.stream().map(replyIdVal -> {
+                    ReplyId replyId = ReplyId.of(replyIdVal);
+                    Optional<ReplyInfo> oReplyInfo = componentFactory.reply.replyInfo(replyId);
+                    return oReplyInfo.map(replyInfo -> constructReplyItemInfo(replyId, replyInfo))
+                            .orElse(null);
+                }).filter(Objects::nonNull).collect(Collectors.toList());
             }
         };
     }
 
-    private static ReplyItemInfo constructReplyItemInfo(ReplyInfo replyInfo) {
+    private static ReplyItemInfo constructReplyItemInfo(ReplyId replyId, ReplyInfo replyInfo) {
         return new ReplyItemInfo() {
             @Override
             public String getReplyId() {
+                return replyId.value;
+            }
+            @Override
+            public String getPostIdReplying() {
                 return replyInfo.subject;
             }
             @Override
@@ -261,6 +260,78 @@ public class SchoolHeats {
         };
     }
 
+
+    private interface UndoFunction {
+        void undo();
+    }
+
+    public static CreateReplyResult createReply(String userToken, ReplyInfoInput input) {
+        logger.debug("createReply, input: {}", input);
+        List<UndoFunction> undoFunctions = new LinkedList<>();
+        try {
+            UserId userId = fetchUserId(userToken);
+
+            ReplyInfo replyInfo = buildReplyInfo(userId, input);
+            Optional<ReplyId> replyId = componentFactory.reply.reply(replyInfo);
+            if (!replyId.isPresent()) {
+                logger.debug("createReply - failed, error: {}, input: {}", "添加回复失败", input);
+                return SchoolHeatError.of("添加回复失败");
+            }
+            undoFunctions.add(() -> componentFactory.reply.removeReply(replyId.get()));
+
+            PostId postId = PostId.of(input.postIdToReply);
+            componentFactory.schoolHeat.addReply(postId, replyId.get().value);
+            undoFunctions.add(() -> componentFactory.schoolHeat.removeReply(postId, replyId.get().value));
+
+            PostItemInfo postItemInfo = constructPostItemInfo(postId, fetchPostInfo(postId));
+            return CreateReplySuccess.of(postItemInfo);
+
+        } catch (AuthenticatorException e) {
+            logger.debug("createReply - failed, error: {}, input: {}", e.getMessage(), input);
+            undoFunctions.forEach(UndoFunction::undo);
+            return SchoolHeatError.of(e.getMessage());
+        }
+    }
+
+    private static ReplyInfo buildReplyInfo(UserId userId, ReplyInfoInput input) {
+        return ReplyInfo.of(input.postIdToReply, input.content, userId.value);
+    }
+
+
+
+    public static CreateCommentResult createComment(String userToken, CommentInfoInput input) {
+        logger.debug("createComment, input: {}", input);
+        try {
+            UserId userId = fetchUserId(userToken);
+
+            ReplyInfo.Comment comment = ReplyInfo.Comment.of(userId.value, input.content, input.replyIdToComment);
+            boolean success = componentFactory.reply.comment(ReplyId.of(input.replyIdToComment), comment);
+            if (!success) return SchoolHeatError.of("添加评论失败");
+
+            ReplyInfo replyInfo = fetchReplyInfo(ReplyId.of(input.replyIdToComment));
+            PostId postId = PostId.of(replyInfo.subject);
+            PostInfo postInfo = fetchPostInfo(postId);
+
+            PostItemInfo postItemInfo = constructPostItemInfo(postId, postInfo);
+
+            return CreateCommentSuccess.of(postItemInfo);
+
+        } catch (AuthenticatorException | ReplyNonExistException e) {
+            logger.debug("createComment - failed, error: {}, input: {}", e.getMessage(), input);
+            return SchoolHeatError.of(e.getMessage());
+        }
+    }
+
+    private static ReplyInfo fetchReplyInfo(ReplyId replyId) {
+        return componentFactory.reply.replyInfo(replyId)
+                .orElseThrow(() -> {
+                    logger.debug("fetchReplyInfo - failed, replyId: {}", replyId);
+                    return new ReplyNonExistException();
+                });
+    }
+
+
+
     // for test
     public static void reset() {
         componentFactory.schoolHeat.allPosts(PostComparators.comparingTime).forEach(postId -> {
@@ -268,9 +339,9 @@ public class SchoolHeats {
             componentFactory.schoolHeat.removePost(postId);
 
             if (postInfo == null) return;
-            postInfo.replyIdentifiers.forEach(replyId -> {
-                componentFactory.reply.removeReply(ReplyId.of(replyId));
-            });
+            postInfo.replyIdentifiers.forEach(replyId ->
+                    componentFactory.reply.removeReply(ReplyId.of(replyId))
+            );
         });
 
     }
@@ -283,6 +354,7 @@ public class SchoolHeats {
 
     public interface ReplyItemInfo {
         String getReplyId();
+        String getPostIdReplying();
         String getContent();
         PersonalInformation.PersonalInfo getAuthor();
         List<CommentItemInfo> getAllComments();
@@ -314,9 +386,57 @@ public class SchoolHeats {
         public void setContent(String content) {
             this.content = content;
         }
+
+        @Override
+        public String toString() {
+            return "title: " + title + ", content: " + content;
+        }
     }
 
-    public static class SchoolHeatError implements CreatePostResult, ModifyPostResult {
+    public static class ReplyInfoInput {
+        private String postIdToReply;
+        private String content;
+
+        public ReplyInfoInput() {
+        }
+
+        public void setPostIdToReply(String postIdToReply) {
+            this.postIdToReply = postIdToReply;
+        }
+
+        public void setContent(String content) {
+            this.content = content;
+        }
+
+        @Override
+        public String toString() {
+            return "postIdToReply: " + postIdToReply + ", content: " + content;
+        }
+    }
+
+    public static class CommentInfoInput {
+        private String replyIdToComment;
+        private String content;
+
+        public CommentInfoInput() {
+        }
+
+        public void setReplyIdToComment(String replyIdToComment) {
+            this.replyIdToComment = replyIdToComment;
+        }
+
+        public void setContent(String content) {
+            this.content = content;
+        }
+
+        @Override
+        public String toString() {
+            return "replyIdToComment: " + replyIdToComment + ", content: " + content;
+        }
+    }
+
+    public static class SchoolHeatError implements CreatePostResult, ModifyPostResult,
+            CreateReplyResult, CreateCommentResult {
         private String error;
 
         public SchoolHeatError(String error) {
@@ -371,9 +491,47 @@ public class SchoolHeats {
     public interface ModifyPostResult {
     }
 
+    public static class CreateReplySuccess implements CreateReplyResult {
+        private PostItemInfo postInfo;
+
+        public CreateReplySuccess(PostItemInfo postInfo) {
+            this.postInfo = postInfo;
+        }
+
+        public static CreateReplySuccess of(PostItemInfo postInfo) {
+            return new CreateReplySuccess(postInfo);
+        }
+
+        public PostItemInfo getPostInfo() {
+            return postInfo;
+        }
+    }
+
+    public interface CreateReplyResult {
+    }
+
+    public static class CreateCommentSuccess implements CreateCommentResult {
+        private PostItemInfo postInfo;
+
+        public CreateCommentSuccess(PostItemInfo postInfo) {
+            this.postInfo = postInfo;
+        }
+
+        public static CreateCommentSuccess of(PostItemInfo postInfo) {
+            return new CreateCommentSuccess(postInfo);
+        }
+
+        public PostItemInfo getPostInfo() {
+            return postInfo;
+        }
+    }
+
+    public interface CreateCommentResult {
+    }
+
     private static class CreatePostException extends RuntimeException {
-        CreatePostException(String errMsg) {
-            super(errMsg);
+        CreatePostException() {
+            super("创建帖子失败");
         }
     }
 
@@ -386,6 +544,12 @@ public class SchoolHeats {
     private static class PostNonExistException extends RuntimeException {
         PostNonExistException() {
             super("帖子不存在");
+        }
+    }
+
+    private static class ReplyNonExistException extends RuntimeException {
+        ReplyNonExistException() {
+            super("回复不存在");
         }
     }
 

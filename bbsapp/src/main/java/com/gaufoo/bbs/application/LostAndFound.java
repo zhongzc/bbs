@@ -172,7 +172,6 @@ public class LostAndFound {
 
             FileId fileId = storeLostFoundImage(input.imageBase64);
             logger.debug("publishItem storeLostFoundImage, fileId: {}", fileId);
-
             undoOperations.add(() -> deleteLostFoundImage(fileId));
 
             String itemId = "";

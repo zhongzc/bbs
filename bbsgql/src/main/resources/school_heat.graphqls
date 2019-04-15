@@ -3,6 +3,16 @@ input PostInfoInput {
     content: String!
 }
 
+input ReplyInfoInput {
+    postIdToReply: String!
+    content: String!
+}
+
+input CommentInfoInput {
+    replyIdToComment: String!
+    content: String!
+}
+
 type CommentItemInfo {
     content: String!
     commentTo: PersonalInfo
@@ -11,6 +21,7 @@ type CommentItemInfo {
 
 type ReplyItemInfo {
     replyId: String!
+    postIdReplying: String!
     content: String!
     author: PersonalInfo!
     allComments: [CommentItemInfo!]!
@@ -50,3 +61,15 @@ enum SortedBy {
     HeatAsc
     HeatDes
 }
+
+type CreateReplySuccess {
+    postInfo: PostItemInfo!
+}
+
+union CreateReplyResult = SchoolHeatError | CreateReplySuccess
+
+type CreateCommentSuccess {
+    postInfo: PostItemInfo!
+}
+
+union CreateCommentResult = SchoolHeatError | CreateCommentSuccess

@@ -11,10 +11,10 @@ import java.util.stream.Stream;
 
 public class SchoolHeatImpl implements SchoolHeat {
     private final String componentName;
-    private final HeatRepository repository;
+    private final SchoolHeatRepository repository;
     private final IdGenerator idGenerator;
 
-    private SchoolHeatImpl(String componentName, HeatRepository repository, IdGenerator idGenerator) {
+    private SchoolHeatImpl(String componentName, SchoolHeatRepository repository, IdGenerator idGenerator) {
         this.componentName = componentName;
         this.repository = repository;
         this.idGenerator = idGenerator;
@@ -77,7 +77,7 @@ public class SchoolHeatImpl implements SchoolHeat {
         return componentName;
     }
 
-    public static SchoolHeatImpl get(String componentName, HeatRepository repository, IdGenerator idGenerator) {
+    public static SchoolHeatImpl get(String componentName, SchoolHeatRepository repository, IdGenerator idGenerator) {
         return new SchoolHeatImpl(componentName, repository, idGenerator);
     }
 }

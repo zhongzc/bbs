@@ -916,6 +916,103 @@ unit_test("delete post", () =>
 	)
 );
 
+// =============================================
+const CREATE_REPLY = `
+	mutation CreateReply($replyInfo: ReplyInfoInput!) {
+		createReply(replyInfo: $replyInfo) {
+			... on SchoolHeatError {
+				error
+			}
+			... on CreateReplySuccess {
+				postInfo {
+					postId
+					title
+					content
+					allReplies {
+						replyId
+					}
+				}
+			}
+		}
+}
+`;
+
+const createReply = (replyInfo, userToken) => sendGQL({
+	query: CREATE_REPLY,
+	variables: {
+		replyInfo: replyInfo
+	},
+	auth: userToken
+});
+
+unit_test("create reply", () =>
+	after_n_post_create(1, (auth, postInfos, postIds) => {
+		const replyInfo = {
+			postIdToReply: postIds[0],
+			content: "lololololo"
+		};
+		return createReply(replyInfo, auth).then(result => {
+			const postInfo = result.postInfo;
+			assertEq(postIds[0], postInfo.postId);
+			assertEq(postInfos[0].content, postInfo.content);
+		});
+	})
+);
+
+// =============================================
+
+const CREATE_COMMENT = `
+	mutation CreateComment($commentInfo: CommentInfoInput!) {
+		createComment(commentInfo: $commentInfo) {
+			... on SchoolHeatError {
+				error
+			}
+			... on CreateCommentSuccess {
+				postInfo {
+					postId
+					title
+					content
+					allReplies {
+						allComments {
+							content
+						}
+					}
+				}
+			}
+		}
+}
+`;
+
+const createComment = (commentInfo, userToken) => sendGQL({
+	query: CREATE_COMMENT,
+	variables: {
+		commentInfo: commentInfo
+	},
+	auth: userToken
+});
+
+unit_test("create comment", () =>
+	after_n_post_create(1, (auth, postInfos, postIds) => {
+		const replyInfo = {
+			postIdToReply: postIds[0],
+			content: "lololololo"
+		};
+		return createReply(replyInfo, auth).then(result => {
+			const replyId = result.postInfo.allReplies[0].replyId;
+			
+			const commentInfo = {
+				replyIdToComment: replyId,
+				content: "this is a comment!"
+			};
+			return createComment(commentInfo, auth).then(result => {
+				const content = result.postInfo.allReplies[0].allComments[0].content;
+				assertEq(content, commentInfo.content);
+			});
+		});
+	})
+);
+
+
 // =========================================query=========================================
 
 // =============================================
@@ -1301,10 +1398,7 @@ const allPosts = (skip, first, sortedBy) => sendGQL({
 unit_test("all posts", () => 
 	after_n_post_create(10, (auth, postInfos, postIds) =>
 		allPosts(0, 10, "TimeAsc").then(result => {
-			console.log(result);
-			console.log(postIds);
 			const resultPostIds = result.map(r => r.postId);
-			// const originPostIds = postIds.slice(3, 8);
 			const originPostIds = postIds;
 			assertEq(JSON.stringify(resultPostIds), JSON.stringify(originPostIds));
 		})

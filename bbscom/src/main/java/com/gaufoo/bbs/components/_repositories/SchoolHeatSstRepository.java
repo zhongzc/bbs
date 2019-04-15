@@ -1,6 +1,6 @@
 package com.gaufoo.bbs.components._repositories;
 
-import com.gaufoo.bbs.components.schoolHeat.HeatRepository;
+import com.gaufoo.bbs.components.schoolHeat.SchoolHeatRepository;
 import com.gaufoo.bbs.components.schoolHeat.common.PostId;
 import com.gaufoo.bbs.components.schoolHeat.common.PostInfo;
 import com.gaufoo.bbs.util.SstUtils;
@@ -12,14 +12,14 @@ import java.nio.file.Path;
 import java.util.Comparator;
 import java.util.stream.Stream;
 
-public class HeatSstRepository implements HeatRepository {
+public class SchoolHeatSstRepository implements SchoolHeatRepository {
     private static final Gson gson = new Gson();
     private final String repositoryName;
     private final SST idByHeat;
     private final SST idByTime;
     private final SST idToInfo;
 
-    private HeatSstRepository(String repositoryName, Path storingPath) {
+    private SchoolHeatSstRepository(String repositoryName, Path storingPath) {
         this.repositoryName = repositoryName;
 
         String postIdToIdByTime = repositoryName + "time-id";
@@ -108,7 +108,7 @@ public class HeatSstRepository implements HeatRepository {
         return repositoryName;
     }
 
-    public static HeatSstRepository get(String repositoryName, Path storingPath) {
-        return new HeatSstRepository(repositoryName, storingPath);
+    public static SchoolHeatSstRepository get(String repositoryName, Path storingPath) {
+        return new SchoolHeatSstRepository(repositoryName, storingPath);
     }
 }

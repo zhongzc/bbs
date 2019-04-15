@@ -93,7 +93,7 @@ public class ComponentFactory {
                 IdGenerator.seqInteger("resourceId", idRepository));
 
         schoolHeat = SchoolHeat.defau1t("schoolHeat",
-                HeatSstRepository.get("schoolHeatRep", sstPathConfig.schoolHeat()),
+                SchoolHeatSstRepository.get("schoolHeatRep", sstPathConfig.schoolHeat()),
                 IdGenerator.seqInteger("postId", idRepository));
 
         reply = Reply.defau1t("reply",

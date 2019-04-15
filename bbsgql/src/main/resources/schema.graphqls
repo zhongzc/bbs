@@ -14,6 +14,8 @@ type Query {
     lostItemInfo(lostId: String!): ItemInfoResult!
 
     allPosts(skip: Int!, first: Int!, sortedBy: SortedBy): [PostItemInfo!]!
+
+
     searchResource(resourceId: String!): LearnResourceInfoResult!
 }
 
@@ -44,6 +46,9 @@ type Mutation {
 
     createPost(postInfo: PostInfoInput!): CreatePostResult!
     deletePost(postId: String!): ModifyPostResult!
+    createReply(replyInfo: ReplyInfoInput!): CreateReplyResult!
+    createComment(commentInfo: CommentInfoInput!): CreateCommentResult!
+
     publishLearnResource(resourceInfo: LearnResourceInput!): LearnResourceInfoResult!
 }
 

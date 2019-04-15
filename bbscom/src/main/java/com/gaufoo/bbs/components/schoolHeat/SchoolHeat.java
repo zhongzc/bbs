@@ -46,7 +46,7 @@ public interface SchoolHeat {
 
     String getName();
 
-    static SchoolHeat defau1t(String componentName, HeatRepository heatRepository, IdGenerator idGenerator) {
-        return SchoolHeatImpl.get(componentName, heatRepository, idGenerator);
+    static SchoolHeat defau1t(String componentName, SchoolHeatRepository schoolHeatRepository, IdGenerator idGenerator) {
+        return SchoolHeatImpl.get(componentName, schoolHeatRepository, idGenerator);
     }
 }

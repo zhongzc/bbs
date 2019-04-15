@@ -129,13 +129,23 @@ public class Mutation implements GraphQLMutationResolver {
                 SchoolHeats.SchoolHeatError::of, env);
     }
 
-    LearnResource.LearnResourceInfoResult publishLearnResource(LearnResource.LearnResourceInput resourceInfo,DataFetchingEnvironment env){
+    SchoolHeats.CreateReplyResult createReply(SchoolHeats.ReplyInfoInput replyInfoInput, DataFetchingEnvironment env) {
         return authenticatedGuard(
-                userToken->LearnResource.publishLearnResource(userToken,resourceInfo),
-                LearnResource.LearnResourceInfoError::of,env);
+                userToken -> SchoolHeats.createReply(userToken, replyInfoInput),
+                SchoolHeats.SchoolHeatError::of, env);
     }
 
+    SchoolHeats.CreateCommentResult createComment(SchoolHeats.CommentInfoInput commentInfoInput, DataFetchingEnvironment env) {
+        return authenticatedGuard(
+                userToken -> SchoolHeats.createComment(userToken, commentInfoInput),
+                SchoolHeats.SchoolHeatError::of, env);
+    }
 
+    LearnResource.LearnResourceInfoResult publishLearnResource(LearnResource.LearnResourceInput resourceInfo, DataFetchingEnvironment env){
+        return authenticatedGuard(
+                userToken -> LearnResource.publishLearnResource(userToken, resourceInfo),
+                LearnResource.LearnResourceInfoError::of,env);
+    }
 
     private static <E> E authenticatedGuard(Function<String, E> transformer, Function<String, E> errorConstructor,
                                             DataFetchingEnvironment env) {
