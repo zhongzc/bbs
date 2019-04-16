@@ -385,7 +385,7 @@ public class LostAndFound {
         }
     }
 
-    public static AllLostResult allLosts(int skip, int first) {
+    public static AllLostResult allLosts(Long skip, Long first) {
         logger.debug("allLosts, skip: {}, first: {}", skip, first);
 
         return new AllLostResult() {
@@ -396,16 +396,19 @@ public class LostAndFound {
 
             @Override
             public List<LostItemInfo> getLostInfos() {
+                Long sk = Optional.ofNullable(skip).orElse(0L);
+                Long ft = Optional.ofNullable(first).orElse(getTotalCount());
+
                 return componentFactory.lostFound.allLosts()
                         .map(lostId -> componentFactory.lostFound.lostInfo(lostId).map(i -> constructItemInfo(lostId, i)))
                         .map(Optional::get)
-                        .skip(skip).limit(first)
+                        .skip(sk).limit(ft)
                         .collect(Collectors.toList());
             }
         };
     }
 
-    public static AllFoundResult allFounds(int skip, int first) {
+    public static AllFoundResult allFounds(Long skip, Long first) {
         logger.debug("allFounds, skip: {}, first: {}", skip, first);
 
         return new AllFoundResult() {
@@ -416,10 +419,13 @@ public class LostAndFound {
 
             @Override
             public List<FoundItemInfo> getFoundInfos() {
+                Long sk = Optional.ofNullable(skip).orElse(0L);
+                Long ft = Optional.ofNullable(first).orElse(getTotalCount());
+
                 return componentFactory.lostFound.allFounds()
                         .map(foundId -> componentFactory.lostFound.foundInfo(foundId).map(i -> constructItemInfo(foundId, i)))
                         .map(Optional::get)
-                        .skip(skip).limit(first)
+                        .skip(sk).limit(ft)
                         .collect(Collectors.toList());
             }
         };

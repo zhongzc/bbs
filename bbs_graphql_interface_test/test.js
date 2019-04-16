@@ -937,43 +937,6 @@ unit_test("delete post", () =>
 );
 
 // =============================================
-const CREATE_REPLY = `
-	mutation CreateReply($replyInfo: ReplyInfoInput!) {
-		createReply(replyInfo: $replyInfo) {
-			... on SchoolHeatError {
-				error
-			}
-			... on ReplyItemInfo {
-				replyId
-				content
-			}
-		}
-}
-`;
-
-const createReply = (replyInfo, userToken) => sendGQL({
-	query: CREATE_REPLY,
-	variables: {
-		replyInfo: replyInfo
-	},
-	auth: userToken
-});
-
-unit_test("create reply", () =>
-	after_n_post_create(1, (auth, postInfos, postIds) => {
-		const replyInfo = {
-			postIdToReply: postIds[0],
-			content: "lololololo"
-		};
-		return createReply(replyInfo, auth).then(result => {
-			assertNonEmpty(result.replyId);
-			assertEq("lololololo", result.content);
-		});
-	})
-);
-
-// =============================================
-
 const CREATE_COMMENT = `
 	mutation CreateComment($commentInfo: CommentInfoInput!) {
 		createComment(commentInfo: $commentInfo) {
@@ -981,6 +944,7 @@ const CREATE_COMMENT = `
 				error
 			}
 			... on CommentItemInfo {
+				commentId
 				content
 			}
 		}
@@ -990,27 +954,63 @@ const CREATE_COMMENT = `
 const createComment = (commentInfo, userToken) => sendGQL({
 	query: CREATE_COMMENT,
 	variables: {
-		commentInfo: commentInfo
+		commentInfo
 	},
 	auth: userToken
 });
 
 unit_test("create comment", () =>
 	after_n_post_create(1, (auth, postInfos, postIds) => {
-		const replyInfo = {
-			postIdToReply: postIds[0],
+		const commentInfo = {
+			postIdToComment: postIds[0],
 			content: "lololololo"
 		};
-		return createReply(replyInfo, auth).then(result => {
-			const replyId = result.replyId;
+		return createComment(commentInfo, auth).then(result => {
+			assertNonEmpty(result.commentId);
+			assertEq("lololololo", result.content);
+		});
+	})
+);
+
+// =============================================
+
+const CREATE_REPLY = `
+	mutation CreateReply($replyInfo: ReplyInfoInput!) {
+		createReply(replyInfo: $replyInfo) {
+			... on SchoolHeatError {
+				error
+			}
+			... on ReplyItemInfo {
+				content
+			}
+		}
+}
+`;
+
+const createReply = (replyInfo, userToken) => sendGQL({
+	query: CREATE_REPLY,
+	variables: {
+		replyInfo
+	},
+	auth: userToken
+});
+
+unit_test("create reply", () =>
+	after_n_post_create(1, (auth, postInfos, postIds) => {
+		const replyInfo = {
+			postIdToComment: postIds[0],
+			content: "lololololo"
+		};
+		return createComment(replyInfo, auth).then(result => {
+			const commentId = result.commentId;
 			
-			const commentInfo = {
-				replyIdToComment: replyId,
+			const replyInfo = {
+				commentIdToReply: commentId,
 				content: "this is a comment!"
 			};
-			return createComment(commentInfo, auth).then(result => {
+			return createReply(replyInfo, auth).then(result => {
 				const content = result.content;
-				assertEq(content, commentInfo.content);
+				assertEq(content, replyInfo.content);
 			});
 		});
 	})
@@ -1174,7 +1174,7 @@ unit_test("majorsIn - valid academy", () =>
 
 // =============================================
 const ALL_LOSTS = `
-	query AllLosts($skip: Int!, $first: Int!) {
+	query AllLosts($skip: Long, $first: Long) {
 		allLosts(skip: $skip, first: $first) {
 			totalCount
 			lostInfos {
@@ -1215,7 +1215,7 @@ unit_test("losts", () =>
 
 // =============================================
 const ALL_FOUNDS = `
-	query ALLFounds($skip: Int!, $first: Int!) {
+	query ALLFounds($skip: Long, $first: Long) {
 		allFounds(skip: $skip, first: $first) {
 			totalCount
 			foundInfos {
@@ -1366,7 +1366,7 @@ unit_test("lost item info", () =>
 // 注: commentTo === null时表示回复层主，非空时表示回复某个userId
 // SortedBy = {TimeAsc | TimeDes | HeatAsc | HeatDes}
 const ALL_POSTS = `
-	query AllPosts($skip: Int!, $first: Int!, $sortedBy: SortedBy!) {
+	query AllPosts($skip: Long, $first: Long, $sortedBy: SortedBy) {
 		allPosts(skip: $skip, first: $first, sortedBy: $sortedBy) {
 			postInfos {
 				postId
@@ -1375,25 +1375,27 @@ const ALL_POSTS = `
 					author {
 					username
 				}
-					latestReplier {
+				latestCommenter {
 					username
 				}
 				latestActiveTime
 				createTime
-					heat
-					allReplies {
-					replyId
-					content
-					author {
-						username
-					}
-					allComments {
+				heat
+				allComments {
+					comments {
+						commentId
 						content
-						commentTo {
-							username
-						}
 						author {
 							username
+						}
+						allReplies {
+							content
+							replyTo {
+								username
+							}
+							author {
+								username
+							}
 						}
 					}
 				}
@@ -1432,6 +1434,24 @@ const POST_INFO = `
 				postId
 				title
 				content
+				allComments {
+					comments {
+						commentId
+						content
+						author {
+							username
+						}
+						allReplies {
+							content
+							replyTo {
+								username
+							}
+							author {
+								username
+							}
+						}
+					}
+				}
 			}
 		}
 	}

@@ -5,7 +5,6 @@ import com.gaufoo.bbs.components.schoolHeat.common.PostId;
 import com.gaufoo.bbs.components.schoolHeat.common.PostInfo;
 
 import java.util.Comparator;
-import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -22,25 +21,13 @@ public interface SchoolHeat {
 
     void increaseHeat(PostId postId, int delta);
 
-    void setLatestReplier(PostId postId, String replier);
+    void setLatestCommenter(PostId postId, String replier);
 
     Long allPostsCount();
 
-    default void addReply(PostId postId, String replyIdentifier) {
-        postInfo(postId).ifPresent(oldPostInfo -> {
-            List<String> replyIds = oldPostInfo.replyIdentifiers;
-            replyIds.add(replyIdentifier);
-            updatePost(postId, oldPostInfo.modReplyIdentifiers(replyIds));
-        });
-    }
+    void addComment(PostId postId, String commentIdentifier);
 
-    default void removeReply(PostId postId, String replyIdentifier) {
-        postInfo(postId).ifPresent(oldPostInfo -> {
-            List<String> replyIds = oldPostInfo.replyIdentifiers;
-            replyIds.remove(replyIdentifier);
-            updatePost(postId, oldPostInfo.modReplyIdentifiers(replyIds));
-        });
-    }
+    void removeComment(PostId postId, String commentIdentifier);
 
     void updatePost(PostId postId, PostInfo modPostInfo);
 

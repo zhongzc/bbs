@@ -6,6 +6,7 @@ import com.gaufoo.bbs.components.schoolHeat.common.PostId;
 import com.gaufoo.bbs.components.schoolHeat.common.PostInfo;
 
 import java.util.Comparator;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Stream;
@@ -62,15 +63,35 @@ public class SchoolHeatImpl implements SchoolHeat {
     }
 
     @Override
-    public void setLatestReplier(PostId postId, String replier) {
+    public void setLatestCommenter(PostId postId, String commenter) {
         PostInfo postInfo = repository.getPostInfo(postId);
         if (postInfo == null) return;
-        updatePost(postId, postInfo.modLatestReplier(replier));
+        updatePost(postId, postInfo.modLatestCommenter(commenter));
     }
 
     @Override
     public Long allPostsCount() {
         return count.get();
+    }
+
+    @Override
+    public void addComment(PostId postId, String commentIdentifier) {
+        postInfo(postId).ifPresent(oldPostInfo -> {
+            List<String> commentIds = oldPostInfo.commentIdentifiers;
+            commentIds.add(commentIdentifier);
+            updatePost(postId, oldPostInfo.modCommentIdentifiers(commentIds)
+                    .modCommentCount(oldPostInfo.commentCount + 1));
+        });
+    }
+
+    @Override
+    public void removeComment(PostId postId, String commentIdentifier) {
+        postInfo(postId).ifPresent(oldPostInfo -> {
+            List<String> commentIds = oldPostInfo.commentIdentifiers;
+            commentIds.remove(commentIdentifier);
+            updatePost(postId, oldPostInfo.modCommentIdentifiers(commentIds)
+                .modCommentCount(oldPostInfo.commentCount - 1));
+        });
     }
 
     @Override

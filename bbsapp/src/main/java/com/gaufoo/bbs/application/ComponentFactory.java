@@ -12,7 +12,7 @@ import com.gaufoo.bbs.components.idGenerator.IdRepository;
 import com.gaufoo.bbs.components.learningResource.LearningResource;
 import com.gaufoo.bbs.components.like.LikeComponent;
 import com.gaufoo.bbs.components.lostfound.LostFound;
-import com.gaufoo.bbs.components.reply.Reply;
+import com.gaufoo.bbs.components.reply.Comment;
 import com.gaufoo.bbs.components.schoolHeat.SchoolHeat;
 import com.gaufoo.bbs.components.scutMajor.MajorFactory;
 import com.gaufoo.bbs.components.tokenGenerator.TokenGenerator;
@@ -40,7 +40,7 @@ public class ComponentFactory {
     public final LikeComponent like;
     public final LearningResource learnResource;
     public final SchoolHeat schoolHeat;
-    public final Reply reply;
+    public final Comment comment;
     public final IdRepository idRepository;
 
     public ComponentFactory(StaticResourceConfig staticRcConfig) {
@@ -77,11 +77,11 @@ public class ComponentFactory {
         major = MajorFactory.defau1t("major");
 
         lostFound = LostFound.defau1t("lstFnd",
-                LostFoundSstRepository.get("lstFndMryRep", sstPathConfig.lostFound()),
+                LostFoundSstRepository.get("lstFndSstRep", sstPathConfig.lostFound()),
                 IdGenerator.seqInteger("lstId", idRepository), IdGenerator.seqInteger("fndId", idRepository));
 
         lostFoundImages = FileFactory.defau1t("lostFoundImages",
-                        FileFactoryFileSystemRepository.get("lostFileMryRep",
+                        FileFactoryFileSystemRepository.get("lostFoundDskRep",
                                 lostFoundFolder), IdGenerator.seqInteger("lostImgId", idRepository));
 
         like = LikeComponent.defau1t("like",
@@ -93,12 +93,12 @@ public class ComponentFactory {
                 IdGenerator.seqInteger("resourceId", idRepository));
 
         schoolHeat = SchoolHeat.defau1t("schoolHeat",
-                SchoolHeatSstRepository.get("schoolHeatRep", sstPathConfig.schoolHeat()),
+                SchoolHeatSstRepository.get("schoolHeatSstRep", sstPathConfig.schoolHeat()),
                 IdGenerator.seqInteger("postId", idRepository));
 
-        reply = Reply.defau1t("reply",
+        comment = Comment.defau1t("comment",
                 IdGenerator.seqInteger("replyId", idRepository),
-                ReplyMemoryRepository.get("rplyMryRep"));
+                CommentSstRepository.get("commentSstRep", sstPathConfig.comment()));
     }
 
     public void shutdown() {

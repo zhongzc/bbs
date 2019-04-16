@@ -2,31 +2,31 @@ package com.gaufoo.bbs.components.reply.common;
 
 import java.util.Objects;
 
-final public class ReplyId {
+final public class CommentId {
     public final String value;
 
-    private ReplyId(String value) {
+    private CommentId(String value) {
         this.value = value;
     }
 
-    public static ReplyId of(String value) {
-        return new ReplyId(value);
+    public static CommentId of(String value) {
+        return new CommentId(value);
     }
 
-    public ReplyId modValue(String value) {
-        return new ReplyId(value);
+    public CommentId modValue(String value) {
+        return new CommentId(value);
     }
 
     @Override
     public String toString() {
-        return "ReplyId" + "(" + "'" + this.value + "'" + ')';
+        return "CommentId" + "(" + "'" + this.value + "'" + ')';
     }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        ReplyId other = (ReplyId) o;
+        CommentId other = (CommentId) o;
         return Objects.equals(value, other.value);
     }
 

@@ -3,8 +3,8 @@ package com.gaufoo.bbs.application;
 import com.gaufoo.bbs.application.util.Utils;
 import com.gaufoo.bbs.components.authenticator.common.UserToken;
 import com.gaufoo.bbs.components.authenticator.exceptions.AuthenticatorException;
-import com.gaufoo.bbs.components.reply.common.ReplyId;
-import com.gaufoo.bbs.components.reply.common.ReplyInfo;
+import com.gaufoo.bbs.components.reply.common.CommentId;
+import com.gaufoo.bbs.components.reply.common.CommentInfo;
 import com.gaufoo.bbs.components.schoolHeat.common.PostComparators;
 import com.gaufoo.bbs.components.schoolHeat.common.PostId;
 import com.gaufoo.bbs.components.schoolHeat.common.PostInfo;
@@ -27,14 +27,10 @@ public class SchoolHeats {
         logger.debug("createPost, userToken: {}, input: {}", userToken, input);
         try {
             ensurePostInputNonNull(input);
-
             UserId userId = fetchUserId(userToken);
             PostInfo itemInfo = buildPostItemInfo(userId, input);
-
             PostId result = publishPost(itemInfo);
-
             return constructPostItemInfo(result, itemInfo);
-
         } catch (AuthenticatorException | PostInputNullException | CreatePostException e) {
             logger.debug("createPost - failed, error: {}, userToken: {}, input: {}", e.getMessage(), userToken, input);
             return SchoolHeatError.of(e.getMessage());
@@ -47,17 +43,13 @@ public class SchoolHeats {
             throw new PostInputNullException();
         }
     }
-
     private static UserId fetchUserId(String userToken) throws AuthenticatorException {
         String userIdStr = componentFactory.authenticator.getLoggedUser(UserToken.of(userToken)).userId;
         return UserId.of(userIdStr);
     }
-
     private static PostInfo buildPostItemInfo(UserId userId, PostInfoInput input) {
-        return PostInfo.of(input.title, input.content, userId.value, null, 0, new LinkedList<>(),
-                new LinkedList<>(), Instant.now(), Instant.now());
+        return PostInfo.of(input.title, input.content, userId.value);
     }
-
     private static PostId publishPost(PostInfo postInfo) {
         return componentFactory.schoolHeat.publishPost(postInfo)
                 .orElseThrow(() -> {
@@ -115,7 +107,7 @@ public class SchoolHeats {
             PostInfo postToDel = fetchPostInfo(PostId.of(postId));
             checkPostPermission(postToDel, userId);
 
-            removePostAndReplies(postId, postToDel);
+            removePostAndComments(postId, postToDel);
 
             return constructPostItemInfo(PostId.of(postId), postToDel);
 
@@ -125,10 +117,10 @@ public class SchoolHeats {
         }
     }
 
-    private static void removePostAndReplies(String postId, PostInfo postInfo) {
+    private static void removePostAndComments(String postId, PostInfo postInfo) {
         componentFactory.schoolHeat.removePost(PostId.of(postId));
-        postInfo.replyIdentifiers.forEach(replyIdentifier ->
-                componentFactory.reply.removeReply(ReplyId.of(replyIdentifier))
+        postInfo.commentIdentifiers.forEach(comId ->
+                componentFactory.comment.removeComment(CommentId.of(comId))
         );
     }
 
@@ -140,7 +132,7 @@ public class SchoolHeats {
         HeatDes,
     }
 
-    public static AllPostResult allPosts(int skip, int first, SortedBy sortedBy) {
+    public static AllPostResult allPosts(Long skip, Long first, SortedBy sortedBy) {
         return new AllPostResult() {
             @Override
             public Long getTotalCount() {
@@ -150,7 +142,10 @@ public class SchoolHeats {
             @Override
             public List<PostItemInfo> getPostInfos() {
                 Comparator<PostInfo> comparator = null;
-                switch (sortedBy) {
+                Long sk = Optional.ofNullable(skip).orElse(0L);
+                Long ft = Optional.ofNullable(first).orElse(getTotalCount());
+                SortedBy sb = Optional.ofNullable(sortedBy).orElse(SortedBy.TimeDes);
+                switch (sb) {
                     case TimeAsc: comparator = PostComparators.comparingTime;         break;
                     case TimeDes: comparator = PostComparators.comparingTimeReversed; break;
                     case HeatAsc: comparator = PostComparators.comparingHeat;         break;
@@ -158,7 +153,7 @@ public class SchoolHeats {
                 }
                 Stream<PostId> postIds = componentFactory.schoolHeat.allPosts(comparator);
                 return convertIdsToItemInfo(postIds)
-                        .skip(skip).limit(first)
+                        .skip(sk).limit(ft)
                         .collect(Collectors.toList());
             }
         };
@@ -191,9 +186,9 @@ public class SchoolHeats {
                         .orElse(null);
             }
             @Override
-            public PersonalInformation.PersonalInfo getLatestReplier() {
-                if (postInfo.latestReplier == null) return null;
-                return PersonalInformation.personalInfo(UserId.of(postInfo.latestReplier))
+            public PersonalInformation.PersonalInfo getLatestCommenter() {
+                if (postInfo.latestCommenter == null) return null;
+                return PersonalInformation.personalInfo(UserId.of(postInfo.latestCommenter))
                         .orElse(null);
             }
             @Override
@@ -209,66 +204,80 @@ public class SchoolHeats {
                 return postInfo.heat;
             }
             @Override
-            public List<ReplyItemInfo> getAllReplies() {
-                return postInfo.replyIdentifiers.stream().map(replyIdVal -> {
-                    ReplyId replyId = ReplyId.of(replyIdVal);
-                    Optional<ReplyInfo> oReplyInfo = componentFactory.reply.replyInfo(replyId);
-                    return oReplyInfo.map(replyInfo -> constructReplyItemInfo(replyId, replyInfo))
-                            .orElse(null);
-                }).filter(Objects::nonNull).collect(Collectors.toList());
+            public AllCommentResult getAllComments(Long skip, Long first) {
+                return new AllCommentResult() {
+                    private Stream<CommentItemInfo> comments = postInfo.commentIdentifiers.stream().map(commentIdVal -> {
+                        CommentId commentId = CommentId.of(commentIdVal);
+                        Optional<CommentInfo> oReplyInfo = componentFactory.comment.commentInfo(commentId);
+                        return oReplyInfo.map(replyInfo -> constructCommentItemInfo(commentId, replyInfo))
+                                .orElse(null);
+                    }).filter(Objects::nonNull);
+
+                    @Override
+                    public Long getTotalCount() {
+                        return postInfo.commentCount;
+                    }
+
+                    @Override
+                    public List<CommentItemInfo> getComments() {
+                        Long sk = Optional.ofNullable(skip).orElse(0L);
+                        Long ft = Optional.ofNullable(first).orElse(getTotalCount());
+                        return comments.skip(sk).limit(ft).collect(Collectors.toList());
+                    }
+                };
             }
         };
     }
 
-    private static ReplyItemInfo constructReplyItemInfo(ReplyId replyId, ReplyInfo replyInfo) {
-        return new ReplyItemInfo() {
+    private static CommentItemInfo constructCommentItemInfo(CommentId commentId, CommentInfo commentInfo) {
+        return new CommentItemInfo() {
             @Override
-            public String getReplyId() {
-                return replyId.value;
+            public String getCommentId() {
+                return commentId.value;
             }
 
             @Override
-            public String getPostIdReplying() {
-                return replyInfo.subject;
+            public String getPostIdCommenting() {
+                return commentInfo.subject;
             }
 
             @Override
             public String getContent() {
-                return Utils.nilStrToEmpty(replyInfo.content);
+                return Utils.nilStrToEmpty(commentInfo.content);
             }
 
             @Override
             public PersonalInformation.PersonalInfo getAuthor() {
-                return PersonalInformation.personalInfo(UserId.of(replyInfo.replier))
+                return PersonalInformation.personalInfo(UserId.of(commentInfo.commenter))
                         .orElse(null);
             }
 
             @Override
-            public List<CommentItemInfo> getAllComments() {
-                return replyInfo.comments.stream()
-                        .map(SchoolHeats::constructCommentItemInfo)
+            public List<ReplyItemInfo> getAllReplies() {
+                return commentInfo.replies.stream()
+                        .map(SchoolHeats::constructReplyItemInfo)
                         .collect(Collectors.toList());
             }
         };
     }
 
-    private static CommentItemInfo constructCommentItemInfo(ReplyInfo.Comment comment) {
-        return new CommentItemInfo() {
+    private static ReplyItemInfo constructReplyItemInfo(CommentInfo.Reply reply) {
+        return new ReplyItemInfo() {
             @Override
             public String getContent() {
-                return Utils.nilStrToEmpty(comment.content);
+                return Utils.nilStrToEmpty(reply.content);
             }
 
             @Override
-            public PersonalInformation.PersonalInfo getCommentTo() {
-                if (comment.commentTo == null) return null;
-                return PersonalInformation.personalInfo(UserId.of(comment.commentTo))
+            public PersonalInformation.PersonalInfo getReplyTo() {
+                if (reply.replyTo == null) return null;
+                return PersonalInformation.personalInfo(UserId.of(reply.replyTo))
                         .orElse(null);
             }
 
             @Override
             public PersonalInformation.PersonalInfo getAuthor() {
-                return PersonalInformation.personalInfo(UserId.of(comment.commentator))
+                return PersonalInformation.personalInfo(UserId.of(reply.replier))
                         .orElse(null);
             }
         };
@@ -292,66 +301,66 @@ public class SchoolHeats {
         void undo();
     }
 
-    public static CreateReplyResult createReply(String userToken, ReplyInfoInput input) {
-        logger.debug("createReply, input: {}", input);
+    public static CreateCommentResult createComment(String userToken, CommentInfoInput input) {
+        logger.debug("createComment, input: {}", input);
         List<UndoFunction> undoFunctions = new LinkedList<>();
         try {
             UserId userId = fetchUserId(userToken);
 
-            ReplyInfo replyInfo = buildReplyInfo(userId, input);
-            Optional<ReplyId> replyId = componentFactory.reply.reply(replyInfo);
-            if (!replyId.isPresent()) {
-                logger.debug("createReply - failed, error: {}, input: {}", "添加回复失败", input);
-                return SchoolHeatError.of("添加回复失败");
+            CommentInfo commentInfo = buildCommentInfo(userId, input);
+            Optional<CommentId> commentId = componentFactory.comment.comment(commentInfo);
+            if (!commentId.isPresent()) {
+                logger.debug("createComment - failed, error: {}, input: {}", "添加评论失败", input);
+                return SchoolHeatError.of("添加评论失败");
             }
-            undoFunctions.add(() -> componentFactory.reply.removeReply(replyId.get()));
+            undoFunctions.add(() -> componentFactory.comment.removeComment(commentId.get()));
 
-            PostId postId = PostId.of(input.postIdToReply);
-            componentFactory.schoolHeat.addReply(postId, replyId.get().value);
-            undoFunctions.add(() -> componentFactory.schoolHeat.removeReply(postId, replyId.get().value));
+            PostId postId = PostId.of(input.postIdToComment);
+            componentFactory.schoolHeat.addComment(postId, commentId.get().value);
+            undoFunctions.add(() -> componentFactory.schoolHeat.removeComment(postId, commentId.get().value));
 
-            return constructReplyItemInfo(replyId.get(), replyInfo);
+            return constructCommentItemInfo(commentId.get(), commentInfo);
 
         } catch (AuthenticatorException e) {
-            logger.debug("createReply - failed, error: {}, input: {}", e.getMessage(), input);
+            logger.debug("createComment - failed, error: {}, input: {}", e.getMessage(), input);
             undoFunctions.forEach(UndoFunction::undo);
             return SchoolHeatError.of(e.getMessage());
         }
     }
 
-    private static ReplyInfo buildReplyInfo(UserId userId, ReplyInfoInput input) {
-        return ReplyInfo.of(input.postIdToReply, input.content, userId.value);
+    private static CommentInfo buildCommentInfo(UserId userId, CommentInfoInput input) {
+        return CommentInfo.of(input.postIdToComment, input.content, userId.value);
     }
 
 
-    public static CreateCommentResult createComment(String userToken, CommentInfoInput input) {
-        logger.debug("createComment, input: {}", input);
+    public static CreateReplyResult createReply(String userToken, ReplyInfoInput input) {
+        logger.debug("createReply, input: {}", input);
         try {
             UserId userId = fetchUserId(userToken);
 
-            ReplyInfo.Comment comment = ReplyInfo.Comment.of(userId.value, input.content, input.replyIdToComment);
-            boolean success = componentFactory.reply.comment(ReplyId.of(input.replyIdToComment), comment);
-            if (!success) return SchoolHeatError.of("添加评论失败");
+            CommentInfo.Reply reply = CommentInfo.Reply.of(userId.value, input.content, input.commentIdToReply);
+            boolean success = componentFactory.comment.reply(CommentId.of(input.commentIdToReply), reply);
+            if (!success) return SchoolHeatError.of("添加回复失败");
 
-            ReplyInfo replyInfo = fetchReplyInfo(ReplyId.of(input.replyIdToComment));
+            CommentInfo replyInfo = fetchReplyInfo(CommentId.of(input.commentIdToReply));
             PostId postId = PostId.of(replyInfo.subject);
             PostInfo postInfo = fetchPostInfo(postId);
 
             PostItemInfo postItemInfo = constructPostItemInfo(postId, postInfo);
 
-            return constructCommentItemInfo(comment);
+            return constructReplyItemInfo(reply);
 
-        } catch (AuthenticatorException | ReplyNonExistException e) {
-            logger.debug("createComment - failed, error: {}, input: {}", e.getMessage(), input);
+        } catch (AuthenticatorException | CommentNonExistException e) {
+            logger.debug("createReply - failed, error: {}, input: {}", e.getMessage(), input);
             return SchoolHeatError.of(e.getMessage());
         }
     }
 
-    private static ReplyInfo fetchReplyInfo(ReplyId replyId) {
-        return componentFactory.reply.replyInfo(replyId)
+    private static CommentInfo fetchReplyInfo(CommentId commentId) {
+        return componentFactory.comment.commentInfo(commentId)
                 .orElseThrow(() -> {
-                    logger.debug("fetchReplyInfo - failed, replyId: {}", replyId);
-                    return new ReplyNonExistException();
+                    logger.debug("fetchReplyInfo - failed, replyId: {}", commentId);
+                    return new CommentNonExistException();
                 });
     }
 
@@ -363,25 +372,25 @@ public class SchoolHeats {
             componentFactory.schoolHeat.removePost(postId);
 
             if (postInfo == null) return;
-            postInfo.replyIdentifiers.forEach(replyId ->
-                    componentFactory.reply.removeReply(ReplyId.of(replyId))
+            postInfo.commentIdentifiers.forEach(replyId ->
+                    componentFactory.comment.removeComment(CommentId.of(replyId))
             );
         });
 
     }
 
-    public interface CommentItemInfo extends CreateCommentResult {
+    public interface ReplyItemInfo extends CreateReplyResult {
         String getContent();
-        PersonalInformation.PersonalInfo getCommentTo();
+        PersonalInformation.PersonalInfo getReplyTo();
         PersonalInformation.PersonalInfo getAuthor();
     }
 
-    public interface ReplyItemInfo extends CreateReplyResult {
-        String getReplyId();
-        String getPostIdReplying();
+    public interface CommentItemInfo extends CreateCommentResult {
+        String getCommentId();
+        String getPostIdCommenting();
         String getContent();
         PersonalInformation.PersonalInfo getAuthor();
-        List<CommentItemInfo> getAllComments();
+        List<ReplyItemInfo> getAllReplies();
     }
 
     public interface PostItemInfo extends CreatePostResult, ModifyPostResult, PostInfoResult {
@@ -389,11 +398,11 @@ public class SchoolHeats {
         String getTitle();
         String getContent();
         PersonalInformation.PersonalInfo getAuthor();
-        PersonalInformation.PersonalInfo getLatestReplier();
+        PersonalInformation.PersonalInfo getLatestCommenter();
         Long getLatestActiveTime();
         Long getCreateTime();
         Integer getHeat();
-        List<ReplyItemInfo> getAllReplies();
+        AllCommentResult getAllComments(Long skip, Long first);
     }
 
     public static class PostInfoInput {
@@ -417,45 +426,37 @@ public class SchoolHeats {
         }
     }
 
-    public static class ReplyInfoInput {
-        private String postIdToReply;
+    public static class CommentInfoInput {
+        private String postIdToComment;
         private String content;
-
-        public ReplyInfoInput() {
+        public CommentInfoInput() {
         }
-
-        public void setPostIdToReply(String postIdToReply) {
-            this.postIdToReply = postIdToReply;
+        public void setPostIdToComment(String postIdToComment) {
+            this.postIdToComment = postIdToComment;
         }
-
         public void setContent(String content) {
             this.content = content;
         }
-
         @Override
         public String toString() {
-            return "postIdToReply: " + postIdToReply + ", content: " + content;
+            return "postIdToComment: " + postIdToComment + ", content: " + content;
         }
     }
 
-    public static class CommentInfoInput {
-        private String replyIdToComment;
+    public static class ReplyInfoInput {
+        private String commentIdToReply;
         private String content;
-
-        public CommentInfoInput() {
+        public ReplyInfoInput() {
         }
-
-        public void setReplyIdToComment(String replyIdToComment) {
-            this.replyIdToComment = replyIdToComment;
+        public void setCommentIdToReply(String commentIdToReply) {
+            this.commentIdToReply = commentIdToReply;
         }
-
         public void setContent(String content) {
             this.content = content;
         }
-
         @Override
         public String toString() {
-            return "replyIdToComment: " + replyIdToComment + ", content: " + content;
+            return "commentIdToReply: " + commentIdToReply + ", content: " + content;
         }
     }
 
@@ -464,7 +465,12 @@ public class SchoolHeats {
         List<PostItemInfo> getPostInfos();
     }
 
-    public static class SchoolHeatError implements CreatePostResult, ModifyPostResult, CreateReplyResult, CreateCommentResult, PostInfoResult {
+    public interface AllCommentResult {
+        Long getTotalCount();
+        List<CommentItemInfo> getComments();
+    }
+
+    public static class SchoolHeatError implements CreatePostResult, ModifyPostResult, CreateCommentResult, CreateReplyResult, PostInfoResult {
         private String error;
 
         public SchoolHeatError(String error) {
@@ -480,49 +486,16 @@ public class SchoolHeats {
         }
     }
 
-    public interface PostInfoResult {
-    }
+    public interface PostInfoResult      { }
+    public interface CreatePostResult    { }
+    public interface ModifyPostResult    { }
+    public interface CreateCommentResult { }
+    public interface CreateReplyResult   { }
 
-    public interface CreatePostResult {
-    }
-
-    public interface ModifyPostResult {
-    }
-
-    public interface CreateReplyResult {
-    }
-
-    public interface CreateCommentResult {
-    }
-
-    private static class CreatePostException extends RuntimeException {
-        CreatePostException() {
-            super("创建帖子失败");
-        }
-    }
-
-    private static class PostInputNullException extends RuntimeException {
-        PostInputNullException() {
-            super("标题或内容为空");
-        }
-    }
-
-    private static class PostNonExistException extends RuntimeException {
-        PostNonExistException() {
-            super("帖子不存在");
-        }
-    }
-
-    private static class ReplyNonExistException extends RuntimeException {
-        ReplyNonExistException() {
-            super("回复不存在");
-        }
-    }
-
-    private static class PostPermissionException extends RuntimeException {
-        PostPermissionException() {
-            super("无操作权限");
-        }
-    }
+    private static class CreatePostException     extends RuntimeException { CreatePostException()     { super("创建帖子失败"); }}
+    private static class PostInputNullException  extends RuntimeException { PostInputNullException()  { super("标题或内容为空"); }}
+    private static class PostNonExistException   extends RuntimeException { PostNonExistException()   { super("帖子不存在"); }}
+    private static class CommentNonExistException extends RuntimeException { CommentNonExistException()  { super("回复不存在"); }}
+    private static class PostPermissionException extends RuntimeException { PostPermissionException() { super("无操作权限"); }}
 
 }

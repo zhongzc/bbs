@@ -1,6 +1,4 @@
 type Query {
-    test(testStr: String!): String!
-
     loggedId: GetIdResult!
 
     userInfo(userId: String!): PersonalInfoResult!
@@ -8,19 +6,18 @@ type Query {
     allMajors: [String!]!
     majorsIn(academy: String!): MajorsInResult!
 
-    allLosts(skip: Int!, first: Int!): AllLostResult!
-    allFounds(skip: Int!, first: Int!): AllFoundResult!
-    foundItemInfo(foundId: String!): FoundInfoResult!
-    lostItemInfo(lostId: String!): LostInfoResult!
+    allLosts      (skip: Long, first: Long): AllLostResult!
+    allFounds     (skip: Long, first: Long): AllFoundResult!
+    foundItemInfo (foundId: String!):        FoundInfoResult!
+    lostItemInfo  (lostId:  String!):        LostInfoResult!
 
-    allPosts(skip: Int!, first: Int!, sortedBy: SortedBy!): AllPostResult!
+    allPosts(skip: Long, first: Long, sortedBy: SortedBy): AllPostResult!
     postInfo(postId: String!): PostItemResult!
 
     searchResource(resourceId: String!): LearnResourceInfoResult!
 }
 
 type Mutation {
-    test(testStr: String!): String!
     resetLostFound: Boolean!
     resetPost: Boolean!
 
@@ -46,8 +43,8 @@ type Mutation {
 
     createPost    (postInfo: PostInfoInput!):       CreatePostResult!
     deletePost    (postId: String!):                ModifyPostResult!
-    createReply   (replyInfo: ReplyInfoInput!):     CreateReplyResult!
     createComment (commentInfo: CommentInfoInput!): CreateCommentResult!
+    createReply   (replyInfo: ReplyInfoInput!):     CreateReplyResult!
 
     publishLearnResource(resourceInfo: LearnResourceInput!): LearnResourceInfoResult!
 }

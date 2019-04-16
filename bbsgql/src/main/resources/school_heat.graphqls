@@ -3,28 +3,28 @@ input PostInfoInput {
     content: String!
 }
 
-input ReplyInfoInput {
-    postIdToReply: String!
+input CommentInfoInput {
+    postIdToComment: String!
     content: String!
 }
 
-input CommentInfoInput {
-    replyIdToComment: String!
+input ReplyInfoInput {
+    commentIdToReply: String!
     content: String!
 }
 
 type CommentItemInfo {
+    commentId: String!
+    postIdCommenting: String!
     content: String!
-    commentTo: PersonalInfo
     author: PersonalInfo!
+    allReplies: [ReplyItemInfo!]!
 }
 
 type ReplyItemInfo {
-    replyId: String!
-    postIdReplying: String!
     content: String!
+    replyTo: PersonalInfo!
     author: PersonalInfo!
-    allComments: [CommentItemInfo!]!
 }
 
 type PostItemInfo {
@@ -32,11 +32,16 @@ type PostItemInfo {
     title: String!
     content: String!
     author: PersonalInfo!
-    latestReplier: PersonalInfo
+    latestCommenter: PersonalInfo
     latestActiveTime: Long!
     createTime: Long!
     heat: Int!
-    allReplies: [ReplyItemInfo!]!
+    allComments(skip: Long, first: Long): AllCommentResult!
+}
+
+type AllCommentResult {
+    totalCount: Long!
+    comments: [CommentItemInfo!]!
 }
 
 type SchoolHeatError {
@@ -44,13 +49,9 @@ type SchoolHeatError {
 }
 
 union CreatePostResult    = SchoolHeatError | PostItemInfo
-
 union ModifyPostResult    = SchoolHeatError | PostItemInfo
-
 union CreateReplyResult   = SchoolHeatError | ReplyItemInfo
-
 union CreateCommentResult = SchoolHeatError | CommentItemInfo
-
 union PostItemResult      = SchoolHeatError | PostItemInfo
 
 type AllPostResult {

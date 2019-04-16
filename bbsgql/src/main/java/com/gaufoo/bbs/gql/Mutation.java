@@ -11,9 +11,6 @@ import java.util.function.Function;
 
 @Component
 public class Mutation implements GraphQLMutationResolver {
-    String test(String testStr, DataFetchingEnvironment env) {
-        return testStr;
-    }
     Boolean resetLostFound() {
         LostAndFound.reset();
         return true;
@@ -128,15 +125,15 @@ public class Mutation implements GraphQLMutationResolver {
                 SchoolHeats.SchoolHeatError::of, env);
     }
 
-    SchoolHeats.CreateReplyResult createReply(SchoolHeats.ReplyInfoInput replyInfoInput, DataFetchingEnvironment env) {
-        return authenticatedGuard(
-                userToken -> SchoolHeats.createReply(userToken, replyInfoInput),
-                SchoolHeats.SchoolHeatError::of, env);
-    }
-
     SchoolHeats.CreateCommentResult createComment(SchoolHeats.CommentInfoInput commentInfoInput, DataFetchingEnvironment env) {
         return authenticatedGuard(
                 userToken -> SchoolHeats.createComment(userToken, commentInfoInput),
+                SchoolHeats.SchoolHeatError::of, env);
+    }
+
+    SchoolHeats.CreateReplyResult createReply(SchoolHeats.ReplyInfoInput replyInfoInput, DataFetchingEnvironment env) {
+        return authenticatedGuard(
+                userToken -> SchoolHeats.createReply(userToken, replyInfoInput),
                 SchoolHeats.SchoolHeatError::of, env);
     }
 

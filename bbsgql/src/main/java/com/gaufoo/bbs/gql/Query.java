@@ -38,11 +38,11 @@ public class Query implements GraphQLQueryResolver {
                 .orElse(Authentication.GetIdError.of("用户未登录"));
     }
 
-    LostAndFound.AllLostResult allLosts(int skip, int first) {
+    LostAndFound.AllLostResult allLosts(Long skip, Long first) {
         return LostAndFound.allLosts(skip, first);
     }
 
-    LostAndFound.AllFoundResult allFounds(int skip, int first) {
+    LostAndFound.AllFoundResult allFounds(Long skip, Long first) {
         return LostAndFound.allFounds(skip, first);
     }
 
@@ -54,7 +54,7 @@ public class Query implements GraphQLQueryResolver {
         return LostAndFound.lostInfoResult(lostId);
     }
 
-    SchoolHeats.AllPostResult allPosts(int skip, int first, SchoolHeats.SortedBy sortedBy) {
+    SchoolHeats.AllPostResult allPosts(Long skip, Long first, SchoolHeats.SortedBy sortedBy) {
         return SchoolHeats.allPosts(skip, first, sortedBy);
     }
 
