@@ -39,15 +39,15 @@ type Mutation {
     changeAcademy(academy: String!): ModifyPersonInfoResult!
     changeMajor(major: String!): ModifyPersonInfoResult!
 
-    publishFound(itemInfo: ItemInfoInput!): PublishItemResult!
-    publishLost(itemInfo: ItemInfoInput!): PublishItemResult!
-    modifyLostItem(lostId: String!, itemInfo: ItemInfoInput!): ModifyItemResult!
-    modifyFoundItem(foundId: String!, itemInfo: ItemInfoInput!): ModifyItemResult!
+    publishFound    (itemInfo: ItemInfoInput!):                   PublishFoundResult!
+    publishLost     (itemInfo: ItemInfoInput!):                   PublishLostResult!
+    modifyLostItem  (lostId: String!, itemInfo: ItemInfoInput!):  ModifyLostResult!
+    modifyFoundItem (foundId: String!, itemInfo: ItemInfoInput!): ModifyFoundResult!
 
-    createPost(postInfo: PostInfoInput!): CreatePostResult!
-    deletePost(postId: String!): ModifyPostResult!
-    createReply(replyInfo: ReplyInfoInput!): CreateReplyResult!
-    createComment(commentInfo: CommentInfoInput!): CreateCommentResult!
+    createPost    (postInfo: PostInfoInput!):       CreatePostResult!
+    deletePost    (postId: String!):                ModifyPostResult!
+    createReply   (replyInfo: ReplyInfoInput!):     CreateReplyResult!
+    createComment (commentInfo: CommentInfoInput!): CreateCommentResult!
 
     publishLearnResource(resourceInfo: LearnResourceInput!): LearnResourceInfoResult!
 }

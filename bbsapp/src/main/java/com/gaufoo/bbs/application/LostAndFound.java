@@ -49,102 +49,60 @@ public class LostAndFound {
                     input.time != null && input.time > 0
     );
 
-    public static LostInfoResult lostItem(String lostId) {
-        logger.debug("lostItem, lostId: {}", lostId);
+    public static LostInfoResult lostInfoResult(String lostId) {
+        logger.debug("lostInfoResult, lostId: {}", lostId);
         return componentFactory.lostFound.lostInfo(LostId.of(lostId))
-                .map(lostInfo -> (LostInfoResult) constructItemInfo(lostInfo))
+                .map(i -> (LostInfoResult) constructItemInfo(LostId.of(lostId), i))
                 .orElseGet(() -> {
-                    logger.debug("lostItem - failed, error: {}, lostId: {}", "找不到失物", lostId);
+                    logger.debug("lostInfoResult - failed, error: {}, lostId: {}", "找不到失物", lostId);
                     return LostFoundError.of("找不到失物");
                 });
     }
 
-    private static LostItemInfo constructItemInfo(LostInfo lostInfo) {
+    private static LostItemInfo constructItemInfo(LostId id, LostInfo lostInfo) {
         return new LostItemInfo() {
-            @Override
             public PersonalInformation.PersonalInfo getPublisher() {
                 return PersonalInformation.personalInfo(UserId.of(lostInfo.publisher))
                         .orElse(null);
             }
-            @Override
-            public String getName() {
-                return lostInfo.objName;
-            }
-            @Override
-            public String getDescription() {
-                return lostInfo.description;
-            }
-            @Override
-            public String getPosition() {
-                return lostInfo.position;
-            }
-            @Override
-            public String getPictureUrl() {
-                return factorOutPictureUrl(lostInfo.imageIdentifier);
-            }
-            @Override
-            public String getContact() {
-                return lostInfo.contact;
-            }
-            @Override
-            public Long getCreationTime() {
-                return lostInfo.createTime.toEpochMilli();
-            }
-            @Override
-            public Long getLostTime() {
-                return lostInfo.lostTime.toEpochMilli();
-            }
-
+            public String getId()           { return id.value;                                      }
+            public String getName()         { return lostInfo.objName;                              }
+            public String getDescription()  { return lostInfo.description;                          }
+            public String getPosition()     { return lostInfo.position;                             }
+            public String getPictureUrl()   { return factorOutPictureUrl(lostInfo.imageIdentifier); }
+            public String getContact()      { return lostInfo.contact;                              }
+            public Long   getCreationTime() { return lostInfo.createTime.toEpochMilli();            }
+            public Long   getLostTime()     { return lostInfo.lostTime.toEpochMilli();              }
         };
     }
 
-    public static FoundInfoResult foundItem(String foundId) {
-        logger.debug("foundItem, foundId: {}", foundId);
+    public static FoundInfoResult foundInfoResult(String foundId) {
+        logger.debug("foundInfoResult, foundId: {}", foundId);
         return componentFactory.lostFound.foundInfo(FoundId.of(foundId))
-                .map(foundInfo -> (FoundInfoResult) constructItemInfo(foundInfo))
+                .map(foundInfo -> (FoundInfoResult) constructItemInfo(FoundId.of(foundId), foundInfo))
                 .orElseGet(() -> {
-                    logger.debug("foundItem - failed, error: {}, foundId: {}", "找不到寻物", foundId);
+                    logger.debug("foundInfoResult - failed, error: {}, foundId: {}", "找不到寻物", foundId);
                     return LostFoundError.of("");
                 });
     }
 
-    private static FoundItemInfo constructItemInfo(FoundInfo foundInfo) {
+    private static FoundItemInfo constructItemInfo(FoundId id, FoundInfo foundInfo) {
         return new FoundItemInfo() {
-            @Override
             public PersonalInformation.PersonalInfo getPublisher() {
                 return PersonalInformation.personalInfo(UserId.of(foundInfo.publisher))
                         .orElse(null);
             }
-            @Override
-            public String getName() {
-                return foundInfo.objName;
-            }
-            @Override
-            public String getDescription() {
-                return foundInfo.description;
-            }
-            @Override
-            public String getPosition() {
-                return foundInfo.position;
-            }
-            @Override
-            public String getPictureUrl() {
-                return factorOutPictureUrl(foundInfo.imageIdentifier);
-            }
-            @Override
-            public String getContact() {
-                return foundInfo.contact;
-            }
-            @Override
-            public Long getCreationTime() {
-                return foundInfo.createTime.toEpochMilli();
-            }
-            @Override
-            public Long getFoundTime() {
-                return foundInfo.foundTime.toEpochMilli();
-            }
+            public String getId()           { return id.value;                                       }
+            public String getName()         { return foundInfo.objName;                              }
+            public String getDescription()  { return foundInfo.description;                          }
+            public String getPosition()     { return foundInfo.position;                             }
+            public String getPictureUrl()   { return factorOutPictureUrl(foundInfo.imageIdentifier); }
+            public String getContact()      { return foundInfo.contact;                              }
+            public Long   getCreationTime() { return foundInfo.createTime.toEpochMilli();            }
+            public Long   getFoundTime()    { return foundInfo.foundTime.toEpochMilli();             }
         };
     }
+
     private static String factorOutPictureUrl(String imageId) {
         logger.debug("factorOutPictureUrl, imageId: {}", imageId);
         return Optional.ofNullable(imageId)
@@ -154,15 +112,57 @@ public class LostAndFound {
                 .orElse("");
     }
 
-    public static PublishItemResult publishFound(String userToken, ItemInfoInput itemInfo) {
-        return publishItem(userToken, itemInfo, Type.Found);
+    private static LostItemInfo lazyConsLostItemInfo(LostId lostId) {
+        return new LostItemInfo() {
+            private LostItemInfo info = null;
+            private LostItemInfo getInfo() {
+                if (info != null) return info;
+                info = componentFactory.lostFound.lostInfo(lostId)
+                        .map(i -> LostAndFound.constructItemInfo(lostId, i)).get();
+                return info;
+            }
+            public PersonalInformation.PersonalInfo getPublisher()    { return getInfo().getPublisher();    }
+            public String                           getId()           { return getInfo().getId();           }
+            public String                           getName()         { return getInfo().getName();         }
+            public String                           getDescription()  { return getInfo().getDescription();  }
+            public String                           getPosition()     { return getInfo().getPosition();     }
+            public String                           getPictureUrl()   { return getInfo().getPictureUrl();   }
+            public String                           getContact()      { return getInfo().getContact();      }
+            public Long                             getCreationTime() { return getInfo().getCreationTime(); }
+            public Long                             getLostTime()     { return getInfo().getLostTime();     }
+        };
     }
 
-    public static PublishItemResult publishLost(String userToken, ItemInfoInput itemInfo) {
-        return publishItem(userToken, itemInfo, Type.Lost);
+    private static FoundItemInfo lazyConsFoundItemInfo(FoundId foundId) {
+        return new FoundItemInfo() {
+            private FoundItemInfo info = null;
+            private FoundItemInfo getInfo() {
+                if (info != null) return info;
+                info = componentFactory.lostFound.foundInfo(foundId)
+                        .map(i -> LostAndFound.constructItemInfo(foundId, i)).get();
+                return info;
+            }
+            public PersonalInformation.PersonalInfo getPublisher()    { return getInfo().getPublisher();    }
+            public String                           getId()           { return getInfo().getId();           }
+            public String                           getName()         { return getInfo().getName();         }
+            public String                           getDescription()  { return getInfo().getDescription();  }
+            public String                           getPosition()     { return getInfo().getPosition();     }
+            public String                           getPictureUrl()   { return getInfo().getPictureUrl();   }
+            public String                           getContact()      { return getInfo().getContact();      }
+            public Long                             getCreationTime() { return getInfo().getCreationTime(); }
+            public Long                             getFoundTime()    { return getInfo().getFoundTime();    }
+        };
     }
 
-    private static PublishItemResult publishItem(String userToken, ItemInfoInput input, Type type) {
+    public static PublishFoundResult publishFound(String userToken, ItemInfoInput itemInfo) {
+        return (PublishFoundResult) publishItem(userToken, itemInfo, Type.Found);
+    }
+
+    public static PublishLostResult publishLost(String userToken, ItemInfoInput itemInfo) {
+        return (PublishLostResult) publishItem(userToken, itemInfo, Type.Lost);
+    }
+
+    private static Object publishItem(String userToken, ItemInfoInput input, Type type) {
         logger.debug("publishItem, userToken: {}, ItemInfoInput: {}, type: {}", userToken, input, type);
         List<UndoFunction> undoOperations = new LinkedList<>();
 
@@ -196,7 +196,7 @@ public class LostAndFound {
                     break;
                 }
             }
-            return PublishItemSuccess.of(itemId);
+            return (type.equals(Type.Found)) ? foundInfoResult(itemId) : lostInfoResult(itemId);
 
         } catch (AuthenticatorException | PublishException e) {
             undoOperations.forEach(UndoFunction::undo);
@@ -212,10 +212,12 @@ public class LostAndFound {
             throw new PublishException("信息不完整");
         }
     }
+
     private static UserId fetchUserId(String userToken) throws AuthenticatorException {
         String userIdStr = componentFactory.authenticator.getLoggedUser(UserToken.of(userToken)).userId;
         return UserId.of(userIdStr);
     }
+
     private static FileId storeLostFoundImage(String imageBase64) {
         byte[] image = Base64.getDecoder().decode(imageBase64);
         return componentFactory.lostFoundImages.createFile(image, UUID.randomUUID().toString())
@@ -224,13 +226,16 @@ public class LostAndFound {
                     return new PublishException("图片保存失败");
                 });
     }
+
     private static void deleteLostFoundImage(FileId imageId) {
         componentFactory.lostFoundImages.Remove(imageId);
     }
+
     private static FoundInfo buildFoundInfoWith(String userId, ItemInfoInput input, FileId imageId) {
         Instant foundTime = Instant.ofEpochMilli(input.time);
         return FoundInfo.of(userId, input.itemName, foundTime, input.position, input.description, imageId.value, input.contact);
     }
+
     private static LostInfo buildLostInfoWith(String userId, ItemInfoInput input, FileId imageId) {
         Instant foundTime = Instant.ofEpochMilli(input.time);
         return LostInfo.of(userId, input.itemName, foundTime, input.position, input.description, imageId.value, input.contact);
@@ -242,21 +247,23 @@ public class LostAndFound {
             return new PublishException("发布寻物失败");
         });
     }
+
     private static LostId storeLostInfo(LostInfo lostInfo) {
         return componentFactory.lostFound.pubLost(lostInfo).orElseThrow(() -> {
             logger.debug("storeLostInfo - failed, foundInfo: {}", lostInfo);
             return new PublishException("发布失物失败");
         });
     }
+
     private static void deleteFoundInfo(FoundId foundId) {
         componentFactory.lostFound.removeFound(foundId);
     }
+
     private static void deleteLostInfo(LostId lostId) {
         componentFactory.lostFound.removeLost(lostId);
     }
 
-
-    public static ModifyItemResult modifyLostItem(String userToken, String itemId, ItemInfoInput input) {
+    public static ModifyLostResult modifyLostItem(String userToken, String itemId, ItemInfoInput input) {
         try {
             UserId userId = fetchUserId(userToken);
             checkLostPublisher(userId, itemId);
@@ -264,12 +271,13 @@ public class LostAndFound {
             optionallyUpdateLostItem(itemId, input);
 
             logger.debug("modifyLostItem - successful, userToken: {}, input: {}", userToken, input);
-            return ModifyItemSuccess.build();
+            return lazyConsLostItemInfo(LostId.of(itemId));
         } catch (AuthenticatorException | ModifyException e) {
             logger.debug("modifyLostItem, error: {}, input: {}", e.getMessage(), input);
             return LostFoundError.of(e.getMessage());
         }
     }
+
     private static void checkLostPublisher(UserId userId, String itemId) {
         componentFactory.lostFound.lostInfo(LostId.of(itemId))
                 .map(lostInfo -> {
@@ -282,6 +290,7 @@ public class LostAndFound {
                     return new ModifyException("无更改权限");
                 });
     }
+
     // fixme: partially updated
     private static void optionallyUpdateLostItem(String itemId, ItemInfoInput input) {
         LostId lostId = LostId.of(itemId);
@@ -310,6 +319,7 @@ public class LostAndFound {
             componentFactory.lostFound.changeImageIdentifier(lostId, newFileId);
         }
     }
+
     private static String updateImage(String oldFileId, String newImageBase64) {
         componentFactory.lostFoundImages.Remove(FileId.of(oldFileId));
 
@@ -322,7 +332,7 @@ public class LostAndFound {
                 });
     }
 
-    public static ModifyItemResult modifyFoundItem(String userToken, String itemId, ItemInfoInput input) {
+    public static ModifyFoundResult modifyFoundItem(String userToken, String itemId, ItemInfoInput input) {
         try {
             UserId userId = fetchUserId(userToken);
             checkFoundPublisher(userId, itemId);
@@ -330,12 +340,13 @@ public class LostAndFound {
             optionallyUpdateFoundItem(itemId, input);
 
             logger.debug("modifyFoundItem - successful, userToken: {}, input: {}", userToken, input);
-            return ModifyItemSuccess.build();
+            return lazyConsFoundItemInfo(FoundId.of(itemId));
         } catch (AuthenticatorException e) {
             logger.debug("modifyFoundItem, error: {}, input: {}", e.getMessage(), input);
             return LostFoundError.of(e.getMessage());
         }
     }
+
     private static void checkFoundPublisher(UserId userId, String itemId) {
         componentFactory.lostFound.foundInfo(FoundId.of(itemId))
                 .map(foundInfo -> foundInfo.publisher)
@@ -345,6 +356,7 @@ public class LostAndFound {
                     return new ModifyException("无更改权限");
                 });
     }
+
     private static void optionallyUpdateFoundItem(String itemId, ItemInfoInput input) {
         FoundId foundId = FoundId.of(itemId);
         if (input.description != null) {
@@ -385,9 +397,9 @@ public class LostAndFound {
             @Override
             public List<LostItemInfo> getLostInfos() {
                 return componentFactory.lostFound.allLosts()
-                        .map(lostId -> componentFactory.lostFound.lostInfo(lostId))
+                        .map(lostId -> componentFactory.lostFound.lostInfo(lostId).map(i -> constructItemInfo(lostId, i)))
                         .map(Optional::get)
-                        .map(LostAndFound::constructItemInfo).skip(skip).limit(first)
+                        .skip(skip).limit(first)
                         .collect(Collectors.toList());
             }
         };
@@ -405,9 +417,9 @@ public class LostAndFound {
             @Override
             public List<FoundItemInfo> getFoundInfos() {
                 return componentFactory.lostFound.allFounds()
-                        .map(foundId -> componentFactory.lostFound.foundInfo(foundId))
+                        .map(foundId -> componentFactory.lostFound.foundInfo(foundId).map(i -> constructItemInfo(foundId, i)))
                         .map(Optional::get)
-                        .map(LostAndFound::constructItemInfo).skip(skip).limit(first)
+                        .skip(skip).limit(first)
                         .collect(Collectors.toList());
             }
         };
@@ -441,23 +453,18 @@ public class LostAndFound {
         public void setItemName(String itemName) {
             this.itemName = itemName;
         }
-
         public void setDescription(String description) {
             this.description = description;
         }
-
         public void setPosition(String position) {
             this.position = position;
         }
-
         public void setTime(Long time) {
             this.time = time;
         }
-
         public void setContact(String contact) {
             this.contact = contact;
         }
-
         public void setImageBase64(String imageBase64) {
             this.imageBase64 = imageBase64;
         }
@@ -469,88 +476,49 @@ public class LostAndFound {
         }
     }
 
-    public static class LostFoundError implements LostInfoResult, FoundInfoResult , PublishItemResult, ModifyItemResult {
+    public static class LostFoundError implements LostInfoResult, FoundInfoResult , PublishFoundResult, PublishLostResult, ModifyFoundResult, ModifyLostResult {
         private String error;
-
         public LostFoundError(String error) {
             this.error = error;
         }
-
         public static LostFoundError of(String error) {
             return new LostFoundError(error);
         }
-
         public String getError() {
             return error;
         }
     }
 
-    public interface LostItemInfo extends LostInfoResult {
+    public interface LostItemInfo extends LostInfoResult, PublishLostResult, ModifyLostResult {
         PersonalInformation.PersonalInfo getPublisher();
+        String getId();
         String getName();
         String getDescription();
         String getPosition();
         String getPictureUrl();
         String getContact();
-        Long getCreationTime();
-        Long getLostTime();
+        Long   getCreationTime();
+        Long   getLostTime();
     }
 
-    public interface LostInfoResult{
-    }
-
-    public interface FoundItemInfo extends FoundInfoResult {
+    public interface FoundItemInfo extends FoundInfoResult, PublishFoundResult, ModifyFoundResult {
         PersonalInformation.PersonalInfo getPublisher();
+        String getId();
         String getName();
         String getDescription();
         String getPosition();
         String getPictureUrl();
         String getContact();
-        Long getCreationTime();
-        Long getFoundTime();
+        Long   getCreationTime();
+        Long   getFoundTime();
     }
 
-    public interface FoundInfoResult {
-    }
-
-
-    public static class PublishItemSuccess implements PublishItemResult {
-        private String itemId;
-
-        public PublishItemSuccess(String itemId) {
-            this.itemId = itemId;
-        }
-
-        public static PublishItemSuccess of(String itemId) {
-            return new PublishItemSuccess(itemId);
-        }
-
-        public String getItemId() {
-            return itemId;
-        }
-    }
-
-    public interface PublishItemResult {
-    }
-
-    public static class ModifyItemSuccess implements ModifyItemResult {
-        private Boolean ok;
-
-        public ModifyItemSuccess() {
-            this.ok = true;
-        }
-
-        public static ModifyItemSuccess build() {
-            return new ModifyItemSuccess();
-        }
-
-        public Boolean getOk() {
-            return ok;
-        }
-    }
-
-    public interface ModifyItemResult {
-    }
+    public interface LostInfoResult     { }
+    public interface FoundInfoResult    { }
+    public interface PublishFoundResult { }
+    public interface PublishLostResult  { }
+    public interface ModifyFoundResult  { }
+    public interface ModifyLostResult   { }
 
     public interface AllLostResult {
         Long getTotalCount();

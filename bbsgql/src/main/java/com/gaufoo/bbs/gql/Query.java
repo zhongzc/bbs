@@ -47,11 +47,11 @@ public class Query implements GraphQLQueryResolver {
     }
 
     LostAndFound.FoundInfoResult foundItemInfo(String foundId) {
-        return LostAndFound.foundItem(foundId);
+        return LostAndFound.foundInfoResult(foundId);
     }
 
     LostAndFound.LostInfoResult lostItemInfo(String lostId) {
-        return LostAndFound.lostItem(lostId);
+        return LostAndFound.lostInfoResult(lostId);
     }
 
     SchoolHeats.AllPostResult allPosts(int skip, int first, SchoolHeats.SortedBy sortedBy) {

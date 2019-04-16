@@ -92,26 +92,25 @@ public class Mutation implements GraphQLMutationResolver {
     }
 
 
-    LostAndFound.PublishItemResult publishFound(LostAndFound.ItemInfoInput itemInfo, DataFetchingEnvironment env) {
+    LostAndFound.PublishFoundResult publishFound(LostAndFound.ItemInfoInput itemInfo, DataFetchingEnvironment env) {
         return authenticatedGuard(
                 userToken -> LostAndFound.publishFound(userToken, itemInfo),
                 LostAndFound.LostFoundError::of, env);
     }
 
-    LostAndFound.PublishItemResult publishLost(LostAndFound.ItemInfoInput itemInfo, DataFetchingEnvironment env) {
+    LostAndFound.PublishLostResult publishLost(LostAndFound.ItemInfoInput itemInfo, DataFetchingEnvironment env) {
         return authenticatedGuard(
                 userToken -> LostAndFound.publishLost(userToken, itemInfo),
                 LostAndFound.LostFoundError::of, env);
     }
 
-    LostAndFound.ModifyItemResult modifyLostItem(String lostId, LostAndFound.ItemInfoInput itemInfo, DataFetchingEnvironment env) {
-
+    LostAndFound.ModifyLostResult modifyLostItem(String lostId, LostAndFound.ItemInfoInput itemInfo, DataFetchingEnvironment env) {
         return authenticatedGuard(
                 userToken -> LostAndFound.modifyLostItem(userToken, lostId, itemInfo),
                 LostAndFound.LostFoundError::of, env);
     }
 
-    LostAndFound.ModifyItemResult modifyFoundItem(String foundId, LostAndFound.ItemInfoInput itemInfo, DataFetchingEnvironment env) {
+    LostAndFound.ModifyFoundResult modifyFoundItem(String foundId, LostAndFound.ItemInfoInput itemInfo, DataFetchingEnvironment env) {
         return authenticatedGuard(
                 userToken -> LostAndFound.modifyFoundItem(userToken, foundId, itemInfo),
                 LostAndFound.LostFoundError::of, env);

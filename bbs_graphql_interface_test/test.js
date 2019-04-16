@@ -77,7 +77,7 @@ const after_publishFound = (func) =>
 			time: Date.now(),
 		};
 		return publishFound(testObj, auth).then(result =>
-			func(auth, result.itemId, testObj)
+			func(auth, result.id, testObj)
 		)
 	});
 
@@ -93,7 +93,7 @@ const after_publishLost = (func) =>
 			time: Date.now(),
 		};
 		return publishLost(testObj, auth).then(result =>
-			func(auth, result.itemId, testObj)
+			func(auth, result.id, testObj)
 		)
 	});
 
@@ -708,8 +708,8 @@ unit_test("change major - valid major", () =>
 const PUBLISH_FOUND = `
 	mutation PublishFound($itemInfo: ItemInfoInput!) {
 		publishFound(itemInfo: $itemInfo) {
-			... on PublishItemSuccess {
-				itemId
+			... on FoundItemInfo {
+				id
 			}
 			... on LostFoundError {
 				error
@@ -736,7 +736,7 @@ unit_test("publish found", () =>
 			imageBase64: "aGVsbG93b3JsZCE=",
 			time: Date.now(),
 		}, auth).then(result => {
-			assertNonEmpty(result.itemId);
+			assertNonEmpty(result.id);
 		})
 	)
 );
@@ -746,8 +746,8 @@ unit_test("publish found", () =>
 const PUBLISH_LOST = `
 	mutation PublishLost($itemInfo: ItemInfoInput!) {
 		publishLost(itemInfo: $itemInfo) {
-			... on PublishItemSuccess {
-				itemId
+			... on LostItemInfo {
+				id
 			}
 			... on LostFoundError {
 				error
@@ -774,7 +774,7 @@ unit_test("publish lost", () =>
 			imageBase64: "aGVsbG93b3JsZCE=",
 			time: Date.now(),
 		}, auth).then(result => {
-			assertNonEmpty(result.itemId);
+			assertNonEmpty(result.id);
 		})
 	)
 );
@@ -787,8 +787,13 @@ const MODIFY_LOST_ITEM = `
 			... on LostFoundError {
 				error
 			}
-			... on ModifyItemSuccess {
-				ok
+			... on LostItemInfo {
+				id
+				name
+				description
+				position
+				contact
+				lostTime
 			}
 		}
 	}
@@ -798,7 +803,7 @@ const modifyLostItem = (lostId, itemInfo, userToken) => sendGQL({
 	query: MODIFY_LOST_ITEM,
 	variables: {
 		lostId: lostId,
-		itemInfo, itemInfo
+		itemInfo,
 	},
 	auth: userToken
 });
@@ -809,16 +814,14 @@ unit_test("modify lost item", () =>
 			...oldItem,
 			itemName: "modified",
 			contact: "12345678910"
-		}
+		};
 		return modifyLostItem(lostId, newObj, auth).then(result => {
-			assert(result.ok);
-			return lostItemInfo(lostId).then(result => {
-				assertEq(result.name, newObj.itemName);
-				assertEq(result.description, oldItem.description);
-				assertEq(result.position, oldItem.position);
-				assertEq(result.contact, newObj.contact);
-				assertEq(result.lostTime, oldItem.time);
-			});
+			assertEq(result.id, lostId);
+			assertEq(result.name, newObj.itemName);
+			assertEq(result.description, oldItem.description);
+			assertEq(result.position, oldItem.position);
+			assertEq(result.contact, newObj.contact);
+			assertEq(result.lostTime, oldItem.time);
 		});
 	})
 );
@@ -831,8 +834,13 @@ const MODIFY_FOUND_ITEM = `
 			... on LostFoundError {
 				error
 			}
-			... on ModifyItemSuccess {
-				ok
+			... on FoundItemInfo {
+				id
+				name
+				description
+				position
+				contact
+				foundTime
 			}
 		}
 	}
@@ -842,7 +850,7 @@ const modifyFoundItem = (foundId, itemInfo, userToken) => sendGQL({
 	query: MODIFY_FOUND_ITEM,
 	variables: {
 		foundId: foundId,
-		itemInfo, itemInfo
+		itemInfo
 	},
 	auth: userToken
 });
@@ -852,16 +860,14 @@ unit_test("modify found item", () =>
 		const newObj = {
 			itemName: "modified",
 			contact: "12345678910"
-		}
+		};
 		return modifyFoundItem(foundId, newObj, auth).then(result => {
-			assert(result.ok);
-			return foundItemInfo(foundId).then(result => {
-				assertEq(result.name, newObj.itemName);
-				assertEq(result.description, oldItem.description);
-				assertEq(result.position, oldItem.position);
-				assertEq(result.contact, newObj.contact);
-				assertEq(result.foundTime, oldItem.time);
-			});
+			assertEq(result.id, foundId)
+			assertEq(result.name, newObj.itemName);
+			assertEq(result.description, oldItem.description);
+			assertEq(result.position, oldItem.position);
+			assertEq(result.contact, newObj.contact);
+			assertEq(result.foundTime, oldItem.time);
 		});
 	})
 );
@@ -1290,7 +1296,7 @@ unit_test("found item info", () =>
 			time: Date.now(),
 		};
 		return publishFound(testObj, auth).then(result => {
-			const itemId = result.itemId;
+			const itemId = result.id;
 			return foundItemInfo(itemId).then(result => {
 				assertEq(result.name, testObj.itemName);
 				assertEq(result.description, testObj.description);
@@ -1344,7 +1350,7 @@ unit_test("lost item info", () =>
 			time: Date.now(),
 		};
 		return publishLost(testObj, auth).then(result => {
-			const itemId = result.itemId;
+			const itemId = result.id;
 			return lostItemInfo(itemId).then(result => {
 				assertEq(result.name, testObj.itemName);
 				assertEq(result.description, testObj.description);
