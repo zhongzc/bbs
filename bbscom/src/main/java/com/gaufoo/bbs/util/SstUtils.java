@@ -23,7 +23,7 @@ public class SstUtils {
     }
 
     public static boolean contains(SST kvMap, String key) {
-        return waitFuture(kvMap.get(key)).isPresent();
+        return waitFuture(kvMap.get(key)).flatMap(i -> i).isPresent();
     }
 
     public static boolean setEntry(SST kvMap, String key, String value) {
