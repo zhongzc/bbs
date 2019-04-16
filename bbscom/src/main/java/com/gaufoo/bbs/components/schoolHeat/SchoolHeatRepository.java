@@ -21,7 +21,7 @@ public interface SchoolHeatRepository {
 
     void deletePostInfo(PostId postId);
 
-    void updatePostInfo(PostId postId, PostInfo postInfo);
+    boolean updatePostInfo(PostId postId, PostInfo postInfo);
 
     default void shutdown() {}
 

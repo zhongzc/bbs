@@ -22,6 +22,10 @@ public class SstUtils {
                 .orElse(null);
     }
 
+    public static boolean contains(SST kvMap, String key) {
+        return waitFuture(kvMap.get(key)).isPresent();
+    }
+
     public static boolean setEntry(SST kvMap, String key, String value) {
         return waitFuture(kvMap.set(key, value)
                 .thenApply(value::equals)).orElse(false);

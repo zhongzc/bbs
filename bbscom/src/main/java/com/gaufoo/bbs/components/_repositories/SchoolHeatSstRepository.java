@@ -84,6 +84,17 @@ public class SchoolHeatSstRepository implements SchoolHeatRepository {
 
     @Override
     public boolean savePostInfo(PostId postId, PostInfo postInfo) {
+        if (SstUtils.contains(idToInfo, postId.value)) return false;
+        return putPostInfo(postId, postInfo);
+    }
+
+    @Override
+    public boolean updatePostInfo(PostId postId, PostInfo postInfo) {
+        if (!SstUtils.contains(idToInfo, postId.value)) return false;
+        return putPostInfo(postId, postInfo);
+    }
+
+    private boolean putPostInfo(PostId postId, PostInfo postInfo) {
         List<CompletionStage<Boolean>> stages = new LinkedList<>();
         stages.add(SstUtils.setEntryAsync(idToInfo, postId.value, gson.toJson(postInfo)));
         stages.add(SstUtils.setEntryAsync(idByTime, format(postInfo.latestActiveTime), postId.value));
@@ -105,10 +116,6 @@ public class SchoolHeatSstRepository implements SchoolHeatRepository {
         );
     }
 
-    @Override
-    public void updatePostInfo(PostId postId, PostInfo postInfo) {
-        savePostInfo(postId, postInfo);
-    }
 
     @Override
     public void shutdown() {

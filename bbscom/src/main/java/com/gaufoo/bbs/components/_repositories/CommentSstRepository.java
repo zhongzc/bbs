@@ -21,6 +21,7 @@ public class CommentSstRepository implements CommentRepository {
 
     @Override
     public boolean saveComment(CommentId id, CommentInfo commentInfo) {
+        if (SstUtils.contains(idToInfo, id.value)) return false;
         return SstUtils.setEntry(idToInfo, id.value, gson.toJson(commentInfo));
     }
 
@@ -32,7 +33,8 @@ public class CommentSstRepository implements CommentRepository {
 
     @Override
     public boolean updateComment(CommentId id, CommentInfo commentInfo) {
-        return saveComment(id, commentInfo);
+        if (!SstUtils.contains(idToInfo, id.value)) return false;
+        return SstUtils.setEntry(idToInfo, id.value, gson.toJson(commentInfo));
     }
 
     @Override
