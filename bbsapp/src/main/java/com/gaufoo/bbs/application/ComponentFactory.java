@@ -12,7 +12,7 @@ import com.gaufoo.bbs.components.idGenerator.IdRepository;
 import com.gaufoo.bbs.components.learningResource.LearningResource;
 import com.gaufoo.bbs.components.like.LikeComponent;
 import com.gaufoo.bbs.components.lostfound.LostFound;
-import com.gaufoo.bbs.components.reply.Comment;
+import com.gaufoo.bbs.components.comment.Comment;
 import com.gaufoo.bbs.components.schoolHeat.SchoolHeat;
 import com.gaufoo.bbs.components.scutMajor.MajorFactory;
 import com.gaufoo.bbs.components.tokenGenerator.TokenGenerator;
@@ -97,8 +97,10 @@ public class ComponentFactory {
                 IdGenerator.seqInteger("postId", idRepository));
 
         comment = Comment.defau1t("comment",
+                IdGenerator.seqInteger("commentId", idRepository),
                 IdGenerator.seqInteger("replyId", idRepository),
-                CommentSstRepository.get("commentSstRep", sstPathConfig.comment()));
+                CommentSstRepository.get("commentSstRep", sstPathConfig.comment()),
+                ReplySstRepository.get("replySstRep", sstPathConfig.reply()));
     }
 
     public void shutdown() {
@@ -112,6 +114,7 @@ public class ComponentFactory {
                 like::shutdown,
                 learnResource::shutdown,
                 schoolHeat::shutdown,
+                comment::shutdown,
                 idRepository::shutdown,
         };
         for (Runnable s : shutdowns) {

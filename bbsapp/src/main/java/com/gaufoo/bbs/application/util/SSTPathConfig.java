@@ -15,9 +15,10 @@ public class SSTPathConfig {
     private final String learnResource;
     private final String schoolHeat;
     private final String comment;
+    private final String reply;
     private final String id;
 
-    private SSTPathConfig(Path baseDir, String authenticator, String authenticatorTokenGenerator, String userFactory, String lostFound, String like, String learnResource, String schoolHeat, String comment, String id) {
+    private SSTPathConfig(Path baseDir, String authenticator, String authenticatorTokenGenerator, String userFactory, String lostFound, String like, String learnResource, String schoolHeat, String comment, String reply, String id) {
         this.baseDir = baseDir;
         this.authenticator = authenticator;
         this.authenticatorTokenGenerator = authenticatorTokenGenerator;
@@ -27,6 +28,7 @@ public class SSTPathConfig {
         this.learnResource = learnResource;
         this.schoolHeat = schoolHeat;
         this.comment = comment;
+        this.reply = reply;
         this.id = id;
     }
 
@@ -66,6 +68,10 @@ public class SSTPathConfig {
         return baseDir.resolve(comment);
     }
 
+    public Path reply() {
+        return baseDir.resolve(reply);
+    }
+
     public List<Path> allSSTPaths() {
         Path[] paths = new Path[]{
                 auth(),
@@ -93,6 +99,9 @@ public class SSTPathConfig {
                 "learnResource",
                 "schoolHeat",
                 "comment",
+                "reply",
                 "id");
     }
+
+
 }

@@ -1,7 +1,7 @@
-package com.gaufoo.bbs.components.reply;
+package com.gaufoo.bbs.components.comment;
 
-import com.gaufoo.bbs.components.reply.common.CommentId;
-import com.gaufoo.bbs.components.reply.common.CommentInfo;
+import com.gaufoo.bbs.components.comment.common.CommentId;
+import com.gaufoo.bbs.components.comment.common.CommentInfo;
 
 public interface CommentRepository {
     boolean saveComment(CommentId id, CommentInfo commentInfo);

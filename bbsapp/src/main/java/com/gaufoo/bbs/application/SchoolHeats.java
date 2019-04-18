@@ -3,8 +3,10 @@ package com.gaufoo.bbs.application;
 import com.gaufoo.bbs.application.util.Utils;
 import com.gaufoo.bbs.components.authenticator.common.UserToken;
 import com.gaufoo.bbs.components.authenticator.exceptions.AuthenticatorException;
-import com.gaufoo.bbs.components.reply.common.CommentId;
-import com.gaufoo.bbs.components.reply.common.CommentInfo;
+import com.gaufoo.bbs.components.comment.common.CommentId;
+import com.gaufoo.bbs.components.comment.common.CommentInfo;
+import com.gaufoo.bbs.components.comment.reply.common.ReplyId;
+import com.gaufoo.bbs.components.comment.reply.common.ReplyInfo;
 import com.gaufoo.bbs.components.schoolHeat.common.PostComparators;
 import com.gaufoo.bbs.components.schoolHeat.common.PostId;
 import com.gaufoo.bbs.components.schoolHeat.common.PostInfo;
@@ -255,13 +257,16 @@ public class SchoolHeats {
             @Override
             public List<ReplyItemInfo> getAllReplies() {
                 return commentInfo.replies.stream()
+                        .map(componentFactory.comment::replyInfo)
+                        .filter(Optional::isPresent)
+                        .map(Optional::get)
                         .map(SchoolHeats::constructReplyItemInfo)
                         .collect(Collectors.toList());
             }
         };
     }
 
-    private static ReplyItemInfo constructReplyItemInfo(CommentInfo.Reply reply) {
+    private static ReplyItemInfo constructReplyItemInfo(ReplyInfo reply) {
         return new ReplyItemInfo() {
             @Override
             public String getContent() {
@@ -338,9 +343,9 @@ public class SchoolHeats {
         try {
             UserId userId = fetchUserId(userToken);
 
-            CommentInfo.Reply reply = CommentInfo.Reply.of(userId.value, input.content, input.commentIdToReply);
-            boolean success = componentFactory.comment.reply(CommentId.of(input.commentIdToReply), reply);
-            if (!success) return SchoolHeatError.of("添加回复失败");
+            ReplyInfo reply = ReplyInfo.of(userId.value, input.content, input.commentIdToReply);
+            Optional<ReplyId> rpyId = componentFactory.comment.reply(CommentId.of(input.commentIdToReply), reply);
+            if (!rpyId.isPresent()) return SchoolHeatError.of("添加回复失败");
 
             CommentInfo replyInfo = fetchReplyInfo(CommentId.of(input.commentIdToReply));
             PostId postId = PostId.of(replyInfo.subject);

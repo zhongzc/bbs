@@ -1,4 +1,4 @@
-package com.gaufoo.bbs.components.reply.common;
+package com.gaufoo.bbs.components.comment.common;
 
 import java.util.Objects;
 

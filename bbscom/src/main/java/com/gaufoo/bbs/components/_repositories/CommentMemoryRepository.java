@@ -1,8 +1,8 @@
 package com.gaufoo.bbs.components._repositories;
 
-import com.gaufoo.bbs.components.reply.CommentRepository;
-import com.gaufoo.bbs.components.reply.common.CommentId;
-import com.gaufoo.bbs.components.reply.common.CommentInfo;
+import com.gaufoo.bbs.components.comment.CommentRepository;
+import com.gaufoo.bbs.components.comment.common.CommentId;
+import com.gaufoo.bbs.components.comment.common.CommentInfo;
 import com.google.gson.Gson;
 
 import java.util.Map;

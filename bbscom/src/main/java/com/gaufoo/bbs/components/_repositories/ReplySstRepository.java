@@ -1,44 +1,44 @@
 package com.gaufoo.bbs.components._repositories;
 
-import com.gaufoo.bbs.components.comment.CommentRepository;
-import com.gaufoo.bbs.components.comment.common.CommentId;
-import com.gaufoo.bbs.components.comment.common.CommentInfo;
+import com.gaufoo.bbs.components.comment.reply.ReplyRepository;
+import com.gaufoo.bbs.components.comment.reply.common.ReplyId;
+import com.gaufoo.bbs.components.comment.reply.common.ReplyInfo;
 import com.gaufoo.bbs.util.SstUtils;
 import com.gaufoo.sst.SST;
 import com.google.gson.Gson;
 
 import java.nio.file.Path;
 
-public class CommentSstRepository implements CommentRepository {
+public class ReplySstRepository implements ReplyRepository {
     private static final Gson gson = new Gson();
     private final String repositoryName;
     private final SST idToInfo;
 
-    private CommentSstRepository(String repositoryName, Path storingPath) {
+    public ReplySstRepository(String repositoryName, Path storingPath) {
         this.repositoryName = repositoryName;
         this.idToInfo = SST.of(repositoryName, storingPath.resolve(repositoryName));
     }
 
     @Override
-    public boolean saveComment(CommentId id, CommentInfo commentInfo) {
+    public boolean saveReply(ReplyId id, ReplyInfo replyInfo) {
         if (SstUtils.contains(idToInfo, id.value)) return false;
-        return SstUtils.setEntry(idToInfo, id.value, gson.toJson(commentInfo));
+        return SstUtils.setEntry(idToInfo, id.value, gson.toJson(replyInfo));
     }
 
     @Override
-    public CommentInfo getComment(CommentId id) {
+    public ReplyInfo getReply(ReplyId id) {
         return SstUtils.getEntry(idToInfo, id.value,
-                info -> gson.fromJson(info, CommentInfo.class));
+                info -> gson.fromJson(info, ReplyInfo.class));
     }
 
     @Override
-    public boolean updateComment(CommentId id, CommentInfo commentInfo) {
+    public boolean updateReply(ReplyId id, ReplyInfo replyInfo) {
         if (!SstUtils.contains(idToInfo, id.value)) return false;
-        return SstUtils.setEntry(idToInfo, id.value, gson.toJson(commentInfo));
+        return SstUtils.setEntry(idToInfo, id.value, gson.toJson(replyInfo));
     }
 
     @Override
-    public void deleteComment(CommentId id) {
+    public void deleteReply(ReplyId id) {
         SstUtils.removeEntryWithKey(idToInfo, id.value);
     }
 
@@ -52,7 +52,7 @@ public class CommentSstRepository implements CommentRepository {
         return this.repositoryName;
     }
 
-    public static CommentRepository get(String repositoryName, Path storingPath) {
-        return new CommentSstRepository(repositoryName, storingPath);
+    public static ReplyRepository get(String repositoryName, Path storingPath) {
+        return new ReplySstRepository(repositoryName, storingPath);
     }
 }
