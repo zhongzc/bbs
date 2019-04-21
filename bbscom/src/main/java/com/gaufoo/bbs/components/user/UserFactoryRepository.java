@@ -14,5 +14,4 @@ public interface UserFactoryRepository {
 
     default void shutdown() {}
 
-    String getRepositoryName();
 }

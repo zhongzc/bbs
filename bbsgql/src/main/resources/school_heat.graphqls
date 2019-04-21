@@ -17,22 +17,22 @@ type CommentItemInfo {
     commentId: String!
     postIdCommenting: String!
     content: String!
-    author: PersonalInfo!
+    authorId: PersonalInfo!
     allReplies: [ReplyItemInfo!]!
 }
 
 type ReplyItemInfo {
     content: String!
     replyTo: PersonalInfo!
-    author: PersonalInfo!
+    authorId: PersonalInfo!
 }
 
 type PostItemInfo {
     postId: String!
     title: String!
     content: String!
-    author: PersonalInfo!
-    latestCommenter: PersonalInfo
+    authorId: PersonalInfo!
+    latestCommenterId: PersonalInfo
     latestActiveTime: Long!
     createTime: Long!
     heat: Int!
@@ -41,7 +41,7 @@ type PostItemInfo {
 
 type AllCommentResult {
     totalCount: Long!
-    comments: [CommentItemInfo!]!
+    commentIds: [CommentItemInfo!]!
 }
 
 type SchoolHeatError {

@@ -13,7 +13,7 @@ public class AccountAndPassword {
 
     public static ConfirmPasswordResult confirmPassword(String userToken, String username, String password) {
         try {
-            logger.debug("confirmPassword userToken: {}, username: {}", userToken, username);
+            logger.debug("confirmPassword userToken: {}, usernameVal: {}", userToken, username);
             componentFactory.authenticator.getLoggedUser(UserToken.of(userToken));
 
             if (componentFactory.authenticator.isAuthenticated(username, password)) {

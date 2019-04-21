@@ -1,8 +1,8 @@
 package com.gaufoo.bbs.components._repositories;
 
-import com.gaufoo.bbs.components.comment.CommentRepository;
-import com.gaufoo.bbs.components.comment.common.CommentId;
-import com.gaufoo.bbs.components.comment.common.CommentInfo;
+import com.gaufoo.bbs.components.commentGroup.comment.CommentRepository;
+import com.gaufoo.bbs.components.commentGroup.comment.common.CommentId;
+import com.gaufoo.bbs.components.commentGroup.comment.common.CommentInfo;
 import com.google.gson.Gson;
 
 import java.util.Map;
@@ -41,11 +41,6 @@ public class CommentMemoryRepository implements CommentRepository {
     @Override
     public void deleteComment(CommentId id) {
         map.remove(id.value);
-    }
-
-    @Override
-    public String getRepositoryName() {
-        return this.repositoryName;
     }
 
     public static CommentRepository get(String repositoryName) {

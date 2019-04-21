@@ -8,11 +8,13 @@ import java.util.*;
 
 import static com.gaufoo.bbs.application.util.StaticResourceConfig.FileType.LostFoundImage;
 import static com.gaufoo.bbs.application.util.StaticResourceConfig.FileType.UserProfileImage;
+import static com.gaufoo.bbs.application.util.StaticResourceConfig.FileType.ContentImages;
 
 public class StaticResourceConfig {
     public enum FileType {
         UserProfileImage,
-        LostFoundImage
+        LostFoundImage,
+        ContentImages
     }
 
     private final Path resourceFolder;
@@ -65,7 +67,7 @@ public class StaticResourceConfig {
         List<Tuple<FileType, String>> tuples = new LinkedList<Tuple<FileType, String>>() {{
             add(Tuple.of(UserProfileImage, "profiles"));
             add(Tuple.of(LostFoundImage, "lostAndFound"));
-
+            add(Tuple.of(ContentImages, "contentImg"));
             // add more mappings here
         }};
 

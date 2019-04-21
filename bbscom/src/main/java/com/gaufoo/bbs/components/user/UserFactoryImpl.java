@@ -8,12 +8,10 @@ import com.gaufoo.bbs.components.user.common.UserInfo;
 import java.util.Optional;
 
 public class UserFactoryImpl implements UserFactory {
-    private final String componentName;
     private final UserFactoryRepository repository;
     private final IdGenerator idGenerator;
 
-    UserFactoryImpl(String componentName, UserFactoryRepository repository, IdGenerator idGenerator) {
-        this.componentName = componentName;
+    UserFactoryImpl(UserFactoryRepository repository, IdGenerator idGenerator) {
         this.repository = repository;
         this.idGenerator = idGenerator;
     }
@@ -81,25 +79,15 @@ public class UserFactoryImpl implements UserFactory {
         repository.deleteUser(userId);
     }
 
-    @Override
-    public void shutdown() {
-        repository.shutdown();
-    }
-
-    @Override
-    public String getName() {
-        return this.componentName;
-    }
-
     public static void main(String[] args) {
-        UserFactory userFactory = UserFactory.defau1t("", UserFactoryMemoryRepository.get(""), IdGenerator.seqInteger(""));
-        Optional<UserId> id = userFactory.createUser(UserInfo.of("n", "ppi", UserInfo.Gender.male, "e", "cc", "aa"));
-        System.out.println(id);
-
-        System.out.println(userFactory.userInfo(id.get()));
-
-        if (userFactory.changeGender(id.get(), UserInfo.Gender.female)) {
-            System.out.println(userFactory.userInfo(id.get()));
-        }
+//        UserFactory userFactory = UserFactory.defau1t("", UserFactoryMemoryRepository.get(""), IdGenerator.seqInteger(""));
+//        Optional<UserId> id = userFactory.createUser(UserInfo.of("n", "ppi", UserInfo.Gender.male, "e", "cc", "aa"));
+//        System.out.println(id);
+//
+//        System.out.println(userFactory.userInfo(id.get()));
+//
+//        if (userFactory.changeGender(id.get(), UserInfo.Gender.female)) {
+//            System.out.println(userFactory.userInfo(id.get()));
+//        }
     }
 }

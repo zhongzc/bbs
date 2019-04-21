@@ -12,6 +12,4 @@ public interface FileFactoryRepository {
     void delete(FileId id);
 
     default void shutdown() {}
-
-    String getRepositoryName();
 }

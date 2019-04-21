@@ -13,7 +13,6 @@ import static com.gaufoo.bbs.components.scutMajor.common.Major.*;
 import static com.gaufoo.bbs.components.scutMajor.common.School.*;
 
 public class MajorFactoryImpl implements MajorFactory {
-    private final String componentName;
     private static final Map<School, List<Major>> schoolToMajor = new HashMap<>();
 
     static {
@@ -46,9 +45,7 @@ public class MajorFactoryImpl implements MajorFactory {
         schoolToMajor.put(建筑学院, Util.buildList(建筑学, 城乡规划, 风景园林));
     }
 
-    MajorFactoryImpl(String componentName) {
-        this.componentName = componentName;
-    }
+    MajorFactoryImpl() { }
 
     @Override
     public Optional<MajorValue> getMajorValue(School school, Major major) {
@@ -79,13 +76,8 @@ public class MajorFactoryImpl implements MajorFactory {
         return getMajorValue(School.values()[school], Major.values()[major]);
     }
 
-    @Override
-    public String getName() {
-        return this.componentName;
-    }
-
     public static void main(String[] args) {
-        MajorFactoryImpl mf = new MajorFactoryImpl("");
+        MajorFactoryImpl mf = new MajorFactoryImpl();
         Optional<MajorValue> m = mf.getMajorValue(计算机科学与工程学院, 计算机科学与技术);
 
         System.out.println(m.get());

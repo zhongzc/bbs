@@ -1,29 +1,22 @@
 package com.gaufoo.bbs.components.schoolHeat;
 
-import com.gaufoo.bbs.components.schoolHeat.common.PostId;
-import com.gaufoo.bbs.components.schoolHeat.common.PostInfo;
+import com.gaufoo.bbs.components.schoolHeat.common.SchoolHeatId;
+import com.gaufoo.bbs.components.schoolHeat.common.SchoolHeatInfo;
 
-import java.util.Comparator;
 import java.util.stream.Stream;
 
 public interface SchoolHeatRepository {
-    Stream<PostId> getAllPosts(Comparator<PostInfo> comparator);
-    Stream<PostId> getAllPosts();
 
-    Stream<PostId> allPostsByTimeAsc();
-    Stream<PostId> allPostsByTimeDes();
-    Stream<PostId> allPostsByHeatAsc();
-    Stream<PostId> allPostsByHeatDes();
+    Stream<SchoolHeatId> getAllPostsAsc();
+    Stream<SchoolHeatId> getAllPostsDes();
+    Stream<SchoolHeatId> getAllPostsByAuthorAsc(String authorId);
+    Stream<SchoolHeatId> getAllPostsByAuthorDes(String authorId);
 
-    PostInfo getPostInfo(PostId postId);
+    SchoolHeatInfo getPostInfo(SchoolHeatId postId);
 
-    boolean savePostInfo(PostId postId, PostInfo postInfo);
+    boolean savePost(SchoolHeatId postId, SchoolHeatInfo postInfo);
 
-    void deletePostInfo(PostId postId);
-
-    boolean updatePostInfo(PostId postId, PostInfo postInfo);
+    void deletePost(SchoolHeatId postId);
 
     default void shutdown() {}
-
-    String getRepositoryName();
 }

@@ -23,18 +23,15 @@ public class SeqInteger implements IdGenerator {
     }
 
     @Override
-    public void shutdown() { }
-
-    @Override
     public String getName() {
         return this.componentName;
     }
 
     public static void main(String[] args) {
-        IdGenerator g = IdGenerator.seqInteger("");
-        System.out.println(g.generateId());
-        System.out.println(g.generateId());
-        System.out.println(g.generateId());
-        System.out.println(g.generateId());
+//        IdGenerator g = IdGenerator.seqInteger("");
+//        System.out.println(g.generateId());
+//        System.out.println(g.generateId());
+//        System.out.println(g.generateId());
+//        System.out.println(g.generateId());
     }
 }

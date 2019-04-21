@@ -1,8 +1,8 @@
 package com.gaufoo.bbs.components._repositories;
 
-import com.gaufoo.bbs.components.like.LikeComponentRepository;
-import com.gaufoo.bbs.components.like.common.LikeId;
-import com.gaufoo.bbs.components.like.common.LikeInfo;
+import com.gaufoo.bbs.components._depr_like.LikeComponentRepository;
+import com.gaufoo.bbs.components._depr_like.common.LikeId;
+import com.gaufoo.bbs.components._depr_like.common.LikeInfo;
 import com.google.gson.Gson;
 
 import java.util.Map;

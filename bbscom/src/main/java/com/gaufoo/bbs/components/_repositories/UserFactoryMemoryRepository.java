@@ -43,11 +43,6 @@ public class UserFactoryMemoryRepository implements UserFactoryRepository {
         idToInfo.remove(userId.value);
     }
 
-    @Override
-    public String getRepositoryName() {
-        return this.repositoryName;
-    }
-
     public static UserFactoryRepository get(String repositoryName) {
         return new UserFactoryMemoryRepository(repositoryName);
     }

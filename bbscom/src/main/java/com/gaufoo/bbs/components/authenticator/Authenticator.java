@@ -24,8 +24,6 @@ public interface Authenticator {
 
     void remove(String username);
 
-    String getName();
-
     boolean isAuthenticated(String username, String password);
 
     enum Role {
@@ -33,16 +31,13 @@ public interface Authenticator {
         ADMIN,
     }
 
-    void shutdown();
-
     /**
      * 默认实现
      */
-    static Authenticator defau1t(String componentName,
-                                 AuthenticatorRepository repository,
+    static Authenticator defau1t(AuthenticatorRepository repository,
                                  Validator<String> usernameValidator,
                                  Validator<String> passwordValidator,
                                  TokenGenerator tokenGenerator) {
-        return new AuthenticatorImpl(componentName, repository, usernameValidator, passwordValidator, tokenGenerator);
+        return new AuthenticatorImpl(repository, usernameValidator, passwordValidator, tokenGenerator);
     }
 }

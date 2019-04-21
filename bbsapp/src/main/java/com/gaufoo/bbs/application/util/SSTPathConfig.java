@@ -10,26 +10,36 @@ public class SSTPathConfig {
     private final String authenticator;
     private final String authenticatorTokenGenerator;
     private final String userFactory;
-    private final String lostFound;
-    private final String like;
-    private final String learnResource;
+    private final String lost;
+    private final String found;
+    private final String entertainment;
+    private final String lecture;
+    private final String learningResource;
     private final String schoolHeat;
     private final String comment;
     private final String reply;
     private final String id;
+    private final String content;
+    private final String active;
+    private final String heat;
 
-    private SSTPathConfig(Path baseDir, String authenticator, String authenticatorTokenGenerator, String userFactory, String lostFound, String like, String learnResource, String schoolHeat, String comment, String reply, String id) {
+    private SSTPathConfig(Path baseDir, String authenticator, String authenticatorTokenGenerator, String userFactory, String lost, String found, String entertainment, String lecture, String learningResource, String schoolHeat, String comment, String reply, String id, String content, String active, String heat) {
         this.baseDir = baseDir;
         this.authenticator = authenticator;
         this.authenticatorTokenGenerator = authenticatorTokenGenerator;
         this.userFactory = userFactory;
-        this.lostFound = lostFound;
-        this.like = like;
-        this.learnResource = learnResource;
+        this.lost = lost;
+        this.found = found;
+        this.entertainment = entertainment;
+        this.lecture = lecture;
+        this.learningResource = learningResource;
         this.schoolHeat = schoolHeat;
         this.comment = comment;
         this.reply = reply;
         this.id = id;
+        this.content = content;
+        this.active = active;
+        this.heat = heat;
     }
 
     public Path auth() {
@@ -44,20 +54,28 @@ public class SSTPathConfig {
         return baseDir.resolve(userFactory);
     }
 
-    public Path lostFound() {
-        return baseDir.resolve(lostFound);
+    public Path lost() {
+        return baseDir.resolve(lost);
     }
 
-    public Path like() {
-        return baseDir.resolve(like);
+    public Path found() {
+        return baseDir.resolve(found);
     }
 
-    public Path learnResource() {
-        return baseDir.resolve(learnResource);
+    public Path learningResource() {
+        return baseDir.resolve(learningResource);
     }
 
     public Path schoolHeat() {
         return baseDir.resolve(schoolHeat);
+    }
+
+    public Path entertainment() {
+        return baseDir.resolve(entertainment);
+    }
+
+    public Path lecture() {
+        return baseDir.resolve(lecture);
     }
 
     public Path id() {
@@ -72,16 +90,35 @@ public class SSTPathConfig {
         return baseDir.resolve(reply);
     }
 
+    public Path content() {
+        return baseDir.resolve(content);
+    }
+
+    public Path active() {
+        return baseDir.resolve(active);
+    }
+
+    public Path heat() {
+        return baseDir.resolve(heat);
+    }
+
     public List<Path> allSSTPaths() {
         Path[] paths = new Path[]{
                 auth(),
                 authTokenGen(),
                 userFactory(),
-                lostFound(),
-                like(),
-                learnResource(),
+                lost(),
+                found(),
+                learningResource(),
                 schoolHeat(),
-                id()
+                entertainment(),
+                lecture(),
+                id(),
+                comment(),
+                reply(),
+                content(),
+                active(),
+                heat()
         };
         return Arrays.asList(paths);
     }
@@ -94,14 +131,15 @@ public class SSTPathConfig {
                 "authenticator",
                 "authTokenGenerator",
                 "userFactory",
-                "lostFound",
-                "like",
-                "learnResource",
+                "lost",
+                "found",
+                "entertainment",
+                "lecture",
+                "learningResource",
                 "schoolHeat",
                 "comment",
                 "reply",
-                "id");
+                "id", "content", "active", "heat");
     }
-
 
 }

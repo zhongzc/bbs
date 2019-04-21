@@ -1,41 +1,34 @@
 package com.gaufoo.bbs.components.schoolHeat;
 
 import com.gaufoo.bbs.components.idGenerator.IdGenerator;
-import com.gaufoo.bbs.components.schoolHeat.common.PostId;
-import com.gaufoo.bbs.components.schoolHeat.common.PostInfo;
+import com.gaufoo.bbs.components.schoolHeat.common.SchoolHeatId;
+import com.gaufoo.bbs.components.schoolHeat.common.SchoolHeatInfo;
 
-import java.util.Comparator;
 import java.util.Optional;
 import java.util.stream.Stream;
 
 public interface SchoolHeat {
-    // use comparators in common.PostComparators
-    // fixme: not easy to use correctly
-    Stream<PostId> allPosts(Comparator<PostInfo> comparator);
+    Stream<SchoolHeatId> allPosts(boolean descending);
 
-    Optional<PostInfo> postInfo(PostId postId);
+    default Stream<SchoolHeatId> allPosts() {
+        return allPosts(false);
+    }
 
-    Optional<PostId> publishPost(PostInfo postInfo);
+    Stream<SchoolHeatId> allPostsByAuthor(String authorId, boolean descending);
 
-    void removePost(PostId postId);
+    default Stream<SchoolHeatId> allPostsByAuthor(String authorId) {
+        return allPostsByAuthor(authorId, true);
+    }
 
-    void increaseHeat(PostId postId, int delta);
+    Optional<SchoolHeatInfo> postInfo(SchoolHeatId schoolHeatId);
 
-    void setLatestCommenter(PostId postId, String replier);
+    Optional<SchoolHeatId> publishPost(SchoolHeatInfo schoolHeatInfo);
+
+    void removePost(SchoolHeatId schoolHeatId);
 
     Long allPostsCount();
 
-    void addComment(PostId postId, String commentIdentifier);
-
-    void removeComment(PostId postId, String commentIdentifier);
-
-    void updatePost(PostId postId, PostInfo modPostInfo);
-
-    void shutdown();
-
-    String getName();
-
-    static SchoolHeat defau1t(String componentName, SchoolHeatRepository schoolHeatRepository, IdGenerator idGenerator) {
-        return SchoolHeatImpl.get(componentName, schoolHeatRepository, idGenerator);
+    static SchoolHeat defau1t(SchoolHeatRepository repository, IdGenerator idGenerator) {
+        return new SchoolHeatImpl(repository, idGenerator);
     }
 }

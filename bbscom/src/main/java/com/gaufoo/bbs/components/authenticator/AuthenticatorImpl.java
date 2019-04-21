@@ -10,18 +10,15 @@ import com.gaufoo.bbs.components.validator.Validator;
 import java.time.*;
 
 class AuthenticatorImpl implements Authenticator {
-    private final String componentName;
     private final AuthenticatorRepository repository;
     private final Validator<String> usernameValidator;
     private final Validator<String> passwordValidator;
     private final TokenGenerator tokenGenerator;
 
-    AuthenticatorImpl(String componentName,
-                      AuthenticatorRepository repository,
+    AuthenticatorImpl(AuthenticatorRepository repository,
                       Validator<String> usernameValidator,
                       Validator<String> passwordValidator,
                       TokenGenerator tokenGenerator) {
-        this.componentName = componentName;
         this.repository = repository;
         this.usernameValidator = usernameValidator;
         this.passwordValidator = passwordValidator;
@@ -107,18 +104,8 @@ class AuthenticatorImpl implements Authenticator {
     }
 
     @Override
-    public String getName() {
-        return this.componentName;
-    }
-
-    @Override
     public boolean isAuthenticated(String username, String password) {
         return repository.contains(username) && repository.getPassword(username).equals(password);
-    }
-
-    @Override
-    public void shutdown() {
-        repository.shutdown();
     }
 
     public static void main(String[] args) throws AuthenticatorException {
@@ -134,7 +121,6 @@ class AuthenticatorImpl implements Authenticator {
         TokenGenerator tokenGenerator = TokenGenerator.defau1t("", TokenGeneratorMemoryRepository.get(""));
         // 认证器
         Authenticator authenticator = Authenticator.defau1t(
-                "",
                 AuthenticatorMemoryRepository.get(""),
                 usernameV, passwordV, tokenGenerator
         );

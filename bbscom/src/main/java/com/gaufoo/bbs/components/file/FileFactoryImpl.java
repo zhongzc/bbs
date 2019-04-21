@@ -6,12 +6,10 @@ import com.gaufoo.bbs.components.idGenerator.IdGenerator;
 import java.util.Optional;
 
 public class FileFactoryImpl implements FileFactory {
-    private final String componentName;
     private final FileFactoryRepository repository;
     private final IdGenerator idGenerator;
 
-    FileFactoryImpl(String componentName, FileFactoryRepository repository, IdGenerator idGenerator) {
-        this.componentName = componentName;
+    FileFactoryImpl(FileFactoryRepository repository, IdGenerator idGenerator) {
         this.repository = repository;
         this.idGenerator = idGenerator;
     }
@@ -40,13 +38,4 @@ public class FileFactoryImpl implements FileFactory {
         repository.delete(id);
     }
 
-    @Override
-    public String getName() {
-        return this.componentName;
-    }
-
-    @Override
-    public void shutdown() {
-        repository.shutdown();
-    }
 }

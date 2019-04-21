@@ -4,19 +4,27 @@ import com.gaufoo.bbs.application.util.SSTPathConfig;
 import com.gaufoo.bbs.application.util.StaticResourceConfig;
 import com.gaufoo.bbs.application.util.StaticResourceConfig.FileType;
 import com.gaufoo.bbs.application.util.Utils;
-import com.gaufoo.bbs.components._repositories.*;
+import com.gaufoo.bbs.components._depr_learningResource.LearningResourceSstRepository;
+import com.gaufoo.bbs.components._depr_lostfound.LostFoundSstRepository;
+import com.gaufoo.bbs.components._depr_schoolHeat.SchoolHeatSstRepository;
 import com.gaufoo.bbs.components.authenticator.Authenticator;
+import com.gaufoo.bbs.components.authenticator.AuthenticatorSstRepository;
+import com.gaufoo.bbs.components.commentGroup.comment.CommentSstRepository;
+import com.gaufoo.bbs.components.commentGroup.comment.reply.ReplySstRepository;
 import com.gaufoo.bbs.components.file.FileFactory;
+import com.gaufoo.bbs.components.file.FileFactoryFileSystemRepository;
 import com.gaufoo.bbs.components.idGenerator.IdGenerator;
 import com.gaufoo.bbs.components.idGenerator.IdRepository;
-import com.gaufoo.bbs.components.learningResource.LearningResource;
-import com.gaufoo.bbs.components.like.LikeComponent;
-import com.gaufoo.bbs.components.lostfound.LostFound;
-import com.gaufoo.bbs.components.comment.Comment;
-import com.gaufoo.bbs.components.schoolHeat.SchoolHeat;
+import com.gaufoo.bbs.components._depr_learningResource.LearningResource;
+import com.gaufoo.bbs.components._depr_lostfound.LostFound;
+import com.gaufoo.bbs.components.commentGroup.comment.Comment;
+import com.gaufoo.bbs.components._depr_schoolHeat.SchoolHeat;
+import com.gaufoo.bbs.components.idGenerator.IdSstRepository;
 import com.gaufoo.bbs.components.scutMajor.MajorFactory;
 import com.gaufoo.bbs.components.tokenGenerator.TokenGenerator;
+import com.gaufoo.bbs.components.tokenGenerator.TokenGeneratorSstRepository;
 import com.gaufoo.bbs.components.user.UserFactory;
+import com.gaufoo.bbs.components.user.UserFactorySstRepository;
 import com.gaufoo.bbs.components.validator.Validator;
 
 import java.nio.file.Path;
@@ -37,7 +45,6 @@ public class ComponentFactory {
     public final MajorFactory major;
     public final LostFound lostFound;
     public final FileFactory lostFoundImages;
-    public final LikeComponent like;
     public final LearningResource learnResource;
     public final SchoolHeat schoolHeat;
     public final Comment comment;
@@ -58,49 +65,43 @@ public class ComponentFactory {
         clearFolders(allFolderPaths);
         createFoldersIfAbsent(allFolderPaths);
 
-        idRepository = IdSstRepository.get("idSstRep", sstPathConfig.id());
+        idRepository = IdSstRepository.get(sstPathConfig.id());
 
-        user = UserFactory.defau1t("usrFty",
-                UserFactorySstRepository.get("usrFtySstRep", sstPathConfig.userFactory()),
+        user = UserFactory.defau1t(
+                UserFactorySstRepository.get(sstPathConfig.userFactory()),
                 IdGenerator.seqInteger("usrId", idRepository));
 
-        authenticator = Authenticator.defau1t("auth",
-                AuthenticatorSstRepository.get("authSstRep", sstPathConfig.auth()),
+        authenticator = Authenticator.defau1t(
+                AuthenticatorSstRepository.get(sstPathConfig.auth()),
                 Validator.email(), Validator.nonContainsSpace().compose(Validator.minLength(8)).compose(Validator.maxLength(20)),
-                TokenGenerator.defau1t("authToken",
-                        TokenGeneratorSstRepository.get("authTokenSstRep", sstPathConfig.authTokenGen())));
+                TokenGenerator.defau1t(TokenGeneratorSstRepository.get(sstPathConfig.authTokenGen())));
 
-        userProfiles = FileFactory.defau1t("userProfiles",
-                FileFactoryFileSystemRepository.get("fileDskRep",userProfileFolder),
+        userProfiles = FileFactory.defau1t(
+                FileFactoryFileSystemRepository.get(userProfileFolder),
                 IdGenerator.seqInteger("usrImgId", idRepository));
 
-        major = MajorFactory.defau1t("major");
+        major = MajorFactory.defau1t();
 
-        lostFound = LostFound.defau1t("lstFnd",
-                LostFoundSstRepository.get("lstFndSstRep", sstPathConfig.lostFound()),
+        lostFound = LostFound.defau1t(
+                LostFoundSstRepository.get(sstPathConfig.lostFound()),
                 IdGenerator.seqInteger("lstId", idRepository), IdGenerator.seqInteger("fndId", idRepository));
 
-        lostFoundImages = FileFactory.defau1t("lostFoundImages",
-                        FileFactoryFileSystemRepository.get("lostFoundDskRep",
-                                lostFoundFolder), IdGenerator.seqInteger("lostImgId", idRepository));
+        lostFoundImages = FileFactory.defau1t(FileFactoryFileSystemRepository.get(lostFoundFolder),
+                IdGenerator.seqInteger("lostImgId", idRepository));
 
-        like = LikeComponent.defau1t("like",
-                LikeComponentSstRepository.get("likeMryRep", sstPathConfig.like()),
-                IdGenerator.seqInteger("likeId", idRepository));
-
-        learnResource = LearningResource.defau1t("learnResource",
-                LearningResourceSstRepository.get("learnResMryRep", sstPathConfig.learnResource()),
+        learnResource = LearningResource.defau1t(
+                LearningResourceSstRepository.get(sstPathConfig.learningResource()),
                 IdGenerator.seqInteger("resourceId", idRepository));
 
-        schoolHeat = SchoolHeat.defau1t("schoolHeat",
-                SchoolHeatSstRepository.get("schoolHeatSstRep", sstPathConfig.schoolHeat()),
+        schoolHeat = SchoolHeat.defau1t(
+                SchoolHeatSstRepository.get(sstPathConfig.schoolHeat()),
                 IdGenerator.seqInteger("postId", idRepository));
 
-        comment = Comment.defau1t("comment",
+        comment = Comment.defau1t(
                 IdGenerator.seqInteger("commentId", idRepository),
                 IdGenerator.seqInteger("replyId", idRepository),
-                CommentSstRepository.get("commentSstRep", sstPathConfig.comment()),
-                ReplySstRepository.get("replySstRep", sstPathConfig.reply()));
+                CommentSstRepository.get(sstPathConfig.comment()),
+                ReplySstRepository.get(sstPathConfig.reply()));
     }
 
     public void shutdown() {
@@ -111,7 +112,6 @@ public class ComponentFactory {
                 userProfiles::shutdown,
                 lostFound::shutdown,
                 lostFoundImages::shutdown,
-                like::shutdown,
                 learnResource::shutdown,
                 schoolHeat::shutdown,
                 comment::shutdown,

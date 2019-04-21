@@ -1,8 +1,8 @@
 package com.gaufoo.bbs.components._repositories;
 
-import com.gaufoo.bbs.components.learningResource.LearningResourceRepository;
-import com.gaufoo.bbs.components.learningResource.common.ResourceId;
-import com.gaufoo.bbs.components.learningResource.common.ResourceInfo;
+import com.gaufoo.bbs.components._depr_learningResource.LearningResourceRepository;
+import com.gaufoo.bbs.components._depr_learningResource.common.ResourceId;
+import com.gaufoo.bbs.components._depr_learningResource.common.ResourceInfo;
 import com.google.gson.Gson;
 
 import java.util.Map;
@@ -45,11 +45,6 @@ public class LearningResourceMemoryRepository implements LearningResourceReposit
     @Override
     public void deleteResource(ResourceId resourceId) {
         resources.remove(resourceId.value);
-    }
-
-    @Override
-    public String getRepositoryName() {
-        return this.repositoryName;
     }
 
     public static LearningResourceRepository get(String repositoryName) {

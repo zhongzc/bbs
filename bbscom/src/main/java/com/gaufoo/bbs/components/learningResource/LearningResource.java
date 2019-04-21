@@ -1,51 +1,40 @@
 package com.gaufoo.bbs.components.learningResource;
 
 import com.gaufoo.bbs.components.idGenerator.IdGenerator;
-import com.gaufoo.bbs.components.learningResource.common.ResourceId;
-import com.gaufoo.bbs.components.learningResource.common.ResourceInfo;
+import com.gaufoo.bbs.components.learningResource.common.LearningResourceId;
+import com.gaufoo.bbs.components.learningResource.common.LearningResourceInfo;
 
 import java.util.Optional;
 import java.util.stream.Stream;
 
 public interface LearningResource {
-    Optional<ResourceId> pubResource(ResourceInfo resourceInfo);
+    Stream<LearningResourceId> allPosts(boolean descending);
 
-    Optional<ResourceInfo> resourceInfo(ResourceId resourceId);
-
-    Stream<ResourceId> allResources();
-
-    default Stream<ResourceId> resourcesOfMajor(String majorCode) {
-        return allResources().filter(r ->
-                resourceInfo(r).map(ri -> ri.majorCode.equals(majorCode)).orElse(false));
+    default Stream<LearningResourceId> allPosts() {
+        return allPosts(false);
     }
 
-    boolean changeSharer(ResourceId resourceId, String newSharer);
+    Stream<LearningResourceId> allPostsByAuthor(String authorId, boolean descending);
 
-    boolean changeMajorCode(ResourceId resourceId, String newMajorCode);
-
-    boolean changeTitle(ResourceId resourceId, String newTitle);
-
-    boolean changeContent(ResourceId resourceId, String newContent);
-
-    boolean changeAttachedFileIdentifier(ResourceId resourceId, String newAttachedFileIdentifier);
-
-    default Stream<ResourceId> searchResourcesByTitle(String title) {
-        return allResources().filter(r ->
-                resourceInfo(r).map(ri -> ri.title.matches(".*" + title + ".*")).orElse(false));
+    default Stream<LearningResourceId> allPostsByAuhtor(String authorId) {
+        return allPostsByAuthor(authorId, true);
     }
 
-    default Stream<ResourceId> searchResourcesByContent(String content) {
-        return allResources().filter(r ->
-                resourceInfo(r).map(ri -> ri.content.matches(".*" + content + ".*")).orElse(false));
+    Stream<LearningResourceId> allPostsOfCourse(String courseCode, boolean descending);
+
+    default Stream<LearningResourceId> allPostsOfCourse(String courseCode) {
+        return allPostsOfCourse(courseCode, true);
     }
 
-    void removeResource(ResourceId resourceId);
+    Optional<LearningResourceInfo> postInfo(LearningResourceId learningResourceId);
 
-    void shutdown();
+    Optional<LearningResourceId> publishPost(LearningResourceInfo learningResourceInfo);
 
-    String getName();
+    void removePost(LearningResourceId learningResourceId);
 
-    static LearningResource defau1t(String componentName, LearningResourceRepository repository, IdGenerator idGenerator) {
-        return new LearningResourceImpl(componentName, repository, idGenerator);
+    Long allPostsCount();
+
+    static LearningResource defau1t(LearningResourceRepository repository, IdGenerator idGenerator) {
+        return new LearningResourceImpl(repository, idGenerator);
     }
 }

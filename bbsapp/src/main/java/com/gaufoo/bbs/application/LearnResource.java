@@ -2,8 +2,8 @@ package com.gaufoo.bbs.application;
 
 import com.gaufoo.bbs.components.authenticator.common.UserToken;
 import com.gaufoo.bbs.components.authenticator.exceptions.AuthenticatorException;
-import com.gaufoo.bbs.components.learningResource.common.ResourceId;
-import com.gaufoo.bbs.components.learningResource.common.ResourceInfo;
+import com.gaufoo.bbs.components._depr_learningResource.common.ResourceId;
+import com.gaufoo.bbs.components._depr_learningResource.common.ResourceInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

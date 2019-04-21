@@ -4,7 +4,6 @@ import com.coxautodev.graphql.tools.SchemaParserDictionary;
 import com.gaufoo.bbs.application.*;
 import com.gaufoo.bbs.application.util.StaticResourceConfig;
 import com.gaufoo.bbs.application.util.StaticResourceConfig.FileType;
-import com.gaufoo.bbs.components.schoolHeat.SchoolHeat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;

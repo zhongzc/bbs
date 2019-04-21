@@ -1,7 +1,7 @@
 package com.gaufoo.bbs.components._repositories;
 
-import com.gaufoo.bbs.components.lostfound.LostFoundRepository;
-import com.gaufoo.bbs.components.lostfound.common.*;
+import com.gaufoo.bbs.components._depr_lostfound.LostFoundRepository;
+import com.gaufoo.bbs.components._depr_lostfound.common.*;
 import com.google.gson.Gson;
 
 import java.util.Map;
@@ -10,7 +10,6 @@ import java.util.stream.Stream;
 
 public class LostFoundMemoryRepository implements LostFoundRepository {
     private final static Gson gson = new Gson();
-    private final String repositoryName;
 
     // LostId -> LostInfo
     private final Map<String, String> losts = new ConcurrentHashMap<>();
@@ -18,9 +17,7 @@ public class LostFoundMemoryRepository implements LostFoundRepository {
     // FoundId -> FoundInfo
     private final Map<String, String> founds = new ConcurrentHashMap<>();
 
-    private LostFoundMemoryRepository(String repositoryName) {
-        this.repositoryName = repositoryName;
-    }
+    private LostFoundMemoryRepository() { }
 
     @Override
     public boolean saveLost(LostId id, LostInfo info) {
@@ -80,12 +77,7 @@ public class LostFoundMemoryRepository implements LostFoundRepository {
         founds.remove(id.value);
     }
 
-    @Override
-    public String getRepositoryName() {
-        return this.repositoryName;
-    }
-
-    public static LostFoundRepository get(String repositoryName) {
-        return new LostFoundMemoryRepository(repositoryName);
+    public static LostFoundRepository get() {
+        return new LostFoundMemoryRepository();
     }
 }

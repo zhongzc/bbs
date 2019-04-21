@@ -10,7 +10,5 @@ public interface TokenGeneratorRepository {
     void delete(String token);
 
     default void shutdown() {}
-
-    String getRepositoryName();
 }
 

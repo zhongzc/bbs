@@ -104,4 +104,16 @@ public class SstUtils {
             e.printStackTrace();
         }
     }
+
+    public static void waitAllFuturesPar(Stream<CompletionStage<?>> completionStages) {
+        CompletableFuture<?>[] futures = completionStages
+                .map(CompletionStage::toCompletableFuture).toArray(CompletableFuture<?>[]::new);
+        try {
+            CompletableFuture.allOf(futures).get();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        }
+    }
 }

@@ -7,8 +7,6 @@ public interface IdRepository {
 
     void shutdown();
 
-    String getRepositoryName();
-
     static IdRepository fakeIdRepository() {
         return new IdRepository() {
             @Override
@@ -24,11 +22,6 @@ public interface IdRepository {
             @Override
             public void shutdown() {
 
-            }
-
-            @Override
-            public String getRepositoryName() {
-                return "";
             }
         };
     }

@@ -1,22 +1,24 @@
 package com.gaufoo.bbs.components.learningResource;
 
-import com.gaufoo.bbs.components.learningResource.common.ResourceId;
-import com.gaufoo.bbs.components.learningResource.common.ResourceInfo;
+import com.gaufoo.bbs.components.learningResource.common.LearningResourceId;
+import com.gaufoo.bbs.components.learningResource.common.LearningResourceInfo;
 
 import java.util.stream.Stream;
 
 public interface LearningResourceRepository {
-    boolean saveResource(ResourceId id, ResourceInfo resourceInfo);
 
-    boolean updateResource(ResourceId resourceId, ResourceInfo modSharer);
+    Stream<LearningResourceId> getAllPostsAsc();
+    Stream<LearningResourceId> getAllPostsDes();
+    Stream<LearningResourceId> getAllPostsByAuthorAsc(String authorId);
+    Stream<LearningResourceId> getAllPostsByAuthorDes(String authorId);
+    Stream<LearningResourceId> getAllPostsOfCourseAsc(String courseCode);
+    Stream<LearningResourceId> getAllPostsOfCourseDes(String courseCode);
 
-    ResourceInfo getResourceInfo(ResourceId resourceId);
+    LearningResourceInfo getPostInfo(LearningResourceId postId);
 
-    Stream<ResourceId> getAllResources();
+    boolean savePostInfo(LearningResourceId postId, LearningResourceInfo postInfo);
 
-    void deleteResource(ResourceId resourceId);
+    void deletePostInfo(LearningResourceId postId);
 
     default void shutdown() {}
-
-    String getRepositoryName();
 }

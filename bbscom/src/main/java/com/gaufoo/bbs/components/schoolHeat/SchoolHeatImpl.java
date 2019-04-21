@@ -1,115 +1,62 @@
 package com.gaufoo.bbs.components.schoolHeat;
 
 import com.gaufoo.bbs.components.idGenerator.IdGenerator;
-import com.gaufoo.bbs.components.schoolHeat.common.PostComparators;
-import com.gaufoo.bbs.components.schoolHeat.common.PostId;
-import com.gaufoo.bbs.components.schoolHeat.common.PostInfo;
+import com.gaufoo.bbs.components.schoolHeat.common.SchoolHeatId;
+import com.gaufoo.bbs.components.schoolHeat.common.SchoolHeatInfo;
 
-import java.util.Comparator;
-import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Stream;
 
 public class SchoolHeatImpl implements SchoolHeat {
-    private final String componentName;
     private final SchoolHeatRepository repository;
     private final IdGenerator idGenerator;
     private final AtomicLong count;
 
-    private SchoolHeatImpl(String componentName, SchoolHeatRepository repository, IdGenerator idGenerator) {
-        this.componentName = componentName;
+    SchoolHeatImpl(SchoolHeatRepository repository, IdGenerator idGenerator) {
         this.repository = repository;
         this.idGenerator = idGenerator;
-        this.count = new AtomicLong(repository.getAllPosts().count());
+        this.count = new AtomicLong(repository.getAllPostsAsc().count());
     }
 
     @Override
-    public Stream<PostId> allPosts(Comparator<PostInfo> comparator) {
-        if (comparator.equals(PostComparators.comparingTime)) return repository.allPostsByTimeAsc();
-        if (comparator.equals(PostComparators.comparingTimeReversed)) return repository.allPostsByTimeDes();
-        if (comparator.equals(PostComparators.comparingHeat)) return repository.allPostsByHeatAsc();
-        if (comparator.equals(PostComparators.comparingHeatReversed)) return repository.allPostsByHeatDes();
-        else return repository.getAllPosts(comparator);
+    public Stream<SchoolHeatId> allPosts(boolean descending) {
+        if (descending) return repository.getAllPostsDes();
+        else return repository.getAllPostsAsc();
     }
 
     @Override
-    public Optional<PostInfo> postInfo(PostId postId) {
-        return Optional.ofNullable(repository.getPostInfo(postId));
+    public Stream<SchoolHeatId> allPostsByAuthor(String authorId, boolean descending) {
+        if (descending) return repository.getAllPostsByAuthorDes(authorId);
+        else return repository.getAllPostsByAuthorAsc(authorId);
     }
 
     @Override
-    public Optional<PostId> publishPost(PostInfo postInfo) {
-        PostId newPostId = PostId.of(idGenerator.generateId());
-        if (repository.savePostInfo(newPostId, postInfo)) {
-            count.incrementAndGet();
-            return Optional.of(newPostId);
+    public Optional<SchoolHeatInfo> postInfo(SchoolHeatId schoolHeatId) {
+        return Optional.ofNullable(repository.getPostInfo(schoolHeatId));
+    }
+
+    @Override
+    public Optional<SchoolHeatId> publishPost(SchoolHeatInfo schoolHeatInfo) {
+        SchoolHeatId id = SchoolHeatId.of(idGenerator.generateId());
+        if (repository.savePost(id, schoolHeatInfo)) {
+            this.count.incrementAndGet();
+            return Optional.of(id);
         } else {
             return Optional.empty();
         }
     }
 
     @Override
-    public void removePost(PostId postId) {
-        count.decrementAndGet();
-        repository.deletePostInfo(postId);
-    }
-
-    @Override
-    public void increaseHeat(PostId postId, int delta) {
-        PostInfo postInfo = repository.getPostInfo(postId);
-        if (postInfo == null) return;
-        updatePost(postId, postInfo.modHeat(postInfo.heat + delta));
-    }
-
-    @Override
-    public void setLatestCommenter(PostId postId, String commenter) {
-        PostInfo postInfo = repository.getPostInfo(postId);
-        if (postInfo == null) return;
-        updatePost(postId, postInfo.modLatestCommenter(commenter));
+    public void removePost(SchoolHeatId schoolHeatId) {
+        postInfo(schoolHeatId).ifPresent(i -> {
+            repository.deletePost(schoolHeatId);
+            this.count.decrementAndGet();
+        });
     }
 
     @Override
     public Long allPostsCount() {
-        return count.get();
-    }
-
-    @Override
-    public void addComment(PostId postId, String commentIdentifier) {
-        postInfo(postId).ifPresent(oldPostInfo -> {
-            List<String> commentIds = oldPostInfo.commentIdentifiers;
-            commentIds.add(commentIdentifier);
-            updatePost(postId, oldPostInfo.modCommentIdentifiers(commentIds)
-                    .modCommentCount(oldPostInfo.commentCount + 1));
-        });
-    }
-
-    @Override
-    public void removeComment(PostId postId, String commentIdentifier) {
-        postInfo(postId).ifPresent(oldPostInfo -> {
-            List<String> commentIds = oldPostInfo.commentIdentifiers;
-            commentIds.remove(commentIdentifier);
-            updatePost(postId, oldPostInfo.modCommentIdentifiers(commentIds)
-                .modCommentCount(oldPostInfo.commentCount - 1));
-        });
-    }
-
-    @Override
-    public void updatePost(PostId postId, PostInfo modPostInfo) {
-        repository.updatePostInfo(postId, modPostInfo);
-    }
-
-    @Override
-    public void shutdown() {
-        repository.shutdown();
-    }
-
-    @Override
-    public String getName() {
-        return componentName;
-    }
-
-    public static SchoolHeatImpl get(String componentName, SchoolHeatRepository repository, IdGenerator idGenerator) {
-        return new SchoolHeatImpl(componentName, repository, idGenerator);
+        return this.count.get();
     }
 }

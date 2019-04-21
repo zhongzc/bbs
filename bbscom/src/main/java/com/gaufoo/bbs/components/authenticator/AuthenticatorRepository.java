@@ -34,5 +34,4 @@ public interface AuthenticatorRepository {
 
     default void shutdown() {}
 
-    String getRepositoryName();
 }

@@ -21,7 +21,7 @@ public class Authentication {
     private static final Logger log = LoggerFactory.getLogger(Authentication.class);
 
     public static SignUpResult signUp(String username, String password, String nickname) {
-        log.debug("sign up - username: {}, nickname: {}", username, nickname);
+        log.debug("sign up - usernameVal: {}, nickname: {}", username, nickname);
 
         try {
             Attachable needUser = componentFactory.authenticator.signUp(username, password);
@@ -29,23 +29,23 @@ public class Authentication {
             Optional<UserId> userId = componentFactory.user.createUser(UserInfo.of(nickname, null,
                     UserInfo.Gender.secret, null, defaultMajorCodeValue(), null));
             if (!userId.isPresent()) {
-                log.debug("sign up - failed, error: {}, username: {}, nickname: {}", "用户创建失败", username, nickname);
+                log.debug("sign up - failed, error: {}, usernameVal: {}, nickname: {}", "用户创建失败", username, nickname);
                 return SignUpError.of("用户创建失败");
             } else {
                 needUser.attach(Permission.of(userId.get().value, Authenticator.Role.USER));
             }
 
         } catch (AuthenticatorException e) {
-            log.debug("sign up - failed, error: {}, username: {}, nickname: {}", e.getMessage(), username, nickname);
+            log.debug("sign up - failed, error: {}, usernameVal: {}, nickname: {}", e.getMessage(), username, nickname);
             return SignUpError.of(e.getMessage());
         }
 
         try {
             UserToken token = componentFactory.authenticator.login(username, password);
-            log.debug("sign up - successfully, token: {}, username: {}, nickname: {}", token, username, nickname);
+            log.debug("sign up - successfully, token: {}, usernameVal: {}, nickname: {}", token, username, nickname);
             return SignUpPayload.of(token.value);
         } catch (AuthenticatorException e) {
-            log.debug("sign up - failed, error: {}, username: {}, nickname: {}", e.getMessage(), username, nickname);
+            log.debug("sign up - failed, error: {}, usernameVal: {}, nickname: {}", e.getMessage(), username, nickname);
             return SignUpError.of(e.getMessage());
         }
     }
@@ -56,14 +56,14 @@ public class Authentication {
     }
 
     public static LogInResult logIn(String username, String password) {
-        log.debug("login, username: {}, password: {}", username, password);
+        log.debug("login, usernameVal: {}, passwordVal: {}", username, password);
 
         try {
             UserToken token = componentFactory.authenticator.login(username, password);
-            log.debug("login - successfully, token: {}, username: {}", token, username);
+            log.debug("login - successfully, token: {}, usernameVal: {}", token, username);
             return LogInPayload.of(token.value);
         } catch (AuthenticatorException e) {
-            log.debug("login - failed, error: {}, username: {}", e.getMessage(), username);
+            log.debug("login - failed, error: {}, usernameVal: {}", e.getMessage(), username);
             return LogInError.of(e.getMessage());
         }
     }

@@ -1,28 +1,52 @@
 package com.gaufoo.bbs.components.learningResource;
 
 import com.gaufoo.bbs.components.idGenerator.IdGenerator;
-import com.gaufoo.bbs.components.learningResource.common.ResourceId;
-import com.gaufoo.bbs.components.learningResource.common.ResourceInfo;
+import com.gaufoo.bbs.components.learningResource.common.LearningResourceId;
+import com.gaufoo.bbs.components.learningResource.common.LearningResourceInfo;
 
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Stream;
 
-class LearningResourceImpl implements LearningResource {
-    private final String componentName;
+public class LearningResourceImpl implements LearningResource {
     private final LearningResourceRepository repository;
     private final IdGenerator idGenerator;
+    private final AtomicLong count;
 
-    LearningResourceImpl(String componentName, LearningResourceRepository repository, IdGenerator idGenerator) {
-        this.componentName = componentName;
+    LearningResourceImpl(LearningResourceRepository repository, IdGenerator idGenerator) {
         this.repository = repository;
         this.idGenerator = idGenerator;
+        this.count = new AtomicLong(repository.getAllPostsAsc().count());
     }
 
     @Override
-    public Optional<ResourceId> pubResource(ResourceInfo resourceInfo) {
-        ResourceId id = ResourceId.of(idGenerator.generateId());
+    public Stream<LearningResourceId> allPosts(boolean descending) {
+        if (descending) return repository.getAllPostsDes();
+        else return repository.getAllPostsAsc();
+    }
 
-        if (repository.saveResource(id, resourceInfo)) {
+    @Override
+    public Stream<LearningResourceId> allPostsByAuthor(String authorId, boolean descending) {
+        if (descending) return repository.getAllPostsByAuthorDes(authorId);
+        else return repository.getAllPostsByAuthorAsc(authorId);
+    }
+
+    @Override
+    public Stream<LearningResourceId> allPostsOfCourse(String courseCode, boolean descending) {
+        if (descending) return repository.getAllPostsOfCourseDes(courseCode);
+        else return repository.getAllPostsOfCourseAsc(courseCode);
+    }
+
+    @Override
+    public Optional<LearningResourceInfo> postInfo(LearningResourceId learningResourceId) {
+        return Optional.ofNullable(repository.getPostInfo(learningResourceId));
+    }
+
+    @Override
+    public Optional<LearningResourceId> publishPost(LearningResourceInfo learningResourceInfo) {
+        LearningResourceId id = LearningResourceId.of(idGenerator.generateId());
+        if (repository.savePostInfo(id, learningResourceInfo)) {
+            this.count.incrementAndGet();
             return Optional.of(id);
         } else {
             return Optional.empty();
@@ -30,62 +54,15 @@ class LearningResourceImpl implements LearningResource {
     }
 
     @Override
-    public Optional<ResourceInfo> resourceInfo(ResourceId resourceId) {
-        return Optional.ofNullable(repository.getResourceInfo(resourceId));
+    public void removePost(LearningResourceId learningResourceId) {
+        postInfo(learningResourceId).ifPresent(i -> {
+            repository.deletePostInfo(learningResourceId);
+            this.count.decrementAndGet();
+        });
     }
 
     @Override
-    public Stream<ResourceId> allResources() {
-        return repository.getAllResources();
-    }
-
-    @Override
-    public boolean changeSharer(ResourceId resourceId, String newSharer) {
-        return Optional.ofNullable(repository.getResourceInfo(resourceId)).map(u ->
-                repository.updateResource(resourceId, u.modSharer(newSharer))
-        ).orElse(false);
-    }
-
-    @Override
-    public boolean changeMajorCode(ResourceId resourceId, String newMajorCode) {
-        return Optional.ofNullable(repository.getResourceInfo(resourceId)).map(u ->
-                repository.updateResource(resourceId, u.modMajorCode(newMajorCode))
-        ).orElse(false);
-    }
-
-    @Override
-    public boolean changeTitle(ResourceId resourceId, String newTitle) {
-        return Optional.ofNullable(repository.getResourceInfo(resourceId)).map(u ->
-                repository.updateResource(resourceId, u.modTitle(newTitle))
-        ).orElse(false);
-    }
-
-    @Override
-    public boolean changeContent(ResourceId resourceId, String newContent) {
-        return Optional.ofNullable(repository.getResourceInfo(resourceId)).map(u ->
-                repository.updateResource(resourceId, u.modContent(newContent))
-        ).orElse(false);
-    }
-
-    @Override
-    public boolean changeAttachedFileIdentifier(ResourceId resourceId, String newAttachedFileIdentifier) {
-        return Optional.ofNullable(repository.getResourceInfo(resourceId)).map(u ->
-                repository.updateResource(resourceId, u.modAttachedFileIdentifier(newAttachedFileIdentifier))
-        ).orElse(false);
-    }
-
-    @Override
-    public void removeResource(ResourceId resourceId) {
-        repository.deleteResource(resourceId);
-    }
-
-    @Override
-    public void shutdown() {
-        repository.shutdown();
-    }
-
-    @Override
-    public String getName() {
-        return this.componentName;
+    public Long allPostsCount() {
+        return this.count.get();
     }
 }

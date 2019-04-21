@@ -14,11 +14,7 @@ public interface FileFactory {
 
     void Remove(FileId id);
 
-    String getName();
-
-    void shutdown();
-
-    static FileFactory defau1t(String componentName, FileFactoryRepository repository, IdGenerator idGenerator) {
-        return new FileFactoryImpl(componentName, repository, idGenerator);
+    static FileFactory defau1t(FileFactoryRepository repository, IdGenerator idGenerator) {
+        return new FileFactoryImpl(repository, idGenerator);
     }
 }
