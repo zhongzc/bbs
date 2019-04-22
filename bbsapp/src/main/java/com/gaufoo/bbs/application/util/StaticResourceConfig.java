@@ -53,12 +53,14 @@ public class StaticResourceConfig {
             return this;
         }
 
-        public Optional<StaticResourceConfig> build() {
+        public StaticResourceConfig build() {
             boolean isValid = uriMapper.values().stream()
                     .allMatch(tup -> tup.left != null && tup.right != null &&
                             !tup.left.isEmpty() && !tup.right.isEmpty());
-            if (!isValid) return Optional.empty();
-            return Optional.of(new StaticResourceConfig(resourceFolder, uriMapper));
+            if (!isValid) {
+                throw new RuntimeException("StaticResourceConfig is invalid");
+            }
+            return new StaticResourceConfig(resourceFolder, uriMapper);
         }
     }
 
