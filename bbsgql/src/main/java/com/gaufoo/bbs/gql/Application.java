@@ -56,7 +56,7 @@ public class Application implements WebMvcConfigurer {
         StaticResourceConfig config = StaticResourceConfig.defaultPartialConfig()
                 .addMapping(FileType.UserProfileImage, profileImgMapping)
                 .addMapping(FileType.LostFoundImage, lostFoundMapping)
-                .addMapping(FileType.ContentImages, contentMapping).build().get();
+                .addMapping(FileType.ContentImages, contentMapping).build();
 
         ComponentFactory.componentFactory = new ComponentFactory(config);
 
