@@ -4,7 +4,7 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 public interface Heat {
-    // heatGroup 字长 8, id 字长 8
+    // heatGroup ascii 字长最长 14, id ascii 字长最长 14
     Optional<Long> increase(String heatGroup, String id, long delta);
 
     Optional<Long> getHeat(String heatGroup, String id);

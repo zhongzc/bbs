@@ -5,7 +5,7 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 public interface Active {
-    // activeGroup 字长 8, id 字长 8
+    // activeGroup ascii 字长最长 14, id ascii 字长最长 14
     Optional<Instant> touch(String activeGroup, String id);
 
     Optional<Instant> getLatestActiveTime(String activeGroup, String id);
