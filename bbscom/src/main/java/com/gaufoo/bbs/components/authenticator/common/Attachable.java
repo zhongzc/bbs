@@ -1,7 +1,7 @@
 package com.gaufoo.bbs.components.authenticator.common;
 
-import com.gaufoo.bbs.components.authenticator.exceptions.CommonException;
+import com.gaufoo.bbs.util.TaskChain;
 
 public interface Attachable {
-    void attach(Permission permission) throws CommonException;
+    TaskChain.Procedure<Boolean> attach(Permission permission);
 }

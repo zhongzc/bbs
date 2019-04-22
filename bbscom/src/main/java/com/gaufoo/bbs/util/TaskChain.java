@@ -17,6 +17,14 @@ public interface TaskChain {
         static <T> Procedure<T> fromOptional(Optional<T> optional, String error) {
             return optional.map(i -> (Procedure<T>) Result.of(i)).orElse(new Fail<>(error));
         }
+
+        static <T> Procedure<T> ofNullable(T nullable, String error) {
+            return fromOptional(Optional.ofNullable(nullable), error);
+        }
+
+        static <T> Procedure<T> ofNullable(T nullable, String error, Runnable rollback) {
+            return fromOptional(Optional.ofNullable(nullable), error, rollback);
+        }
     }
 
     class Result<T> implements Procedure<T> {

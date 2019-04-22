@@ -4,23 +4,24 @@ import com.gaufoo.bbs.components.authenticator.common.Attachable;
 import com.gaufoo.bbs.components.authenticator.common.UserToken;
 import com.gaufoo.bbs.components.authenticator.common.Permission;
 import com.gaufoo.bbs.components.authenticator.common.ResetToken;
-import com.gaufoo.bbs.components.authenticator.exceptions.AuthenticatorException;
 import com.gaufoo.bbs.components.tokenGenerator.TokenGenerator;
 import com.gaufoo.bbs.components.validator.Validator;
 
+import static com.gaufoo.bbs.util.TaskChain.*;
+
 public interface Authenticator {
 
-    Attachable signUp(String username, String password) throws AuthenticatorException;
+    Procedure<Attachable> signUp(String username, String password);
 
-    UserToken login(String username, String password) throws AuthenticatorException;
+    Procedure<UserToken> login(String username, String password);
 
-    Permission getLoggedUser(UserToken userToken) throws AuthenticatorException;
+    Procedure<Permission> getLoggedUser(UserToken userToken);
 
     void logout(UserToken userToken);
 
-    ResetToken reqResetPassword(String username) throws AuthenticatorException;
+    Procedure<ResetToken> reqResetPassword(String username);
 
-    void resetPassword(ResetToken resetToken, String newPassword) throws AuthenticatorException;
+    Procedure<Boolean> resetPassword(ResetToken resetToken, String newPassword);
 
     void remove(String username);
 
