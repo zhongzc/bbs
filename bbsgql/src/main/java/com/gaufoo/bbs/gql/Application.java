@@ -5,7 +5,8 @@ import com.gaufoo.bbs.application.*;
 import com.gaufoo.bbs.application.util.StaticResourceConfig;
 import com.gaufoo.bbs.application.util.StaticResourceConfig.FileType;
 import com.gaufoo.bbs.gql.util.AuthenticationInterceptor;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
@@ -19,9 +20,9 @@ import javax.annotation.PostConstruct;
 import java.util.LinkedList;
 import java.util.List;
 
-@Slf4j
 @SpringBootApplication
 public class Application implements WebMvcConfigurer {
+    private static Logger log = LoggerFactory.getLogger(Application.class);
     @Value("${user-profile-images-mapping}")
     private String profileImgMapping;
     @Value("${lost-and-found-images-mapping}")
