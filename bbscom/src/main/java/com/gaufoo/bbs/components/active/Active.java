@@ -6,8 +6,6 @@ import java.util.stream.Stream;
 
 public interface Active {
     // activeGroup 字长 8, id 字长 8
-    Optional<Instant> cons(String activeGroup, String id);
-
     Optional<Instant> touch(String activeGroup, String id);
 
     Optional<Instant> getLatestActiveTime(String activeGroup, String id);

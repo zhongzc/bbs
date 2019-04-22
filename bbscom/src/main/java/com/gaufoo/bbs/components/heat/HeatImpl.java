@@ -11,19 +11,18 @@ public class HeatImpl implements Heat {
     }
 
     @Override
-    public Optional<Long> cons(String heatGroup, String id) {
-        if (repository.saveHeat(heatGroup, id, 0)) {
-            return Optional.of(0L);
-        } else {
-            return Optional.empty();
-        }
-    }
-
-    @Override
     public Optional<Long> increase(String heatGroup, String id, long delta) {
-        return getHeat(heatGroup, id).flatMap(h -> {
+        Optional<Optional<Long>> l = getHeat(heatGroup, id).map(h -> {
             if (repository.updateHeat(heatGroup, id, h + delta)) {
                 return Optional.of(h + delta);
+            } else {
+                return Optional.empty();
+            }
+        });
+
+        return l.orElseGet(() -> {
+            if (repository.saveHeat(heatGroup, id, delta)) {
+                return Optional.of(delta);
             } else {
                 return Optional.empty();
             }

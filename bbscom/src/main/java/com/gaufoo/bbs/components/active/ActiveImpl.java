@@ -12,23 +12,24 @@ public class ActiveImpl implements Active {
     }
 
     @Override
-    public Optional<Instant> cons(String activeGroup, String id) {
-        Instant time = Instant.now();
-        if (repository.saveActive(activeGroup, id, time)) {
-            return Optional.of(time);
-        } else {
-            return Optional.empty();
-        }
-    }
-
-    @Override
     public Optional<Instant> touch(String activeGroup, String id) {
         Instant time = Instant.now();
-        if (repository.updateActive(activeGroup, id, time)) {
-            return Optional.of(time);
-        } else {
-            return Optional.empty();
-        }
+
+        Optional<Optional<Instant>> i = getLatestActiveTime(activeGroup, id).map(__ -> {
+            if (repository.updateActive(activeGroup, id, time)) {
+                return Optional.of(time);
+            } else {
+                return Optional.empty();
+            }
+        });
+
+        return i.orElseGet(() -> {
+            if (repository.saveActive(activeGroup, id, time)) {
+                return Optional.of(time);
+            } else {
+                return Optional.empty();
+            }
+        });
     }
 
     @Override
