@@ -69,7 +69,7 @@ public class HeatSstRepository implements HeatRepository {
     @Override
     public void delete(String heatGroup, String id) {
         Optional.ofNullable(getHeat(heatGroup, id)).ifPresent(h -> SstUtils.waitAllFuturesPar(
-                idToHeat.delete(formatHG(heatGroup) + id),
+                idToHeat.delete(formatHG(heatGroup) + formatID(id)),
                 cluster.delete(concat(heatGroup, id, h))));
     }
 

@@ -69,7 +69,7 @@ public class ActiveSstRepository implements ActiveRepository {
     @Override
     public void delete(String activeGroup, String id) {
         Optional.ofNullable(getActive(activeGroup, id)).ifPresent(otime -> SstUtils.waitAllFuturesPar(
-                idToTime.delete(formatAG(activeGroup) + id),
+                idToTime.delete(formatAG(activeGroup) + formatID(id)),
                 cluster.delete(concat(activeGroup, id, otime))));
     }
 
@@ -89,7 +89,7 @@ public class ActiveSstRepository implements ActiveRepository {
     }
 
     private static String concat(String activeGroup, String id, Instant time) {
-        return formatAG(activeGroup) + format(time) + id;
+        return formatAG(activeGroup) + format(time) + formatID(id);
     }
 
     private static String retrieveId(String string) {
