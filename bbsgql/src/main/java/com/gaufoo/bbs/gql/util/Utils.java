@@ -18,11 +18,4 @@ public class Utils {
         Optional<String> auth = getHeader("Authorization", env);
         return auth.map(str -> str.replace("Bearer ", ""));
     }
-
-    public static Function<String, String> urlMakerProducer(String prefix) {
-        return (uriStr) -> {
-            if (uriStr == null || uriStr.isEmpty()) return "";
-            return prefix + Paths.get(uriStr).toFile().getName();
-        };
-    }
 }

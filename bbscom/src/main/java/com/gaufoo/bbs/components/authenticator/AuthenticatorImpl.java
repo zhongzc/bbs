@@ -107,7 +107,6 @@ class AuthenticatorImpl implements Authenticator {
     public boolean isAuthenticated(String username, String password) {
         return repository.contains(username) && repository.getPassword(username).equals(password);
     }
-
     public static void main(String[] args) throws AuthenticatorException {
         // 用户名和密码合法性验证器
         Validator<String> usernameV = Validator.email();

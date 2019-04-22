@@ -1,0 +1,10 @@
+type Error {
+    errCode: ErrorCode!
+    errMsg: String!
+}
+
+enum ErrorCode {
+    Authenticate
+    LostItemNonExist
+    FoundItemNonExist
+}

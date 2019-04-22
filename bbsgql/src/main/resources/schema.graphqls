@@ -1,52 +1,9 @@
 type Query {
-    loggedId: GetIdResult!
-
-    userInfo(userId: String!): PersonalInfoResult!
-    allAcademies: [String!]!
-    allMajors: [String!]!
-    majorsIn(academy: String!): MajorsInResult!
-
-    allLosts      (skip: Long, first: Long): AllLostResult!
-    allFounds     (skip: Long, first: Long): AllFoundResult!
-    foundItemInfo (foundId: String!):        FoundInfoResult!
-    lostItemInfo  (lostId:  String!):        LostInfoResult!
-
-    allPosts(skip: Long, first: Long, sortedBy: SortedBy): AllPostResult!
-    postInfo(postId: String!): PostItemResult!
-
-    searchResource(resourceId: String!): LearnResourceInfoResult!
+    test(testStr: String!): String
 }
 
 type Mutation {
-    resetLostFound: Boolean!
-    resetPost: Boolean!
-
-    signUp(username: String!, password: String!, nickname: String!): SignUpResult!
-    logIn(username: String!, password: String!): LogInResult!
-    logOut: LogOutError
-
-    confirmPassword(username: String!, password: String!): ConfirmPasswordResult!
-    changePassword(resetToken: String!, newPassword: String!): ChangePasswordError
-
-    uploadUserProfile(base64Image: String!): ModifyPersonInfoResult!
-    changeGender(gender: String!): ModifyPersonInfoResult!
-    changeGrade(grade: String!): ModifyPersonInfoResult!
-    changeIntroduction(introduction: String!): ModifyPersonInfoResult!
-    changeNickname(nickname: String!): ModifyPersonInfoResult!
-    changeAcademy(academy: String!): ModifyPersonInfoResult!
-    changeMajor(major: String!): ModifyPersonInfoResult!
-
-    publishFound    (itemInfo: ItemInfoInput!):                   PublishFoundResult!
-    publishLost     (itemInfo: ItemInfoInput!):                   PublishLostResult!
-    modifyLostItem  (lostId: String!, itemInfo: ItemInfoInput!):  ModifyLostResult!
-    modifyFoundItem (foundId: String!, itemInfo: ItemInfoInput!): ModifyFoundResult!
-
-    createPost    (postInfo: PostInfoInput!):       CreatePostResult!
-    deletePost    (postId: String!):                ModifyPostResult!
-    createComment (commentInfo: CommentInfoInput!): CreateCommentResult!
-    createReply   (replyInfo: ReplyInfoInput!):     CreateReplyResult!
-
-    publishLearnResource(resourceInfo: LearnResourceInput!): LearnResourceInfoResult!
+    needsAuth: Error
 }
 
 schema {

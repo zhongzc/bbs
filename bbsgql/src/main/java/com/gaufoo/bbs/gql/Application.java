@@ -4,8 +4,9 @@ import com.coxautodev.graphql.tools.SchemaParserDictionary;
 import com.gaufoo.bbs.application.*;
 import com.gaufoo.bbs.application.util.StaticResourceConfig;
 import com.gaufoo.bbs.application.util.StaticResourceConfig.FileType;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.gaufoo.bbs.gql.util.AuthenticationInterceptor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -18,15 +19,15 @@ import javax.annotation.PostConstruct;
 import java.util.LinkedList;
 import java.util.List;
 
+@Slf4j
 @SpringBootApplication
 public class Application implements WebMvcConfigurer {
-    private static Logger logger = LoggerFactory.getLogger(Application.class);
-
     @Value("${user-profile-images-mapping}")
     private String profileImgMapping;
-
     @Value("${lost-and-found-images-mapping}")
     private String lostFoundMapping;
+    @Value("${content-images-mapping}")
+    private String contentMapping;
 
     public static void main(String[] args) {
         SpringApplication.run(Application.class, args);
@@ -40,23 +41,7 @@ public class Application implements WebMvcConfigurer {
     @Bean
     SchemaParserDictionary schemaParserDictionary() {
         Class<?>[] subUnionTypes = {
-                Authentication.SignUpError.class,
-                Authentication.SignUpPayload.class,
-                Authentication.LogInError.class,
-                Authentication.LogInPayload.class,
-                Authentication.GetIdError.class,
-                Authentication.GetIdPayload.class,
-                AccountAndPassword.ConfirmPasswordError.class,
-                AccountAndPassword.ConfirmPasswordPayload.class,
-                PersonalInformation.PersonalInfoError.class,
-                PersonalInformation.MajorsInError.class,
-                PersonalInformation.MajorsInPayload.class,
-                PersonalInformation.ModifyPersonInfoSuccess.class,
-                PersonalInformation.ModifyPersonInfoError.class,
-                LostAndFound.LostFoundError.class,
-                SchoolHeats.SchoolHeatError.class,
-                LearnResource.LearnResourceInfo.class,
-                LearnResource.LearnResourceInfoError.class,
+                Error.class,
         };
         SchemaParserDictionary schemaParserDictionary = new SchemaParserDictionary();
         for(Class<?> clazz: subUnionTypes) {
@@ -69,15 +54,16 @@ public class Application implements WebMvcConfigurer {
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         StaticResourceConfig config = StaticResourceConfig.defaultPartialConfig()
                 .addMapping(FileType.UserProfileImage, profileImgMapping)
-                .addMapping(FileType.LostFoundImage, lostFoundMapping).build().get();
+                .addMapping(FileType.LostFoundImage, lostFoundMapping)
+                .addMapping(FileType.ContentImages, contentMapping).build().get();
 
         ComponentFactory.componentFactory = new ComponentFactory(config);
 
         List<String> allUrlPrefixes = new LinkedList<>();
         List<String> allFolderPaths = new LinkedList<>();
         config.allFileTypes().forEach(fileType -> {
-            logger.info("mapped url: " + config.urlPrefixOf(fileType) + "/**");
-            logger.info("mapped folder: " + config.folderPathOf(fileType).toString());
+            log.info("mapped url: " + config.urlPrefixOf(fileType) + "/**");
+            log.info("mapped folder: " + config.folderPathOf(fileType).toString());
             allUrlPrefixes.add(config.urlPrefixOf(fileType) + "/**");
             allFolderPaths.add(config.folderPathOf(fileType).toUri().toString());
         });
@@ -89,9 +75,22 @@ public class Application implements WebMvcConfigurer {
     @PostConstruct
     private void addShutdownHook() {
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            logger.debug("ComponentFactory is shutting down..");
-            ComponentFactory.componentFactory.shutdown();
+            log.debug("ComponentFactory is shutting down..");
+            try {
+                ComponentFactory.componentFactory.shutdown();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }));
-        logger.debug("added shutdown hook");
+        log.debug("added shutdown hook");
     }
+
+    @Bean
+    public Mutation createMutation() {
+        ProxyFactory proxyFactory = new ProxyFactory(new Mutation());
+        proxyFactory.setProxyTargetClass(true);
+        proxyFactory.addAdvice(AuthenticationInterceptor.interceptor);
+        return (Mutation)proxyFactory.getProxy();
+    }
+
 }
