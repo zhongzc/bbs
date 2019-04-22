@@ -118,7 +118,7 @@ class AuthenticatorImpl implements Authenticator {
                 .compose(Validator.minLength(8))
                 .compose(Validator.nonContainsSpace());
         // token生成器
-        TokenGenerator tokenGenerator = TokenGenerator.defau1t("", TokenGeneratorMemoryRepository.get(""));
+        TokenGenerator tokenGenerator = TokenGenerator.defau1t(TokenGeneratorMemoryRepository.get(""));
         // 认证器
         Authenticator authenticator = Authenticator.defau1t(
                 AuthenticatorMemoryRepository.get(""),

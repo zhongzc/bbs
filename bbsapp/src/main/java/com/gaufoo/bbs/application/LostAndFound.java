@@ -40,7 +40,7 @@ public class LostAndFound {
     private interface UndoFunction {
         void undo();
     }
-    private static Validator<ItemInfoInput> itemInfoInputNonNull =  Validator.defau1t("itemInfoValidator",
+    private static Validator<ItemInfoInput> itemInfoInputNonNull =  Validator.defau1t(
             input -> notNullOrEmpty(input.contact) &&
                     notNullOrEmpty(input.description) &&
                     notNullOrEmpty(input.itemName) &&
