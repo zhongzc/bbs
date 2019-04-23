@@ -4,7 +4,7 @@ import com.coxautodev.graphql.tools.SchemaParserDictionary;
 import com.gaufoo.bbs.application.*;
 import com.gaufoo.bbs.application.util.StaticResourceConfig;
 import com.gaufoo.bbs.application.util.StaticResourceConfig.FileType;
-import com.gaufoo.bbs.gql.util.AuthenticationInterceptor;
+import com.gaufoo.bbs.gql.util.LoggingInterceptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.aop.framework.ProxyFactory;
@@ -90,8 +90,15 @@ public class Application implements WebMvcConfigurer {
     public Mutation createMutation() {
         ProxyFactory proxyFactory = new ProxyFactory(new Mutation());
         proxyFactory.setProxyTargetClass(true);
-        proxyFactory.addAdvice(AuthenticationInterceptor.interceptor);
+        proxyFactory.addAdvice(LoggingInterceptor.interceptor);
         return (Mutation)proxyFactory.getProxy();
+    }
+
+    @Bean Query createQuery() {
+        ProxyFactory proxyFactory = new ProxyFactory(new Query());
+        proxyFactory.setProxyTargetClass(true);
+        proxyFactory.addAdvice(LoggingInterceptor.interceptor);
+        return (Query)proxyFactory.getProxy();
     }
 
 }
