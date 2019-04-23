@@ -29,7 +29,7 @@ public class TokenGeneratorSstRepository implements TokenGeneratorRepository {
 
     @Override
     public void delete(String token) {
-        removeEntryWithKey(tknToTime, token);
+        removeEntryByKey(tknToTime, token);
     }
 
     @Override

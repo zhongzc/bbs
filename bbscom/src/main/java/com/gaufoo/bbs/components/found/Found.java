@@ -20,7 +20,7 @@ public interface Found {
 
     Optional<FoundInfo> claim(FoundId foundId, String losterId);
 
-    void removePost(FoundId foundId);
+    boolean removePost(FoundId foundId);
 
     Long allPostsCount();
 

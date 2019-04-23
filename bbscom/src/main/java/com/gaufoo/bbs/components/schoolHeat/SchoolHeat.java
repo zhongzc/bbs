@@ -24,7 +24,7 @@ public interface SchoolHeat {
 
     Optional<SchoolHeatId> publishPost(SchoolHeatInfo schoolHeatInfo);
 
-    void removePost(SchoolHeatId schoolHeatId);
+    boolean removePost(SchoolHeatId schoolHeatId);
 
     Long allPostsCount();
 

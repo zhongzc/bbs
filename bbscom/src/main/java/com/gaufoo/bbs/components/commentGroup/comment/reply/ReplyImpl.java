@@ -32,8 +32,8 @@ public class ReplyImpl implements Reply {
     }
 
     @Override
-    public void removeReply(ReplyId replyId) {
-        repository.deleteReply(replyId);
+    public boolean removeReply(ReplyId replyId) {
+        return repository.deleteReply(replyId);
     }
 
 }

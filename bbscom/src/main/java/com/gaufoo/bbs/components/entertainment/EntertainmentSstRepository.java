@@ -11,16 +11,19 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletionStage;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Stream;
 
 public class EntertainmentSstRepository implements EntertainmentRepository {
     private static final Gson gson = new Gson();
     private final SST idToInfo;
     private final SST authorIndex;
+    private final AtomicLong count;
 
     private EntertainmentSstRepository(Path storingPath) {
         this.idToInfo = SST.of("id-to-info", storingPath);
         this.authorIndex = SST.of("author-index", storingPath);
+        this.count = new AtomicLong(getAllPostsAsc().count());
     }
 
     @Override
@@ -56,17 +59,23 @@ public class EntertainmentSstRepository implements EntertainmentRepository {
         List<CompletionStage<Boolean>> tasks = new ArrayList<>();
         tasks.add(SstUtils.setEntryAsync(idToInfo, postId.value, gson.toJson(postInfo)));
         tasks.add(SstUtils.setEntryAsync(authorIndex, concat(postId, postInfo.authorId), "GAUFOO"));
-        return SstUtils.waitAllFutureParT(tasks, true, (a, b) -> a && b);
+        if (SstUtils.waitAllFutureParT(tasks, true, (a, b) -> a && b)) {
+            this.count.incrementAndGet();
+            return true;
+        } else return false;
     }
 
     @Override
-    public void deletePost(EntertainmentId postId) {
-        Optional.ofNullable(getPostInfo(postId)).ifPresent(info ->
-                SstUtils.waitAllFuturesPar(
-                        idToInfo.delete(postId.value),
-                        authorIndex.delete(concat(postId, info.authorId))
-                )
-        );
+    public boolean deletePost(EntertainmentId postId) {
+        return Optional.ofNullable(SstUtils.removeEntryByKey(idToInfo, postId.value, info -> gson.fromJson(info, EntertainmentInfo.class))).map(info -> {
+            this.count.decrementAndGet();
+            return SstUtils.removeEntryByKey(authorIndex, concat(postId, info.authorId)) != null;
+        }).orElse(false);
+    }
+
+    @Override
+    public Long count() {
+        return this.count.get();
     }
 
     @Override

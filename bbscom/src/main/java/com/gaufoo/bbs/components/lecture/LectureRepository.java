@@ -16,7 +16,9 @@ public interface LectureRepository {
 
     boolean savePost(LectureId postId, LectureInfo postInfo);
 
-    void deletePost(LectureId postId);
+    boolean deletePost(LectureId postId);
+
+    Long count();
 
     default void shutdown() {}
 

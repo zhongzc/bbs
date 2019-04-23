@@ -16,7 +16,9 @@ public interface SchoolHeatRepository {
 
     boolean savePost(SchoolHeatId postId, SchoolHeatInfo postInfo);
 
-    void deletePost(SchoolHeatId postId);
+    boolean deletePost(SchoolHeatId postId);
+
+    Long count();
 
     default void shutdown() {}
 }

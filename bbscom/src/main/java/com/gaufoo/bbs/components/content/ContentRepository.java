@@ -8,7 +8,7 @@ public interface ContentRepository {
 
     boolean save(ContentId contentId, ContentInfo contentInfo);
 
-    void delete(ContentId contentId);
+    boolean delete(ContentId contentId);
 
     default void shutdown() {}
 }

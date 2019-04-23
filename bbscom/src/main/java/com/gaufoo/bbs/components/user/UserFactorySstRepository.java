@@ -35,7 +35,7 @@ public class UserFactorySstRepository implements UserFactoryRepository {
 
     @Override
     public void deleteUser(UserId userId) {
-        removeEntryWithKey(idToInfo, userId.value);
+        removeEntryByKey(idToInfo, userId.value);
     }
 
     @Override

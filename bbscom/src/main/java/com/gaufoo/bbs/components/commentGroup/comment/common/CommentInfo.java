@@ -12,43 +12,31 @@ final public class CommentInfo {
     public final String content;
     public final String commenter;
 
-    // 楼中楼
-    public final List<ReplyId> replies;
-
-    private CommentInfo(String subject, String content, String commenter, List<ReplyId> replies) {
+    private CommentInfo(String subject, String content, String commenter) {
         this.subject = subject;
         this.content = content;
         this.commenter = commenter;
-        this.replies = replies;
     }
 
-    public static CommentInfo of(String subject, String content, String replier, List<ReplyId> replies) {
-        return new CommentInfo(subject, content, replier, replies);
-    }
-
-    public static CommentInfo of(String subject, String content, String replier) {
-        return new CommentInfo(subject, content, replier, new ArrayList<>());
+    public static CommentInfo of(String subject, String content, String commenter) {
+        return new CommentInfo(subject, content, commenter);
     }
 
     public CommentInfo modSubject(String subject) {
-        return new CommentInfo(subject, this.content, this.commenter, this.replies);
+        return new CommentInfo(subject, this.content, this.commenter);
     }
 
     public CommentInfo modContent(String content) {
-        return new CommentInfo(this.subject, content, this.commenter, this.replies);
+        return new CommentInfo(this.subject, content, this.commenter);
     }
 
     public CommentInfo modCommenter(String commenter) {
-        return new CommentInfo(this.subject, this.content, commenter, this.replies);
-    }
-
-    public CommentInfo modReplies(List<ReplyId> replies) {
-        return new CommentInfo(this.subject, this.content, this.commenter, replies);
+        return new CommentInfo(this.subject, this.content, commenter);
     }
 
     @Override
     public String toString() {
-        return "CommentInfo" + "(" + "'" + this.subject + "'" + ", " + "'" + this.content + "'" + ", " + "'" + this.commenter + "'" + ", " + this.replies + ')';
+        return "CommentInfo" + "(" + "'" + this.subject + "'" + ", " + "'" + this.content + "'" + ", " + "'" + this.commenter + "'" + ')';
     }
 
     @Override
@@ -58,12 +46,11 @@ final public class CommentInfo {
         CommentInfo other = (CommentInfo) o;
         return Objects.equals(subject, other.subject) &&
                 Objects.equals(content, other.content) &&
-                Objects.equals(commenter, other.commenter) &&
-                Objects.equals(replies, other.replies);
+                Objects.equals(commenter, other.commenter);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(subject, content, commenter, replies);
+        return Objects.hash(subject, content, commenter);
     }
 }

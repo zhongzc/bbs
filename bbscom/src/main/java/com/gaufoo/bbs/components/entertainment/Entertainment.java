@@ -24,7 +24,7 @@ public interface Entertainment {
 
     Optional<EntertainmentId> publishPost(EntertainmentInfo entertainmentInfo);
 
-    void removePost(EntertainmentId entertainmentId);
+    boolean removePost(EntertainmentId entertainmentId);
 
     Long allPostsCount();
 

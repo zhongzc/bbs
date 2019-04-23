@@ -38,8 +38,8 @@ public class ActiveImpl implements Active {
     }
 
     @Override
-    public void remove(String activeGroup, String id) {
-        repository.delete(activeGroup, id);
+    public boolean remove(String activeGroup, String id) {
+        return repository.delete(activeGroup, id);
     }
 
     @Override
@@ -53,7 +53,7 @@ public class ActiveImpl implements Active {
     }
 
     @Override
-    public void removeAll(String activeGroup) {
-        repository.delete(activeGroup);
+    public boolean removeAll(String activeGroup) {
+        return repository.delete(activeGroup);
     }
 }

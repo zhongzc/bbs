@@ -11,7 +11,7 @@ public interface Content {
 
     Optional<ContentInfo> contentInfo(ContentId contentId);
 
-    void remove(ContentId contentId);
+    boolean remove(ContentId contentId);
 
     static Content defau1t(ContentRepository repository, IdGenerator idGenerator) {
         return new ContentImpl(repository, idGenerator);

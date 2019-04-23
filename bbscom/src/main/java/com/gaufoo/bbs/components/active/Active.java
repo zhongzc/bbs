@@ -10,13 +10,13 @@ public interface Active {
 
     Optional<Instant> getLatestActiveTime(String activeGroup, String id);
 
-    void remove(String activeGroup, String id);
+    boolean remove(String activeGroup, String id);
 
     Stream<String> getAllAsc(String activeGroup);
 
     Stream<String> getAllDes(String activeGroup);
 
-    void removeAll(String activeGroup);
+    boolean removeAll(String activeGroup);
 
     static Active defau1t(ActiveRepository repository) {
         return new ActiveImpl(repository);

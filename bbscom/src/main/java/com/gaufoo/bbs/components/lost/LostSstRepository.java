@@ -8,14 +8,17 @@ import com.google.gson.Gson;
 
 import java.nio.file.Path;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Stream;
 
 public class LostSstRepository implements LostRepository {
     private static final Gson gson = new Gson();
     private final SST idToInfo;
+    private final AtomicLong count;
 
     private LostSstRepository(Path storingPath) {
         this.idToInfo = SST.of("id-to-info", storingPath);
+        this.count = new AtomicLong(getAllPostsAsc().count());
     }
 
     @Override
@@ -36,7 +39,10 @@ public class LostSstRepository implements LostRepository {
     @Override
     public boolean savePost(LostId postId, LostInfo postInfo) {
         if (SstUtils.contains(idToInfo, postId.value)) return false;
-        return SstUtils.setEntry(idToInfo, postId.value, gson.toJson(postInfo));
+        if (SstUtils.setEntry(idToInfo, postId.value, gson.toJson(postInfo))) {
+            this.count.incrementAndGet();
+            return true;
+        } else return false;
     }
 
     @Override
@@ -46,8 +52,16 @@ public class LostSstRepository implements LostRepository {
     }
 
     @Override
-    public void deletePost(LostId postId) {
-        SstUtils.removeEntryWithKey(idToInfo, postId.value);
+    public boolean deletePost(LostId postId) {
+        if (SstUtils.removeEntryByKey(idToInfo, postId.value) != null) {
+            this.count.decrementAndGet();
+            return true;
+        } else return false;
+    }
+
+    @Override
+    public Long count() {
+        return this.count.get();
     }
 
     @Override

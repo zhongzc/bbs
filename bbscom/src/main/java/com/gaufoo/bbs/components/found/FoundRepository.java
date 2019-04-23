@@ -16,7 +16,9 @@ public interface FoundRepository {
 
     boolean updatePost(FoundId postId, FoundInfo postInfo);
 
-    void deletePost(FoundId postId);
+    boolean deletePost(FoundId postId);
+
+    Long count();
 
     default void shutdown() {}
 

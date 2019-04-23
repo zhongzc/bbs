@@ -24,15 +24,19 @@ public interface CommentGroup {
 
     Optional<ReplyInfo> replyInfo(ReplyId replyId);
 
-    void removeComments(CommentGroupId commentGroupId);
+    boolean removeComments(CommentGroupId commentGroupId);
 
-    void removeComment(CommentGroupId commentGroupId, CommentId commentId);
+    boolean removeComment(CommentGroupId commentGroupId, CommentId commentId);
 
-    void removeReply(CommentGroupId commentGroupId, CommentId commentId, ReplyId replyId);
+    boolean removeReply(CommentGroupId commentGroupId, CommentId commentId, ReplyId replyId);
 
     Long getCommentsCount(CommentGroupId commentGroupId);
 
+    Long getRepliesCount(CommentGroupId commentGroupId, CommentId commentId);
+
     Stream<CommentId> allComments(CommentGroupId commentGroupId);
+
+    Stream<ReplyId> allReplies(CommentGroupId commentGroupId, CommentId commentId);
 
     static CommentGroup defau1t(IdGenerator cmmtGpIds, IdGenerator cmmtIds, IdGenerator rpyIds, CommentGroupRepository cmmtGpRepository, CommentRepository cmmtRepository, ReplyRepository rpyRepository) {
         return new CommentGroupImpl(cmmtGpIds, cmmtIds, rpyIds, cmmtGpRepository, cmmtRepository, rpyRepository);

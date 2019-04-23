@@ -22,6 +22,10 @@ public class SstUtils {
                 .orElse(null);
     }
 
+    public static String getEntry(SST kvMap, String key) {
+        return waitFuture(kvMap.get(key).thenApply(oStr -> oStr.orElse(null))).orElse(null);
+    }
+
     public static boolean contains(SST kvMap, String key) {
         return waitFuture(kvMap.get(key)).flatMap(i -> i).isPresent();
     }
@@ -35,8 +39,16 @@ public class SstUtils {
         return kvMap.set(key, value).thenApply(value::equals);
     }
 
-    public static void removeEntryWithKey(SST kvMap, String key) {
-        waitFuture(kvMap.delete(key));
+    public static CompletionStage<Boolean> removeEntryAsync(SST kvMap, String key) {
+        return kvMap.delete(key).thenApply(Optional::isPresent);
+    }
+
+    public static <T> T removeEntryByKey(SST kvMap, String key, Function<String, T> shaper) {
+        return waitFuture(kvMap.delete(key).thenApply(oStr -> oStr.map(shaper).orElse(null))).orElse(null);
+    }
+
+    public static String removeEntryByKey(SST kvMap, String key) {
+        return waitFuture(kvMap.delete(key).thenApply(oStr -> oStr.orElse(null))).orElse(null);
     }
 
     public static void removeEntryWithValue(SST kvMap, String value) {

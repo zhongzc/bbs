@@ -18,7 +18,9 @@ public interface LearningResourceRepository {
 
     boolean savePostInfo(LearningResourceId postId, LearningResourceInfo postInfo);
 
-    void deletePostInfo(LearningResourceId postId);
+    boolean deletePostInfo(LearningResourceId postId);
+
+    Long count();
 
     default void shutdown() {}
 }

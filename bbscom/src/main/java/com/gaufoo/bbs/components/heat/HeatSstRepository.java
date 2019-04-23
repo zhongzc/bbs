@@ -67,20 +67,21 @@ public class HeatSstRepository implements HeatRepository {
     }
 
     @Override
-    public void delete(String heatGroup, String id) {
-        Optional.ofNullable(getHeat(heatGroup, id)).ifPresent(h -> SstUtils.waitAllFuturesPar(
-                idToHeat.delete(formatHG(heatGroup) + formatID(id)),
-                cluster.delete(concat(heatGroup, id, h))));
+    public boolean delete(String heatGroup, String id) {
+        return Optional.ofNullable(SstUtils.removeEntryByKey(idToHeat,
+                formatHG(heatGroup) + formatID(id), HeatSstRepository::retrieveHeat)).map(h ->
+                SstUtils.removeEntryByKey(cluster, concat(heatGroup, id, h)) != null).orElse(false);
     }
 
     @Override
-    public void delete(String heatGroup) {
+    public boolean delete(String heatGroup) {
         SstUtils.waitAllFuturesPar(
                 idToHeat.rangeKeysAsc(formatHG(heatGroup) + many('0', 14), formatHG(heatGroup) + many('9', 14))
                         .thenAccept(keys -> SstUtils.waitAllFuturesPar(keys.map(idToHeat::delete))),
                 cluster.rangeKeysAsc(formatHG(heatGroup) + many('0', 28), formatHG(heatGroup) + many('9', 28))
                         .thenAccept(keys -> SstUtils.waitAllFuturesPar(keys.map(cluster::delete)))
         );
+        return true;
     }
 
     @Override

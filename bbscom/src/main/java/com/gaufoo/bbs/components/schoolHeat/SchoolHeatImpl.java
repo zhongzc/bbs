@@ -11,12 +11,10 @@ import java.util.stream.Stream;
 public class SchoolHeatImpl implements SchoolHeat {
     private final SchoolHeatRepository repository;
     private final IdGenerator idGenerator;
-    private final AtomicLong count;
 
     SchoolHeatImpl(SchoolHeatRepository repository, IdGenerator idGenerator) {
         this.repository = repository;
         this.idGenerator = idGenerator;
-        this.count = new AtomicLong(repository.getAllPostsAsc().count());
     }
 
     @Override
@@ -40,7 +38,6 @@ public class SchoolHeatImpl implements SchoolHeat {
     public Optional<SchoolHeatId> publishPost(SchoolHeatInfo schoolHeatInfo) {
         SchoolHeatId id = SchoolHeatId.of(idGenerator.generateId());
         if (repository.savePost(id, schoolHeatInfo)) {
-            this.count.incrementAndGet();
             return Optional.of(id);
         } else {
             return Optional.empty();
@@ -48,15 +45,12 @@ public class SchoolHeatImpl implements SchoolHeat {
     }
 
     @Override
-    public void removePost(SchoolHeatId schoolHeatId) {
-        postInfo(schoolHeatId).ifPresent(i -> {
-            repository.deletePost(schoolHeatId);
-            this.count.decrementAndGet();
-        });
+    public boolean removePost(SchoolHeatId schoolHeatId) {
+        return repository.deletePost(schoolHeatId);
     }
 
     @Override
     public Long allPostsCount() {
-        return this.count.get();
+        return repository.count();
     }
 }

@@ -15,9 +15,9 @@ public interface ActiveRepository {
 
     Stream<String> getAllDes(String activeGroup);
 
-    void delete(String activeGroup, String id);
+    boolean delete(String activeGroup, String id);
 
-    void delete(String activeGroup);
+    boolean delete(String activeGroup);
 
     default void shutdown() { }
 

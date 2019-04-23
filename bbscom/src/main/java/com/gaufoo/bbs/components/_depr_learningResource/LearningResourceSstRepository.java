@@ -43,7 +43,7 @@ public class LearningResourceSstRepository implements LearningResourceRepository
 
     @Override
     public void deleteResource(ResourceId resourceId) {
-        removeEntryWithKey(idToInfo, resourceId.value);
+        removeEntryByKey(idToInfo, resourceId.value);
     }
 
     @Override

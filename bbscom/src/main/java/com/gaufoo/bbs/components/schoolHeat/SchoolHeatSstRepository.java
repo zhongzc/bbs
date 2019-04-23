@@ -11,16 +11,19 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletionStage;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Stream;
 
 public class SchoolHeatSstRepository implements SchoolHeatRepository {
     private static final Gson gson = new Gson();
     private final SST idToInfo;
     private final SST authorIndex;
+    private final AtomicLong count;
 
     private SchoolHeatSstRepository(Path storingPath) {
         this.idToInfo = SST.of("id-to-info", storingPath);
         this.authorIndex = SST.of("author-index", storingPath);
+        this.count = new AtomicLong(getAllPostsAsc().count());
     }
 
     @Override
@@ -31,7 +34,6 @@ public class SchoolHeatSstRepository implements SchoolHeatRepository {
     @Override
     public Stream<SchoolHeatId> getAllPostsDes() {
         return SstUtils.waitFuture(idToInfo.allKeysDes()).map(i -> i.map(SchoolHeatId::of)).orElse(Stream.empty());
-
     }
 
     @Override
@@ -44,7 +46,6 @@ public class SchoolHeatSstRepository implements SchoolHeatRepository {
     public Stream<SchoolHeatId> getAllPostsByAuthorDes(String authorId) {
         return SstUtils.waitFuture(authorIndex.rangeKeysDes(authorId + "99999999", authorId + "00000000")
                 .thenApply(keys -> keys.map(SchoolHeatSstRepository::retrieveId))).orElse(Stream.empty());
-
     }
 
     @Override
@@ -58,17 +59,24 @@ public class SchoolHeatSstRepository implements SchoolHeatRepository {
         List<CompletionStage<Boolean>> tasks = new ArrayList<>();
         tasks.add(SstUtils.setEntryAsync(idToInfo, postId.value, gson.toJson(postInfo)));
         tasks.add(SstUtils.setEntryAsync(authorIndex, concat(postId, postInfo.authorId), "GAUFOO"));
-        return SstUtils.waitAllFutureParT(tasks, true, (a, b) -> a && b);
+        if (SstUtils.waitAllFutureParT(tasks, true, (a, b) -> a && b)) {
+            this.count.incrementAndGet();
+            return true;
+        } else return false;
     }
 
     @Override
-    public void deletePost(SchoolHeatId postId) {
-        Optional.ofNullable(getPostInfo(postId)).ifPresent(info ->
-                SstUtils.waitAllFuturesPar(
-                        idToInfo.delete(postId.value),
-                        authorIndex.delete(concat(postId, info.authorId))
-                )
-        );
+    public boolean deletePost(SchoolHeatId postId) {
+        return Optional.ofNullable(SstUtils.removeEntryByKey(idToInfo, postId.value,
+                info -> gson.fromJson(info, SchoolHeatInfo.class))).map(info -> {
+            this.count.decrementAndGet();
+            return SstUtils.removeEntryByKey(authorIndex, concat(postId, info.authorId)) != null;
+        }).orElse(false);
+    }
+
+    @Override
+    public Long count() {
+        return this.count.get();
     }
 
     @Override

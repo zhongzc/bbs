@@ -9,13 +9,13 @@ public interface Heat {
 
     Optional<Long> getHeat(String heatGroup, String id);
 
-    void remove(String heatGroup, String id);
+    boolean remove(String heatGroup, String id);
 
     Stream<String> getAllAsc(String heatGroup);
 
     Stream<String> getAllDes(String heatGroup);
 
-    void removeAll(String heatGroup);
+    boolean removeAll(String heatGroup);
 
     static Heat defau1t(HeatRepository repository) {
         return new HeatImpl(repository);

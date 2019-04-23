@@ -11,12 +11,10 @@ import java.util.stream.Stream;
 public class FoundImpl implements Found {
     private final FoundRepository repository;
     private final IdGenerator idGenerator;
-    private final AtomicLong count;
 
     FoundImpl(FoundRepository repository, IdGenerator idGenerator) {
         this.repository = repository;
         this.idGenerator = idGenerator;
-        this.count = new AtomicLong(repository.getAllPostsAsc().count());
     }
 
     @Override
@@ -34,7 +32,6 @@ public class FoundImpl implements Found {
     public Optional<FoundId> publishPost(FoundInfo foundInfo) {
         FoundId id = FoundId.of(idGenerator.generateId());
         if (repository.savePost(id, foundInfo)) {
-            this.count.incrementAndGet();
             return Optional.of(id);
         } else {
             return Optional.empty();
@@ -58,15 +55,12 @@ public class FoundImpl implements Found {
     }
 
     @Override
-    public void removePost(FoundId foundId) {
-        postInfo(foundId).ifPresent(i -> {
-            repository.deletePost(foundId);
-            this.count.decrementAndGet();
-        });
+    public boolean removePost(FoundId foundId) {
+        return repository.deletePost(foundId);
     }
 
     @Override
     public Long allPostsCount() {
-        return this.count.get();
+        return repository.count();
     }
 }

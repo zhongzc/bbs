@@ -12,7 +12,7 @@ public class ReplySstRepository implements ReplyRepository {
     private static final Gson gson = new Gson();
     private final SST idToInfo;
 
-    public ReplySstRepository(Path storingPath) {
+    private ReplySstRepository(Path storingPath) {
         this.idToInfo = SST.of("id-to-info", storingPath);
     }
 
@@ -29,14 +29,8 @@ public class ReplySstRepository implements ReplyRepository {
     }
 
     @Override
-    public boolean updateReply(ReplyId id, ReplyInfo replyInfo) {
-        if (!SstUtils.contains(idToInfo, id.value)) return false;
-        return SstUtils.setEntry(idToInfo, id.value, gson.toJson(replyInfo));
-    }
-
-    @Override
-    public void deleteReply(ReplyId id) {
-        SstUtils.removeEntryWithKey(idToInfo, id.value);
+    public boolean deleteReply(ReplyId id) {
+        return SstUtils.removeEntryByKey(idToInfo, id.value) != null;
     }
 
     @Override

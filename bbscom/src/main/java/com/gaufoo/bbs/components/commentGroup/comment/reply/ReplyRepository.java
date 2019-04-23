@@ -8,9 +8,7 @@ public interface ReplyRepository {
 
     ReplyInfo getReply(ReplyId id);
 
-    boolean updateReply(ReplyId id, ReplyInfo replyInfo);
-
-    void deleteReply(ReplyId id);
+    boolean deleteReply(ReplyId id);
 
     default void shutdown() {}
 }

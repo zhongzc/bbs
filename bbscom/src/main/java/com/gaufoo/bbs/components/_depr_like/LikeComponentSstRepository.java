@@ -46,7 +46,7 @@ public class LikeComponentSstRepository implements LikeComponentRepository {
 
     @Override
     public void removeLike(LikeId id) {
-        SstUtils.removeEntryWithKey(idToInfo, id.value);
+        SstUtils.removeEntryByKey(idToInfo, id.value);
     }
 
     @Override

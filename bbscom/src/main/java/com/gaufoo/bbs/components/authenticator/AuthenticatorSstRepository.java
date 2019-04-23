@@ -102,12 +102,12 @@ public class AuthenticatorSstRepository implements AuthenticatorRepository {
 
         removeEntryWithValue(resetTokenToUsername, username);
 
-        removeEntryWithKey(usernameToPasswordAndPermission, username);
+        removeEntryByKey(usernameToPasswordAndPermission, username);
     }
 
     @Override
     public void deleteUserToken(UserToken token) {
-        removeEntryWithKey(tokenToPermission, token.value);
+        removeEntryByKey(tokenToPermission, token.value);
     }
 
     @Override
@@ -119,7 +119,7 @@ public class AuthenticatorSstRepository implements AuthenticatorRepository {
 
     @Override
     public void deleteResetToken(ResetToken token) {
-        removeEntryWithKey(resetTokenToUsername, token.value);
+        removeEntryByKey(resetTokenToUsername, token.value);
     }
 
     private static Tuple<String, Permission> jsonToPwdPms(String json) {

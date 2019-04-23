@@ -12,16 +12,19 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletionStage;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Stream;
 
 public class LectureSstRepository implements LectureRepository {
     private static final Gson gson = new Gson();
     private final SST idToInfo;
     private final SST timeIndex;
+    private final AtomicLong count;
 
     private LectureSstRepository(Path storingPath) {
         this.idToInfo = SST.of("id-to-info", storingPath);
         this.timeIndex = SST.of("time-index", storingPath);
+        this.count = new AtomicLong(getAllPostsAsc().count());
     }
 
     @Override
@@ -55,17 +58,23 @@ public class LectureSstRepository implements LectureRepository {
         List<CompletionStage<Boolean>> tasks = new ArrayList<>();
         tasks.add(SstUtils.setEntryAsync(idToInfo, postId.value, gson.toJson(postInfo)));
         tasks.add(SstUtils.setEntryAsync(timeIndex, concat(postId, postInfo.time), "GAUFOO"));
-        return SstUtils.waitAllFutureParT(tasks, true, (a, b) -> a && b);
+        if (SstUtils.waitAllFutureParT(tasks, true, (a, b) -> a && b)) {
+            this.count.incrementAndGet();
+            return true;
+        } else return false;
     }
 
     @Override
-    public void deletePost(LectureId postId) {
-        Optional.ofNullable(getPostInfo(postId)).ifPresent(info ->
-                SstUtils.waitAllFuturesPar(
-                        idToInfo.delete(postId.value),
-                        timeIndex.delete(concat(postId, info.time))
-                )
-        );
+    public boolean deletePost(LectureId postId) {
+        return Optional.ofNullable(SstUtils.removeEntryByKey(idToInfo, postId.value, info -> gson.fromJson(info, LectureInfo.class))).map(info -> {
+            this.count.decrementAndGet();
+            return SstUtils.removeEntryByKey(timeIndex, concat(postId, info.time)) != null;
+        }).orElse(false);
+    }
+
+    @Override
+    public Long count() {
+        return this.count.get();
     }
 
     @Override

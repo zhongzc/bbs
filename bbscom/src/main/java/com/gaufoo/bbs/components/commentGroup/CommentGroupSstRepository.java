@@ -44,8 +44,8 @@ public class CommentGroupSstRepository implements CommentGroupRepository {
     }
 
     @Override
-    public void deleteComments(CommentGroupId commentGroupId) {
-        if (!SstUtils.contains(idToCnt, commentGroupId.value)) return;
+    public boolean deleteComments(CommentGroupId commentGroupId) {
+        if (!SstUtils.contains(idToCnt, commentGroupId.value)) return false;
 
         SstUtils.waitAllFuturesPar(
                 idToCnt.delete(commentGroupId.value),
@@ -53,12 +53,13 @@ public class CommentGroupSstRepository implements CommentGroupRepository {
                         s -> SstUtils.waitAllFuturesPar(s.map(cluster::delete))
                 )
         );
+        return true;
     }
 
     @Override
-    public void deleteComment(CommentGroupId commentGroupId, CommentId commentId) {
-        if (!SstUtils.contains(idToCnt, commentGroupId.value)) return;
-        SstUtils.removeEntryWithKey(cluster, concat(commentGroupId, commentId));
+    public boolean deleteComment(CommentGroupId commentGroupId, CommentId commentId) {
+        if (!SstUtils.contains(idToCnt, commentGroupId.value)) return false;
+        return SstUtils.removeEntryByKey(cluster, concat(commentGroupId, commentId)) != null;
     }
 
     @Override

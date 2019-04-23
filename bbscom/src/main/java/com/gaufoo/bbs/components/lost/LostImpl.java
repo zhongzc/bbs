@@ -11,12 +11,10 @@ import java.util.stream.Stream;
 public class LostImpl implements Lost {
     private final LostRepository repository;
     private final IdGenerator idGenerator;
-    private final AtomicLong count;
 
     LostImpl(LostRepository repository, IdGenerator idGenerator) {
         this.repository = repository;
         this.idGenerator = idGenerator;
-        this.count = new AtomicLong(repository.getAllPostsAsc().count());
     }
 
     @Override
@@ -34,7 +32,6 @@ public class LostImpl implements Lost {
     public Optional<LostId> publishPost(LostInfo lostInfo) {
         LostId id = LostId.of(idGenerator.generateId());
         if (repository.savePost(id, lostInfo)) {
-            this.count.incrementAndGet();
             return Optional.of(id);
         } else {
             return Optional.empty();
@@ -58,15 +55,12 @@ public class LostImpl implements Lost {
     }
 
     @Override
-    public void removePost(LostId lostId) {
-        postInfo(lostId).ifPresent(i -> {
-            repository.deletePost(lostId);
-            this.count.decrementAndGet();
-        });
+    public boolean removePost(LostId lostId) {
+        return repository.deletePost(lostId);
     }
 
     @Override
     public Long allPostsCount() {
-        return this.count.get();
+        return repository.count();
     }
 }

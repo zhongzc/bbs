@@ -16,7 +16,9 @@ public interface LostRepository {
 
     boolean updatePost(LostId postId, LostInfo postInfo);
 
-    void deletePost(LostId postId);
+    boolean deletePost(LostId postId);
+
+    Long count();
 
     default void shutdown() {}
 

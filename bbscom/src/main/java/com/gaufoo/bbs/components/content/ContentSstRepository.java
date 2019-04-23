@@ -30,8 +30,8 @@ public class ContentSstRepository implements ContentRepository {
     }
 
     @Override
-    public void delete(ContentId contentId) {
-        SstUtils.removeEntryWithKey(idToInfo, contentId.value);
+    public boolean delete(ContentId contentId) {
+        return SstUtils.removeEntryByKey(idToInfo, contentId.value) != null;
     }
 
     @Override

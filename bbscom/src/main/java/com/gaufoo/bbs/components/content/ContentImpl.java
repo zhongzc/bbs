@@ -31,7 +31,7 @@ public class ContentImpl implements Content {
     }
 
     @Override
-    public void remove(ContentId contentId) {
-        repository.delete(contentId);
+    public boolean remove(ContentId contentId) {
+         return repository.delete(contentId);
     }
 }

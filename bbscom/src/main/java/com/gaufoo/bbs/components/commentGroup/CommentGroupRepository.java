@@ -12,9 +12,9 @@ public interface CommentGroupRepository {
 
     Stream<CommentId> getAllComments(CommentGroupId commentGroupId);
 
-    void deleteComments(CommentGroupId commentGroupId);
+    boolean deleteComments(CommentGroupId commentGroupId);
 
-    void deleteComment(CommentGroupId commentGroupId, CommentId commentId);
+    boolean deleteComment(CommentGroupId commentGroupId, CommentId commentId);
 
     Long getCommentsCount(CommentGroupId commentGroupId);
 

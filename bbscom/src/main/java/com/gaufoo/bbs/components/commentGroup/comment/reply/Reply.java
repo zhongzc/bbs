@@ -11,7 +11,7 @@ public interface Reply {
 
     Optional<ReplyInfo> replyInfo(ReplyId replyId);
 
-    void removeReply(ReplyId replyId);
+    boolean removeReply(ReplyId replyId);
 
     static Reply defau1t(IdGenerator idGenerator, ReplyRepository replyRepository) {
         return new ReplyImpl(idGenerator, replyRepository);

@@ -35,8 +35,8 @@ public class HeatImpl implements Heat {
     }
 
     @Override
-    public void remove(String heatGroup, String id) {
-        repository.delete(heatGroup, id);
+    public boolean remove(String heatGroup, String id) {
+        return repository.delete(heatGroup, id);
     }
 
     @Override
@@ -50,7 +50,7 @@ public class HeatImpl implements Heat {
     }
 
     @Override
-    public void removeAll(String heatGroup) {
-        repository.delete(heatGroup);
+    public boolean removeAll(String heatGroup) {
+        return repository.delete(heatGroup);
     }
 }

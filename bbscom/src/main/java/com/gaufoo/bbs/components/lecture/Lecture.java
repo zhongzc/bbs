@@ -24,7 +24,7 @@ public interface Lecture {
 
     Optional<LectureId> publishPost(LectureInfo lectureInfo);
 
-    void removePost(LectureId lectureId);
+    boolean removePost(LectureId lectureId);
 
     Long allPostsCount();
 

@@ -11,12 +11,10 @@ import java.util.stream.Stream;
 public class LectureImpl implements Lecture {
     private final LectureRepository repository;
     private final IdGenerator idGenerator;
-    private final AtomicLong count;
 
     LectureImpl(LectureRepository repository, IdGenerator idGenerator) {
         this.repository = repository;
         this.idGenerator = idGenerator;
-        this.count = new AtomicLong(repository.getAllPostsAsc().count());
     }
 
     @Override
@@ -40,7 +38,6 @@ public class LectureImpl implements Lecture {
     public Optional<LectureId> publishPost(LectureInfo lectureInfo) {
         LectureId id = LectureId.of(idGenerator.generateId());
         if (repository.savePost(id, lectureInfo)) {
-            this.count.incrementAndGet();
             return Optional.of(id);
         } else {
             return Optional.empty();
@@ -48,16 +45,13 @@ public class LectureImpl implements Lecture {
     }
 
     @Override
-    public void removePost(LectureId lectureId) {
-        postInfo(lectureId).ifPresent(i -> {
-            repository.deletePost(lectureId);
-            this.count.decrementAndGet();
-        });
+    public boolean removePost(LectureId lectureId) {
+        return repository.deletePost(lectureId);
     }
 
     @Override
     public Long allPostsCount() {
-        return this.count.get();
+        return repository.count();
     }
 
 }

@@ -8,6 +8,7 @@ import com.gaufoo.bbs.components.commentGroup.comment.common.CommentId;
 import com.gaufoo.bbs.components.commentGroup.comment.common.CommentInfo;
 
 import java.util.Optional;
+import java.util.stream.Stream;
 
 public interface Comment {
     Optional<CommentId> comment(CommentInfo commentInfo);
@@ -18,9 +19,13 @@ public interface Comment {
 
     Optional<ReplyInfo> replyInfo(ReplyId replyId);
 
-    void removeComment(CommentId commentId);
+    Stream<ReplyId> allReplies(CommentId commentId);
 
-    void removeReply(CommentId commentId, ReplyId replyId);
+    Long getRepliesCount(CommentId commentId);
+
+    boolean removeComment(CommentId commentId);
+
+    boolean removeReply(CommentId commentId, ReplyId replyId);
 
     static Comment defau1t(IdGenerator cmmtIds, IdGenerator rpyIds, CommentRepository commentRepository, ReplyRepository replyRepository) {
         return new CommentImpl(cmmtIds, rpyIds, commentRepository, replyRepository);

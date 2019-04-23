@@ -61,20 +61,24 @@ public class CommentGroupImpl implements CommentGroup {
     }
 
     @Override
-    public void removeComments(CommentGroupId commentGroupId) {
-        repository.getAllComments(commentGroupId).forEach(comment::removeComment);
-        repository.deleteComments(commentGroupId);
+    public boolean removeComments(CommentGroupId commentGroupId) {
+        if (repository.getAllComments(commentGroupId).allMatch(comment::removeComment)) {
+            return repository.deleteComments(commentGroupId);
+        } else {
+            return false;
+        }
     }
 
     @Override
-    public void removeComment(CommentGroupId commentGroupId, CommentId commentId) {
-        repository.deleteComment(commentGroupId, commentId);
-        comment.removeComment(commentId);
+    public boolean removeComment(CommentGroupId commentGroupId, CommentId commentId) {
+        if (repository.deleteComment(commentGroupId, commentId)) {
+            return comment.removeComment(commentId);
+        } else return false;
     }
 
     @Override
-    public void removeReply(CommentGroupId commentGroupId, CommentId commentId, ReplyId replyId) {
-        comment.removeReply(commentId, replyId);
+    public boolean removeReply(CommentGroupId commentGroupId, CommentId commentId, ReplyId replyId) {
+        return comment.removeReply(commentId, replyId);
     }
 
     @Override
@@ -82,7 +86,17 @@ public class CommentGroupImpl implements CommentGroup {
         return Optional.ofNullable(repository.getCommentsCount(commentGroupId)).orElse(0L);
     }
 
+    @Override
+    public Long getRepliesCount(CommentGroupId commentGroupId, CommentId commentId) {
+        return comment.getRepliesCount(commentId);
+    }
+
     public Stream<CommentId> allComments(CommentGroupId commentGroupId) {
         return repository.getAllComments(commentGroupId);
+    }
+
+    @Override
+    public Stream<ReplyId> allReplies(CommentGroupId commentGroupId, CommentId commentId) {
+        return comment.allReplies(commentId);
     }
 }

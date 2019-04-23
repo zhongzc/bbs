@@ -16,7 +16,9 @@ public interface EntertainmentRepository {
 
     boolean savePost(EntertainmentId postId, EntertainmentInfo postInfo);
 
-    void deletePost(EntertainmentId postId);
+    boolean deletePost(EntertainmentId postId);
+
+    Long count();
 
     default void shutdown() {}
 

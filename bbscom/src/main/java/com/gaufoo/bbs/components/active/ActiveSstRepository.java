@@ -33,7 +33,7 @@ public class ActiveSstRepository implements ActiveRepository {
 
     @Override
     public Instant getActive(String activeGroup, String id) {
-        return SstUtils.getEntry(idToTime, formatAG(activeGroup) + id, ActiveSstRepository::retrieveTime);
+        return SstUtils.getEntry(idToTime, formatAG(activeGroup) + formatID(id), ActiveSstRepository::retrieveTime);
     }
 
     @Override
@@ -67,20 +67,20 @@ public class ActiveSstRepository implements ActiveRepository {
     }
 
     @Override
-    public void delete(String activeGroup, String id) {
-        Optional.ofNullable(getActive(activeGroup, id)).ifPresent(otime -> SstUtils.waitAllFuturesPar(
-                idToTime.delete(formatAG(activeGroup) + formatID(id)),
-                cluster.delete(concat(activeGroup, id, otime))));
+    public boolean delete(String activeGroup, String id) {
+        return Optional.ofNullable(SstUtils.removeEntryByKey(idToTime, formatAG(activeGroup) + formatID(id), ActiveSstRepository::retrieveTime))
+                .map(ot -> SstUtils.removeEntryByKey(cluster, concat(activeGroup, id, ot)) != null).orElse(false);
     }
 
     @Override
-    public void delete(String activeGroup) {
+    public boolean delete(String activeGroup) {
         SstUtils.waitAllFuturesPar(
                 idToTime.rangeKeysAsc(formatAG(activeGroup) + many('0', 14), formatAG(activeGroup) + many('9', 14))
                         .thenAccept(keys -> SstUtils.waitAllFuturesPar(keys.map(idToTime::delete))),
                 cluster.rangeKeysAsc(formatAG(activeGroup) + many('0', 28), formatAG(activeGroup) + many('9', 28))
                         .thenAccept(keys -> SstUtils.waitAllFuturesPar(keys.map(cluster::delete)))
         );
+        return true;
     }
 
     @Override

@@ -20,7 +20,7 @@ public interface Lost {
 
     Optional<LostInfo> claim(LostId lostId, String founderId) ;
 
-    void removePost(LostId lostId);
+    boolean removePost(LostId lostId);
 
     Long allPostsCount();
 

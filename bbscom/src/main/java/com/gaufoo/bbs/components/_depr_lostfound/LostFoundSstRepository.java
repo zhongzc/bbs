@@ -73,12 +73,12 @@ public class LostFoundSstRepository implements LostFoundRepository {
 
     @Override
     public void deleteLost(LostId id) {
-        removeEntryWithKey(losts, id.value);
+        removeEntryByKey(losts, id.value);
     }
 
     @Override
     public void deleteFound(FoundId id) {
-        removeEntryWithKey(founds, id.value);
+        removeEntryByKey(founds, id.value);
     }
 
     @Override

@@ -30,7 +30,7 @@ public interface LearningResource {
 
     Optional<LearningResourceId> publishPost(LearningResourceInfo learningResourceInfo);
 
-    void removePost(LearningResourceId learningResourceId);
+    boolean removePost(LearningResourceId learningResourceId);
 
     Long allPostsCount();
 

@@ -9,6 +9,7 @@ import com.gaufoo.bbs.components.commentGroup.comment.common.CommentId;
 import com.gaufoo.bbs.components.commentGroup.comment.common.CommentInfo;
 
 import java.util.Optional;
+import java.util.stream.Stream;
 
 public class CommentImpl implements Comment {
     private final IdGenerator cmmtIds;
@@ -34,14 +35,11 @@ public class CommentImpl implements Comment {
 
     @Override
     public Optional<ReplyId> reply(CommentId commentId, ReplyInfo replyInfo) {
-        return Optional.ofNullable(repository.getComment(commentId)).flatMap(info ->
-                reply.reply(replyInfo).flatMap(rpyId -> {
-                    info.replies.add(rpyId);
-                    if (repository.updateComment(commentId, info.modReplies(info.replies)))
-                        return Optional.of(rpyId);
-                    else
-                        return Optional.empty();
-                }));
+        return reply.reply(replyInfo).flatMap(rpyId -> {
+            if (repository.addReply(commentId, rpyId)) {
+                return Optional.of(rpyId);
+            } else return Optional.empty();
+        });
     }
 
     @Override
@@ -51,22 +49,31 @@ public class CommentImpl implements Comment {
 
     @Override
     public Optional<ReplyInfo> replyInfo(ReplyId replyId) {
-        return this.reply.replyInfo(replyId);
+        return reply.replyInfo(replyId);
     }
 
     @Override
-    public void removeComment(CommentId commentId) {
-        repository.deleteComment(commentId);
+    public Stream<ReplyId> allReplies(CommentId commentId) {
+        return repository.getAllReplies(commentId);
     }
 
     @Override
-    public void removeReply(CommentId commentId, ReplyId replyId) {
-        Optional.ofNullable(repository.getComment(commentId)).ifPresent(info -> {
-            info.replies.remove(replyId);
-            repository.updateComment(commentId,
-                    info.modReplies(info.replies));
-        });
-        reply.removeReply(replyId);
+    public Long getRepliesCount(CommentId commentId) {
+        return Optional.ofNullable(repository.getRepliesCount(commentId)).orElse(0L);
+    }
+
+    @Override
+    public boolean removeComment(CommentId commentId) {
+        if (repository.deleteComment(commentId)) {
+            return repository.getAllReplies(commentId).allMatch(reply::removeReply);
+        } else return false;
+    }
+
+    @Override
+    public boolean removeReply(CommentId commentId, ReplyId replyId) {
+        if (repository.deleteReply(commentId, replyId)) {
+            return reply.removeReply(replyId);
+        } else return false;
     }
 
 }

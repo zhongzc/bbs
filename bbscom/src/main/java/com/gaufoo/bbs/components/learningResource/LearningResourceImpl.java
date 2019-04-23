@@ -11,12 +11,10 @@ import java.util.stream.Stream;
 public class LearningResourceImpl implements LearningResource {
     private final LearningResourceRepository repository;
     private final IdGenerator idGenerator;
-    private final AtomicLong count;
 
     LearningResourceImpl(LearningResourceRepository repository, IdGenerator idGenerator) {
         this.repository = repository;
         this.idGenerator = idGenerator;
-        this.count = new AtomicLong(repository.getAllPostsAsc().count());
     }
 
     @Override
@@ -46,7 +44,6 @@ public class LearningResourceImpl implements LearningResource {
     public Optional<LearningResourceId> publishPost(LearningResourceInfo learningResourceInfo) {
         LearningResourceId id = LearningResourceId.of(idGenerator.generateId());
         if (repository.savePostInfo(id, learningResourceInfo)) {
-            this.count.incrementAndGet();
             return Optional.of(id);
         } else {
             return Optional.empty();
@@ -54,15 +51,12 @@ public class LearningResourceImpl implements LearningResource {
     }
 
     @Override
-    public void removePost(LearningResourceId learningResourceId) {
-        postInfo(learningResourceId).ifPresent(i -> {
-            repository.deletePostInfo(learningResourceId);
-            this.count.decrementAndGet();
-        });
+    public boolean removePost(LearningResourceId learningResourceId) {
+        return repository.deletePostInfo(learningResourceId);
     }
 
     @Override
     public Long allPostsCount() {
-        return this.count.get();
+        return repository.count();
     }
 }

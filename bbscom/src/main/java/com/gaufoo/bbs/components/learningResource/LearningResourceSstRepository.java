@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletionStage;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Stream;
 
 public class LearningResourceSstRepository implements LearningResourceRepository {
@@ -18,11 +19,13 @@ public class LearningResourceSstRepository implements LearningResourceRepository
     private final SST idToInfo;
     private final SST authorIndex;
     private final SST courseIndex;
+    private final AtomicLong count;
 
     private LearningResourceSstRepository(Path storingPath) {
         this.idToInfo = SST.of("id-to-info", storingPath);
         this.authorIndex = SST.of("author-index", storingPath);
         this.courseIndex = SST.of("course-index", storingPath);
+        this.count = new AtomicLong(getAllPostsAsc().count());
     }
 
     @Override
@@ -71,17 +74,26 @@ public class LearningResourceSstRepository implements LearningResourceRepository
         tasks.add(SstUtils.setEntryAsync(idToInfo, postId.value, gson.toJson(postInfo)));
         tasks.add(SstUtils.setEntryAsync(authorIndex, fill8(postInfo.authorId) + postId.value, "GAUFOO"));
         tasks.add(SstUtils.setEntryAsync(courseIndex, fill8(postInfo.courseCode) + postId.value, "GAUFOO"));
-        return SstUtils.waitAllFutureParT(tasks, true, (a, b) -> a && b);
+        if (SstUtils.waitAllFutureParT(tasks, true, (a, b) -> a && b)) {
+            this.count.incrementAndGet();
+            return true;
+        } else return false;
     }
 
     @Override
-    public void deletePostInfo(LearningResourceId postId) {
-        Optional.ofNullable(getPostInfo(postId)).ifPresent(info ->
-                SstUtils.waitAllFuturesPar(
-                        idToInfo.delete(postId.value),
-                        authorIndex.delete(fill8(info.authorId) + postId.value),
-                        courseIndex.delete(fill8(info.courseCode) + postId.value)
-                ));
+    public boolean deletePostInfo(LearningResourceId postId) {
+        return Optional.ofNullable(SstUtils.removeEntryByKey(idToInfo, postId.value, info -> gson.fromJson(info, LearningResourceInfo.class))).map(info -> {
+            this.count.decrementAndGet();
+            List<CompletionStage<Boolean>> tasks = new ArrayList<>();
+            tasks.add(SstUtils.removeEntryAsync(authorIndex, fill8(info.authorId) + postId.value));
+            tasks.add(SstUtils.removeEntryAsync(courseIndex, fill8(info.courseCode) + postId.value));
+            return SstUtils.waitAllFutureParT(tasks, true, (a, b) -> a && b);
+        }).orElse(false);
+    }
+
+    @Override
+    public Long count() {
+        return this.count.get();
     }
 
     @Override
