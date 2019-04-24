@@ -23,6 +23,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static com.gaufoo.bbs.application.ComponentFactory.componentFactory;
+import static com.gaufoo.bbs.application.types.PersonalInformation.*;
 
 public class PersonalInformation {
     public static PersonInfoResult personInfo(String id) {
@@ -199,29 +200,7 @@ public class PersonalInformation {
     }
 
 
-    public interface PersonalInfo extends PersonInfoResult, EditPersonInfoResult {
-        String getIntroduction();
-        String getMajor();
-        String getSchool();
-        String getGrade();
-        String getGender();
-        String getUsername();
-        String getPictureUrl();
-        String getUserId();
-    }
 
-    public static class PersonInfoInput {
-        String pictureBase64;
-        String introduction;
-        String major;
-        String school;
-        String grade;
-        String gender;
-        String username;
-    }
-
-    public interface PersonInfoResult {}
-    public interface EditPersonInfoResult {}
 
     public static void main(String[] args) {
         System.out.println(parseGender("male").get());

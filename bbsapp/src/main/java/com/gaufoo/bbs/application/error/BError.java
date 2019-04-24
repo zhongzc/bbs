@@ -1,6 +1,6 @@
 package com.gaufoo.bbs.application.error;
 
-import com.gaufoo.bbs.application.PersonalInformation;
+import com.gaufoo.bbs.application.types.PersonalInformation;
 
 public class BError implements
         PersonalInformation.PersonInfoResult,
