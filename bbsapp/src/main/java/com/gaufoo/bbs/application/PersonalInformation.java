@@ -84,13 +84,13 @@ public class PersonalInformation {
     public static PersonalInfo consPersonalInfo(UserId userId, UserInfo userInfo) {
         return new PersonalInfo() {
             public String getIntroduction() { return userInfo.introduction; }
-            public String getMajor()        { return factorOutMajor(MajorCode.of(nil2Emp(userInfo.majorCode))); }
-            public String getSchool()       { return factorOutSchool(MajorCode.of(nil2Emp(userInfo.majorCode))); }
+            public String getMajor()        { return Optional.ofNullable(userInfo.majorCode).map(c -> factorOutMajor(MajorCode.of(c))).orElse(null); }
+            public String getSchool()       { return Optional.ofNullable(userInfo.majorCode).map(c -> factorOutSchool(MajorCode.of(c))).orElse(null); }
             public String getGrade()        { return userInfo.grade; }
             public String getGender()       { return Optional.ofNullable(userInfo.gender).map(Objects::toString).orElse(null); }
             public String getUsername()     { return userInfo.nickname; }
             public String getUserId()       { return userId.toString(); }
-            public String getPictureUrl()   { return factorOutPictureUrl(FileId.of(nil2Emp(userInfo.profilePicIdentifier))); }
+            public String getPictureUrl()   { return Optional.ofNullable(userInfo.profilePicIdentifier).map(u -> factorOutPictureUrl(FileId.of(u))).orElse(null) ; }
         };
     }
 
@@ -107,9 +107,10 @@ public class PersonalInformation {
     }
 
     private static String factorOutPictureUrl(FileId fileId) {
-        String fileUri = componentFactory.userProfiles.fileURI(fileId).orElse("");
-        if (fileUri.isEmpty()) return null;
-        return componentFactory.staticResourceConfig.makeUrl(StaticResourceConfig.FileType.UserProfileImage, URI.create(fileUri));
+        Optional<String> ouri = componentFactory.userProfiles.fileURI(fileId);
+        return ouri.map(fileUri ->
+                componentFactory.staticResourceConfig.makeUrl(StaticResourceConfig.FileType.UserProfileImage, URI.create(fileUri)))
+                .orElse(null);
     }
 
     private static Procedure<ErrorCode, Boolean> updateGender(UserId userId, String newGenderStr, UserInfo.Gender oldGender) {
@@ -200,11 +201,6 @@ public class PersonalInformation {
     private static Optional<School> parseSchool(String schoolStr) {
         return Arrays.stream(School.values()).filter(m -> m.toString().equals(schoolStr)).findFirst();
     }
-
-    private static String nil2Emp(String nullableStr) {
-        return Optional.ofNullable(nullableStr).orElse("");
-    }
-
 
 
 
