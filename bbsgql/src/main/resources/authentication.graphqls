@@ -1,6 +1,8 @@
-union CurrentUserResult = PersonalInfo | BError
+union CurrentUserResult = PersonalInfo | Error
 
-union SignupResult = PersonalInfo | BError
+union SignupResult = PersonalInfo | Error
+
+union LoginResult = PersonalInfo | Error
 
 input SignupInput {
     nickname: String!

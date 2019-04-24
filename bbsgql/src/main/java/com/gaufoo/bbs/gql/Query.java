@@ -2,7 +2,7 @@ package com.gaufoo.bbs.gql;
 
 import com.coxautodev.graphql.tools.GraphQLQueryResolver;
 import com.gaufoo.bbs.application.PersonalInformation;
-import com.gaufoo.bbs.application.error.BError;
+import com.gaufoo.bbs.application.error.Error;
 import com.gaufoo.bbs.application.error.ErrorCode;
 import com.gaufoo.bbs.application.Authentication;
 import com.gaufoo.bbs.gql.util.Utils;
@@ -36,5 +36,5 @@ public class Query implements GraphQLQueryResolver {
         ).orElse(authError);
     }
 
-    private static BError authError = BError.of(ErrorCode.NotLoggedIn);
+    private static Error authError = Error.of(ErrorCode.NotLoggedIn);
 }

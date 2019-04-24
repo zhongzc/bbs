@@ -19,5 +19,5 @@ type PersonalInfo {
     introduction: String!
 }
 
-union PersonInfoResult = BError | PersonalInfo
-union EditPersonInfoResult = BError | PersonalInfo
+union PersonInfoResult = Error | PersonalInfo
+union EditPersonInfoResult = Error | PersonalInfo

@@ -1,4 +1,4 @@
-type BError {
+type Error {
     errCode: Int!
     msg: String
 }

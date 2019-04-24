@@ -1,6 +1,6 @@
 package com.gaufoo.bbs.application;
 
-import com.gaufoo.bbs.application.error.BError;
+import com.gaufoo.bbs.application.error.Error;
 import com.gaufoo.bbs.application.error.ErrorCode;
 import com.gaufoo.bbs.application.util.StaticResourceConfig;
 import com.gaufoo.bbs.components.authenticator.common.UserToken;
@@ -28,16 +28,18 @@ public class PersonalInformation {
         Procedure<ErrorCode, PersonalInfo> personInfoProc = fetchPersonalInfo(UserId.of(id));
 
         if (personInfoProc.isSuccessful()) return personInfoProc.retrieveResult().get();
-        else return BError.of(personInfoProc.retrieveError().get());
+        else return Error.of(personInfoProc.retrieveError().get());
     }
 
     public static EditPersonInfoResult editPersonInfo(PersonInfoInput input, String userToken) {
         Procedure<ErrorCode, PersonalInfo> proc = Commons.fetchUserId(UserToken.of(userToken)).then(userId ->
                 Procedure.fromOptional(componentFactory.user.userInfo(userId), ErrorCode.UserNonExist).then(oldUserInfo -> {
                     UserFactory users = componentFactory.user;
-                    if (input.gender == null) return Result.of(null);
-                    return updateGender(userId, input.gender, oldUserInfo.gender)
-                            .then(ig1 -> {
+                    return Result.<ErrorCode, PersonalInfo>of(null)
+                            .then(ig0 -> {
+                                if (input.gender == null) return Result.of(null);
+                                return updateGender(userId, input.gender, oldUserInfo.gender);
+                            }).then(ig1 -> {
                                 if (input.username == null) return Result.of(null);
                                 return Result.of(users.changeNickname(userId, input.username), () -> users.changeNickname(userId, oldUserInfo.nickname));
                             }).then(ig2 -> {
@@ -60,7 +62,7 @@ public class PersonalInformation {
                             });
                 }));
         if (proc.isSuccessful()) return proc.retrieveResult().get();
-        else return BError.of(proc.retrieveError().get());
+        else return Error.of(proc.retrieveError().get());
     }
 
     public static List<String> allMajors() {
@@ -81,12 +83,12 @@ public class PersonalInformation {
 
     public static PersonalInfo consPersonalInfo(UserId userId, UserInfo userInfo) {
         return new PersonalInfo() {
-            public String getIntroduction() { return nil2Emp(userInfo.introduction); }
+            public String getIntroduction() { return userInfo.introduction; }
             public String getMajor()        { return factorOutMajor(MajorCode.of(nil2Emp(userInfo.majorCode))); }
             public String getSchool()       { return factorOutSchool(MajorCode.of(nil2Emp(userInfo.majorCode))); }
-            public String getGrade()        { return nil2Emp(userInfo.grade); }
-            public String getGender()       { return Optional.ofNullable(userInfo.gender).orElse(UserInfo.Gender.secret).toString(); }
-            public String getUsername()     { return nil2Emp(userInfo.nickname); }
+            public String getGrade()        { return userInfo.grade; }
+            public String getGender()       { return Optional.ofNullable(userInfo.gender).map(Objects::toString).orElse(null); }
+            public String getUsername()     { return userInfo.nickname; }
             public String getUserId()       { return userId.toString(); }
             public String getPictureUrl()   { return factorOutPictureUrl(FileId.of(nil2Emp(userInfo.profilePicIdentifier))); }
         };
@@ -95,18 +97,18 @@ public class PersonalInformation {
     private static String factorOutMajor(MajorCode majorCode) {
         return componentFactory.major.getMajorValueFromCode(majorCode)
                     .map(v -> v.major.toString())
-                    .orElse("");
+                    .orElse(null);
     }
 
     private static String factorOutSchool(MajorCode majorCode) {
         return componentFactory.major.getMajorValueFromCode(majorCode)
                 .map(v -> v.school.toString())
-                .orElse("");
+                .orElse(null);
     }
 
     private static String factorOutPictureUrl(FileId fileId) {
         String fileUri = componentFactory.userProfiles.fileURI(fileId).orElse("");
-        if (fileUri.isEmpty()) return "";
+        if (fileUri.isEmpty()) return null;
         return componentFactory.staticResourceConfig.makeUrl(StaticResourceConfig.FileType.UserProfileImage, URI.create(fileUri));
     }
 

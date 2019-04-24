@@ -5,7 +5,8 @@ public interface PersonalInformation {
             PersonInfoResult,
             EditPersonInfoResult,
             Authentication.CurrentUserResult,
-            Authentication.SignupResult
+            Authentication.SignupResult,
+            Authentication.LoginResult
     {
         String getIntroduction();
         String getMajor();

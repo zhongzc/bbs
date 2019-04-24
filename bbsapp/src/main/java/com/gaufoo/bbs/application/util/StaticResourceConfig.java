@@ -45,7 +45,7 @@ public class StaticResourceConfig {
     public String makeUrl(FileType fileType, URI fileUri) {
         String fileName = new File(fileUri).getName();
         if (folderPathOf(fileType).resolve(fileName).equals(Paths.get(fileUri))) {
-            log.error("makeUrl({}, {}) BError - fileType mismatch: {} not Eq to {}", fileType, fileUri,
+            log.error("makeUrl({}, {}) Error - fileType mismatch: {} not Eq to {}", fileType, fileUri,
                     folderPathOf(fileType).resolve(fileName).toString(), Paths.get(fileUri).toString());
             return "";
         }

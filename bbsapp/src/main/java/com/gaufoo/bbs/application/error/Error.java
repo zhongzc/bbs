@@ -3,21 +3,23 @@ package com.gaufoo.bbs.application.error;
 import com.gaufoo.bbs.application.types.Authentication;
 import com.gaufoo.bbs.application.types.PersonalInformation;
 
-public class BError implements
+public class Error implements
         PersonalInformation.PersonInfoResult,
         PersonalInformation.EditPersonInfoResult,
         Authentication.CurrentUserResult,
-        Authentication.SignupResult
+        Authentication.SignupResult,
+        Authentication.LoginResult,
+        Authentication.LogoutResult
 {
     private Integer errCode;
     private String msg;
 
-    private BError(Integer errorCode) {
+    private Error(Integer errorCode) {
         this.errCode = errorCode;
     }
 
-    public static BError of(ErrorCode errorCode) {
-        return new BError(errorCode.innerVal);
+    public static Error of(ErrorCode errorCode) {
+        return new Error(errorCode.innerVal);
     }
 
     public Integer getErrCode() {
