@@ -1,10 +1,4 @@
-type Error {
-    errCode: ErrorCode!
-    errMsg: String!
-}
-
-enum ErrorCode {
-    Authenticate
-    LostItemNonExist
-    FoundItemNonExist
+type BError {
+    errCode: Int!
+    msg: String
 }

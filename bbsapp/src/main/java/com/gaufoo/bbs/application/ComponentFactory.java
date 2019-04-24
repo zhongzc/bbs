@@ -86,11 +86,13 @@ public class ComponentFactory {
     public final FileFactory lostFoundImages;
     public final FileFactory contentImages;
 
+    public StaticResourceConfig staticResourceConfig;
+
     public static ComponentFactory componentFactory;
 
     public ComponentFactory(StaticResourceConfig staticResourceConfig) {
         SSTPathConfig sstPathConfig = SSTPathConfig.defau1t();
-//        StaticResourceConfig staticResourceConfig = null; // FIXME
+        this.staticResourceConfig = staticResourceConfig;
         IdConfig idConfig = IdConfig.defau1t();
 
         //

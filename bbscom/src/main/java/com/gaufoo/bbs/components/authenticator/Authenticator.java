@@ -1,9 +1,6 @@
 package com.gaufoo.bbs.components.authenticator;
 
-import com.gaufoo.bbs.components.authenticator.common.Attachable;
-import com.gaufoo.bbs.components.authenticator.common.UserToken;
-import com.gaufoo.bbs.components.authenticator.common.Permission;
-import com.gaufoo.bbs.components.authenticator.common.ResetToken;
+import com.gaufoo.bbs.components.authenticator.common.*;
 import com.gaufoo.bbs.components.tokenGenerator.TokenGenerator;
 import com.gaufoo.bbs.components.validator.Validator;
 
@@ -11,17 +8,17 @@ import static com.gaufoo.bbs.util.TaskChain.*;
 
 public interface Authenticator {
 
-    Procedure<Attachable> signUp(String username, String password);
+    Procedure<AuthError, Attachable> signUp(String username, String password);
 
-    Procedure<UserToken> login(String username, String password);
+    Procedure<AuthError, UserToken> login(String username, String password);
 
-    Procedure<Permission> getLoggedUser(UserToken userToken);
+    Procedure<AuthError, Permission> getLoggedUser(UserToken userToken);
 
     void logout(UserToken userToken);
 
-    Procedure<ResetToken> reqResetPassword(String username);
+    Procedure<AuthError, ResetToken> reqResetPassword(String username);
 
-    Procedure<Boolean> resetPassword(ResetToken resetToken, String newPassword);
+    Procedure<AuthError, Boolean> resetPassword(ResetToken resetToken, String newPassword);
 
     void remove(String username);
 

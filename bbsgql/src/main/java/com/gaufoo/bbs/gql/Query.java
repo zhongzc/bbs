@@ -1,11 +1,12 @@
 package com.gaufoo.bbs.gql;
 
 import com.coxautodev.graphql.tools.GraphQLQueryResolver;
-import graphql.schema.DataFetchingEnvironment;
+import com.gaufoo.bbs.application.PersonalInformation;
 
 public class Query implements GraphQLQueryResolver {
-
-    String test(String testStr, DataFetchingEnvironment env) {
-        return testStr;
+    public PersonalInformation.PersonInfoResult personInfo(String id) {
+        return PersonalInformation.personInfo(id);
     }
+
+
 }

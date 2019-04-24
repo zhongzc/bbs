@@ -1,0 +1,23 @@
+input PersonInfoInput {
+    username: String
+    gender: String
+    grade: String
+    school: String
+    major: String
+    introduction: String
+    pictureBase64: String
+}
+
+type PersonalInfo {
+    userId: String!
+    pictureUrl: String!
+    username: String!
+    gender: String!
+    grade: String!
+    school: String!
+    major: String!
+    introduction: String!
+}
+
+union PersonInfoResult = BError | PersonalInfo
+union EditPersonInfoResult = BError | PersonalInfo

@@ -25,40 +25,40 @@ class AuthenticatorImpl implements Authenticator {
     }
 
     @Override
-    public Procedure<Attachable> signUp(String username, String password) {
-        if (!usernameValidator.validate(username)) return Fail.of("用户名不合法");
-        if (!passwordValidator.validate(password)) return Fail.of("密码不合法");
-        if (repository.contains(username)) return Fail.of("用户名已存在");
+    public Procedure<AuthError, Attachable> signUp(String username, String password) {
+        if (!usernameValidator.validate(username)) return Fail.of(AuthError.UsernameInvalid);
+        if (!passwordValidator.validate(password)) return Fail.of(AuthError.PasswordInvalid);
+        if (repository.contains(username)) return Fail.of(AuthError.UsernameDuplicate);
 
         return Result.of(permission -> {
-            if (!repository.saveUser(username, password, permission)) return Fail.of("注册失败");
+            if (!repository.saveUser(username, password, permission)) return Fail.of(AuthError.RegisterFailed);
             else return Result.of(true);
         });
     }
 
     @Override
-    public Procedure<UserToken> login(String username, String password) {
-        if (!repository.contains(username)) return Fail.of("用户名不存在");
-        if (!repository.getPassword(username).equals(password)) return Fail.of("密码错误");
+    public Procedure<AuthError, UserToken> login(String username, String password) {
+        if (!repository.contains(username)) return Fail.of(AuthError.UsernameNotFound);
+        if (!repository.getPassword(username).equals(password)) return Fail.of(AuthError.WrongPassword);
 
         Permission permission = repository.getPermissionByUsername(username);
         String userId = permission.userId;
         String token = tokenGenerator.genToken(userId, Instant.now().plus(Duration.ofDays(30)));
         UserToken userToken = UserToken.of(token);
 
-        if (!repository.saveUserToken(userToken, permission)) return Fail.of("登录失败");
+        if (!repository.saveUserToken(userToken, permission)) return Fail.of(AuthError.LoginFailed);
 
         return Result.of(userToken);
     }
 
     @Override
-    public Procedure<Permission> getLoggedUser(UserToken userToken) {
+    public Procedure<AuthError, Permission> getLoggedUser(UserToken userToken) {
         if (tokenGenerator.isExpired(userToken.value)) {
             repository.deleteUserToken(userToken);
-            return Fail.of("登录已过期");
+            return Fail.of(AuthError.LoginTokenExpired);
         }
         Permission permission = repository.getPermissionByToken(userToken);
-        return Procedure.ofNullable(permission, "登录信息无效");
+        return Procedure.ofNullable(permission, AuthError.LoginInfoInvalid);
     }
 
 
@@ -69,30 +69,30 @@ class AuthenticatorImpl implements Authenticator {
     }
 
     @Override
-    public Procedure<ResetToken> reqResetPassword(String username) {
-        if (!repository.contains(username)) return Fail.of("用户名不存在");
+    public Procedure<AuthError, ResetToken> reqResetPassword(String username) {
+        if (!repository.contains(username)) return Fail.of(AuthError.UsernameNotFound);
 
         String token = tokenGenerator.genToken(username, Instant.now().plus(Duration.ofHours(1)));
         ResetToken resetToken = ResetToken.of(token);
         if (!repository.saveResetToken(resetToken, username)) {
-            return Fail.of("请求重设密码失败");
+            return Fail.of(AuthError.RequestResetPasswordFailed);
         }
 
         return Result.of(resetToken);
     }
 
     @Override
-    public Procedure<Boolean> resetPassword(ResetToken resetToken, String newPassword) {
+    public Procedure<AuthError, Boolean> resetPassword(ResetToken resetToken, String newPassword) {
         if (tokenGenerator.isExpired(resetToken.value)) {
             repository.deleteResetToken(resetToken);
-            return Fail.of("操作已超时");
+            return Fail.of(AuthError.OperationTimedOut);
         }
 
         String username = repository.getUsernameByResetToken(resetToken);
-        if (username == null) return Fail.of("重置信息无效");
-        if (!passwordValidator.validate(newPassword)) return Fail.of("密码不合法");
+        if (username == null) return Fail.of(AuthError.ResetTokenInvalid);
+        if (!passwordValidator.validate(newPassword)) return Fail.of(AuthError.PasswordInvalid);
 
-        if (!repository.setPassword(username, newPassword)) return Fail.of("重置失败");
+        if (!repository.setPassword(username, newPassword)) return Fail.of(AuthError.ResetFailed);
         repository.deleteResetToken(resetToken);
         repository.deleteUserTokenByUsername(username);
         return Result.of(true);

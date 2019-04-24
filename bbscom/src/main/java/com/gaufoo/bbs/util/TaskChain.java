@@ -1,33 +1,35 @@
 package com.gaufoo.bbs.util;
 
+import scala.Int;
+
 import java.util.Optional;
 import java.util.function.Function;
 
 public interface TaskChain {
-    interface Procedure<T> {
-        <R> Procedure<R> then(Function<T, Procedure<R>> fn);
+    interface Procedure<U, T> {
+        <R> Procedure<U, R> then(Function<T, Procedure<U, R>> fn);
         boolean isSuccessful();
-        Optional<String> retrieveError();
+        Optional<U> retrieveError();
         Optional<T> retrieveResult();
 
-        static <T> Procedure<T> fromOptional(Optional<T> optional, String error, Runnable rollback) {
-            return optional.map(i -> (Procedure<T>) Result.of(i, rollback)).orElse(new Fail<>(error));
+        static <U, T> Procedure<U, T> fromOptional(Optional<T> optional, U error, Runnable rollback) {
+            return optional.map(i -> (Procedure<U, T>) Result.of(i, rollback)).orElse(new Fail<>(error));
         }
 
-        static <T> Procedure<T> fromOptional(Optional<T> optional, String error) {
-            return optional.map(i -> (Procedure<T>) Result.of(i)).orElse(new Fail<>(error));
+        static <U, T> Procedure<U, T> fromOptional(Optional<T> optional, U error) {
+            return optional.map(i -> (Procedure<U, T>) Result.of(i)).orElse(new Fail<>(error));
         }
 
-        static <T> Procedure<T> ofNullable(T nullable, String error) {
+        static <U, T> Procedure<U, T> ofNullable(T nullable, U error) {
             return fromOptional(Optional.ofNullable(nullable), error);
         }
 
-        static <T> Procedure<T> ofNullable(T nullable, String error, Runnable rollback) {
+        static <U, T> Procedure<U, T> ofNullable(T nullable, U error, Runnable rollback) {
             return fromOptional(Optional.ofNullable(nullable), error, rollback);
         }
     }
 
-    class Result<T> implements Procedure<T> {
+    class Result<U, T> implements Procedure<U, T> {
         private final T result;
         private final Runnable rollback;
 
@@ -37,13 +39,13 @@ public interface TaskChain {
         }
 
         @Override
-        public <R> Procedure<R> then(Function<T, Procedure<R>> fn) {
-            Procedure<R> r = fn.apply(result);
+        public <R> Procedure<U, R> then(Function<T, Procedure<U, R>> fn) {
+            Procedure<U, R> r = fn.apply(result);
             if (!r.isSuccessful()) {
                 rollback.run();
                 return r;
             } else {
-                Result<R> s = (Result<R>) r;
+                Result<U, R> s = (Result<U, R>) r;
                 return new Result<>(s.result, () -> {s.rollback.run(); rollback.run();});
             }
         }
@@ -54,7 +56,7 @@ public interface TaskChain {
         }
 
         @Override
-        public Optional<String> retrieveError() {
+        public Optional<U> retrieveError() {
             return Optional.empty();
         }
 
@@ -63,24 +65,24 @@ public interface TaskChain {
             return Optional.of(result);
         }
 
-        public static <T> Result<T> of(T result, Runnable rollback) {
+        public static <U, T> Result<U, T> of(T result, Runnable rollback) {
             return new Result<>(result, rollback);
         }
 
-        public static <T> Result<T> of(T result) {
+        public static <U, T> Result<U, T> of(T result) {
             return new Result<>(result, () -> {});
         }
     }
 
-    class Fail<T> implements Procedure<T> {
-        private final String error;
+    class Fail<U, T> implements Procedure<U, T> {
+        private final U error;
 
-        private Fail(String error) {
+        private Fail(U error) {
             this.error = error;
         }
 
         @Override
-        public <R> Procedure<R> then(Function<T, Procedure<R>> fn) {
+        public <R> Procedure<U, R> then(Function<T, Procedure<U, R>> fn) {
             return new Fail<>(error);
         }
 
@@ -90,7 +92,7 @@ public interface TaskChain {
         }
 
         @Override
-        public Optional<String> retrieveError() {
+        public Optional<U> retrieveError() {
             return Optional.of(error);
         }
 
@@ -99,26 +101,26 @@ public interface TaskChain {
             return Optional.empty();
         }
 
-        public static <T> Fail<T> of(String error) {
+        public static <U, T> Fail<U, T> of(U error) {
             return new Fail<>(error);
         }
     }
 
     static void main(String[] args) {
         Optional<Integer> i = Optional.of(12);
-        Procedure<Integer> a = Procedure.fromOptional(i, "oh", () -> System.out.println("hello"));
+        Procedure<String, Integer> a = Procedure.fromOptional(i, "oh", () -> System.out.println("hello"));
 
         System.out.println(a.isSuccessful());
         System.out.println(a.retrieveResult());
         System.out.println();
 
-        Procedure<Integer> c = a.then(ii -> Procedure.fromOptional(Optional.empty(), "sh*t", () -> System.out.println("world")));
+        Procedure<String, Integer> c = a.then(ii -> Procedure.fromOptional(Optional.empty(), "sh*t", () -> System.out.println("world")));
         System.out.println(c.isSuccessful());
         System.out.println(c.retrieveError());
         System.out.println();
 
-        Procedure<Integer> s =
-        Result.of(1,               () -> System.out.println("erase 1"))  .then(one ->
+        Procedure<String, Integer> s =
+        Result.<String, Integer>of(1,               () -> System.out.println("erase 1"))  .then(one ->
         Result.of(one.toString(),        () -> System.out.println("erase 2"))) .then(two ->
         Result.of(Integer.parseInt(two), () -> {})
         );
@@ -129,10 +131,10 @@ public interface TaskChain {
 
 
 
-        Procedure<Integer> b =
-        Result.of(1,                 () -> System.out.println("erase 1")  ).then(one ->
+        Procedure<String, Integer> b =
+        Result.<String, Integer>of(1,                 () -> System.out.println("erase 1")  ).then(one ->
         Result.of(one.toString(),          () -> System.out.println("erase 2")) ).then(two ->
-        Fail.<Integer>of("oh sh*t")                                             ).then(thr ->
+        Fail.<String, Integer>of("oh sh*t")                                             ).then(thr ->
         Result.of(thr + 1,            () -> System.out.println("erase 3")));
 
         System.out.println(b.retrieveResult());

@@ -2,6 +2,7 @@ package com.gaufoo.bbs.gql;
 
 import com.coxautodev.graphql.tools.SchemaParserDictionary;
 import com.gaufoo.bbs.application.*;
+import com.gaufoo.bbs.application.error.BError;
 import com.gaufoo.bbs.application.util.StaticResourceConfig;
 import com.gaufoo.bbs.application.util.StaticResourceConfig.FileType;
 import com.gaufoo.bbs.gql.util.LoggingInterceptor;
@@ -42,7 +43,8 @@ public class Application implements WebMvcConfigurer {
     @Bean
     SchemaParserDictionary schemaParserDictionary() {
         Class<?>[] subUnionTypes = {
-                Error.class,
+                BError.class,
+                PersonalInformation.PersonalInfo.class,
         };
         SchemaParserDictionary schemaParserDictionary = new SchemaParserDictionary();
         for(Class<?> clazz: subUnionTypes) {
@@ -100,5 +102,4 @@ public class Application implements WebMvcConfigurer {
         proxyFactory.addAdvice(LoggingInterceptor.interceptor);
         return (Query)proxyFactory.getProxy();
     }
-
 }

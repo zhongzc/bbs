@@ -1,7 +1,11 @@
 package com.gaufoo.bbs.application.util;
 
 import com.gaufoo.bbs.util.Tuple;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.io.File;
+import java.net.URI;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
@@ -11,6 +15,7 @@ import static com.gaufoo.bbs.application.util.StaticResourceConfig.FileType.User
 import static com.gaufoo.bbs.application.util.StaticResourceConfig.FileType.ContentImages;
 
 public class StaticResourceConfig {
+    private static Logger log = LoggerFactory.getLogger(StaticResourceConfig.class);
     public enum FileType {
         UserProfileImage,
         LostFoundImage,
@@ -35,6 +40,16 @@ public class StaticResourceConfig {
 
     public List<FileType> allFileTypes() {
         return new LinkedList<>(uriMapper.keySet());
+    }
+
+    public String makeUrl(FileType fileType, URI fileUri) {
+        String fileName = new File(fileUri).getName();
+        if (folderPathOf(fileType).resolve(fileName).equals(Paths.get(fileUri))) {
+            log.error("makeUrl({}, {}) BError - fileType mismatch: {} not Eq to {}", fileType, fileUri,
+                    folderPathOf(fileType).resolve(fileName).toString(), Paths.get(fileUri).toString());
+            return "";
+        }
+        return urlPrefixOf(fileType) + "/" + fileName;
     }
 
     public static class Builder {

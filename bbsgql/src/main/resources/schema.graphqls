@@ -1,9 +1,12 @@
 type Query {
-    test(testStr: String!): String
+    personInfo(id: ID!): PersonInfoResult!
+#    allMajors: [String!]!
+#    allAcademies: [String!]!
+#    majorsIn(academy: String!): [String!]!
 }
 
 type Mutation {
-    needsAuth: Error
+    editPersonInfo(personInfoInput: PersonInfoInput!, userToken: String!): EditPersonInfoResult!
 }
 
 schema {
