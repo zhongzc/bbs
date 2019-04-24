@@ -8,6 +8,7 @@ import java.util.function.Function;
 public interface TaskChain {
     interface Procedure<U, T> {
         <R> Procedure<U, R> then(Function<T, Procedure<U, R>> fn);
+        <E> Procedure<E, T> mapE(Function<U, E> efn);
         boolean isSuccessful();
         Optional<U> retrieveError();
         Optional<T> retrieveResult();
@@ -51,6 +52,11 @@ public interface TaskChain {
         }
 
         @Override
+        public <E> Procedure<E, T> mapE(Function<U, E> efn) {
+            return Result.of(result);
+        }
+
+        @Override
         public boolean isSuccessful() {
             return true;
         }
@@ -84,6 +90,11 @@ public interface TaskChain {
         @Override
         public <R> Procedure<U, R> then(Function<T, Procedure<U, R>> fn) {
             return new Fail<>(error);
+        }
+
+        @Override
+        public <E> Procedure<E, T> mapE(Function<U, E> efn) {
+            return Fail.of(efn.apply(error));
         }
 
         @Override

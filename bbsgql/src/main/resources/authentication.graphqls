@@ -1,0 +1,9 @@
+union CurrentUserResult = PersonalInfo | BError
+
+union SignupResult = PersonalInfo | BError
+
+input SignupInput {
+    nickname: String!
+    password: String!
+    username: String!
+}

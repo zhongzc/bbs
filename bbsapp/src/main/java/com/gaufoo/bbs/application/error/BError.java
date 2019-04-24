@@ -1,10 +1,13 @@
 package com.gaufoo.bbs.application.error;
 
+import com.gaufoo.bbs.application.types.Authentication;
 import com.gaufoo.bbs.application.types.PersonalInformation;
 
 public class BError implements
         PersonalInformation.PersonInfoResult,
-        PersonalInformation.EditPersonInfoResult
+        PersonalInformation.EditPersonInfoResult,
+        Authentication.CurrentUserResult,
+        Authentication.SignupResult
 {
     private Integer errCode;
     private String msg;

@@ -1,7 +1,8 @@
 package com.gaufoo.bbs.gql;
 
 import com.coxautodev.graphql.tools.SchemaParserDictionary;
-import com.gaufoo.bbs.application.*;
+import com.gaufoo.bbs.application.ComponentFactory;
+import com.gaufoo.bbs.application.types.PersonalInformation;
 import com.gaufoo.bbs.application.error.BError;
 import com.gaufoo.bbs.application.util.StaticResourceConfig;
 import com.gaufoo.bbs.application.util.StaticResourceConfig.FileType;

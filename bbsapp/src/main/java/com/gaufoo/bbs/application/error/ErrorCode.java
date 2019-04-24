@@ -27,7 +27,8 @@ public enum ErrorCode {
     ChangeMajorFailed(19),
     ChangeSchoolFailed(20),
     ChangeImageFailed(21),
-    NotLoggedIn(22);
+    NotLoggedIn(22),
+    CreateUserFailed(23),
 
     ;final Integer innerVal;
     ErrorCode(Integer bindingVal) {
@@ -55,6 +56,7 @@ public enum ErrorCode {
         put(ErrorCode.ChangeSchoolFailed, "更改学院失败");
         put(ErrorCode.ChangeImageFailed, "更改头像失败");
         put(ErrorCode.NotLoggedIn, "用户尚未登录");
+        put(ErrorCode.CreateUserFailed, "创建用户失败");
 
         // add more error code mapping here
     }};

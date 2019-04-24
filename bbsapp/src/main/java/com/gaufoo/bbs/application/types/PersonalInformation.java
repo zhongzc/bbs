@@ -3,7 +3,9 @@ package com.gaufoo.bbs.application.types;
 public interface PersonalInformation {
     interface PersonalInfo extends
             PersonInfoResult,
-            EditPersonInfoResult
+            EditPersonInfoResult,
+            Authentication.CurrentUserResult,
+            Authentication.SignupResult
     {
         String getIntroduction();
         String getMajor();

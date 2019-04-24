@@ -1,12 +1,17 @@
 type Query {
     personInfo(id: ID!): PersonInfoResult!
-#    allMajors: [String!]!
-#    allAcademies: [String!]!
-#    majorsIn(academy: String!): [String!]!
+    allMajors: [String!]!
+    allSchools: [String!]!
+    majorsIn(school: String!): [String!]!
+
+    currentUser: CurrentUserResult!
 }
 
 type Mutation {
     editPersonInfo(personInfoInput: PersonInfoInput!, userToken: String!): EditPersonInfoResult!
+    signup(signup: SignupInput!): SignupResult!
+#    login(loginInput: LoginInput!): LoginResult!
+#    logout: LogoutResult!
 }
 
 schema {

@@ -3,7 +3,6 @@ package com.gaufoo.bbs.application;
 import com.gaufoo.bbs.application.error.BError;
 import com.gaufoo.bbs.application.error.ErrorCode;
 import com.gaufoo.bbs.application.util.StaticResourceConfig;
-import com.gaufoo.bbs.components.authenticator.common.AuthError;
 import com.gaufoo.bbs.components.authenticator.common.UserToken;
 import com.gaufoo.bbs.components.file.common.FileId;
 import com.gaufoo.bbs.components.scutMajor.common.Major;
@@ -17,11 +16,10 @@ import com.gaufoo.bbs.util.TaskChain.Procedure;
 import com.gaufoo.bbs.util.TaskChain.Result;
 
 import java.net.URI;
-import java.util.Arrays;
-import java.util.Base64;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Collectors;
 
+import static com.gaufoo.bbs.application.Commons.fetchPersonalInfo;
 import static com.gaufoo.bbs.application.ComponentFactory.componentFactory;
 import static com.gaufoo.bbs.application.types.PersonalInformation.*;
 
@@ -34,7 +32,7 @@ public class PersonalInformation {
     }
 
     public static EditPersonInfoResult editPersonInfo(PersonInfoInput input, String userToken) {
-        Procedure<ErrorCode, PersonalInfo> proc = fetchUserId(userToken).then(userId ->
+        Procedure<ErrorCode, PersonalInfo> proc = Commons.fetchUserId(UserToken.of(userToken)).then(userId ->
                 Procedure.fromOptional(componentFactory.user.userInfo(userId), ErrorCode.UserNonExist).then(oldUserInfo -> {
                     UserFactory users = componentFactory.user;
                     if (input.gender == null) return Result.of(null);
@@ -65,30 +63,32 @@ public class PersonalInformation {
         else return BError.of(proc.retrieveError().get());
     }
 
-    private static Procedure<ErrorCode, UserId> fetchUserId(String userToken) {
-        Procedure<AuthError, UserId> userIdProc = componentFactory.authenticator.getLoggedUser(UserToken.of(userToken))
-                .then(perm -> Result.of(UserId.of(perm.userId)));
-
-        if (userIdProc.isSuccessful()) return Result.of(userIdProc.retrieveResult().get());
-        else return Fail.of(ErrorCode.fromAuthError(userIdProc.retrieveError().get()));
+    public static List<String> allMajors() {
+        return Arrays.stream(Major.values()).map(Enum::toString).collect(Collectors.toList());
     }
 
-    private static Procedure<ErrorCode, PersonalInfo> fetchPersonalInfo(UserId userId) {
-        return Procedure.fromOptional(componentFactory.user.userInfo(userId), ErrorCode.UserNonExist).then(userInfo ->
-                Result.of(consPersonalInfo(userId, userInfo))
-        );
+    public static List<String> allSchools() {
+        return Arrays.stream(School.values()).map(Enum::toString).collect(Collectors.toList());
     }
 
-    private static PersonalInfo consPersonalInfo(UserId userId, UserInfo userInfo) {
+    public static List<String> majorsIn(String school) {
+        return parseSchool(school).map(s ->
+                componentFactory.major.majorsIn(s)
+                        .map(Enum::toString)
+                        .collect(Collectors.toList())
+        ).orElse(new LinkedList<>());
+    }
+
+    public static PersonalInfo consPersonalInfo(UserId userId, UserInfo userInfo) {
         return new PersonalInfo() {
-            public String getIntroduction() { return userInfo.introduction; }
-            public String getMajor()        { return factorOutMajor(MajorCode.of(userInfo.majorCode)); }
-            public String getSchool()       { return factorOutSchool(MajorCode.of(userInfo.majorCode)); }
-            public String getGrade()        { return userInfo.grade; }
-            public String getGender()       { return userInfo.gender.toString(); }
-            public String getUsername()     { return userInfo.nickname; }
+            public String getIntroduction() { return nil2Emp(userInfo.introduction); }
+            public String getMajor()        { return factorOutMajor(MajorCode.of(nil2Emp(userInfo.majorCode))); }
+            public String getSchool()       { return factorOutSchool(MajorCode.of(nil2Emp(userInfo.majorCode))); }
+            public String getGrade()        { return nil2Emp(userInfo.grade); }
+            public String getGender()       { return Optional.ofNullable(userInfo.gender).orElse(UserInfo.Gender.secret).toString(); }
+            public String getUsername()     { return nil2Emp(userInfo.nickname); }
             public String getUserId()       { return userId.toString(); }
-            public String getPictureUrl()   { return factorOutPictureUrl(FileId.of(userInfo.profilePicIdentifier)); }
+            public String getPictureUrl()   { return factorOutPictureUrl(FileId.of(nil2Emp(userInfo.profilePicIdentifier))); }
         };
     }
 
@@ -197,6 +197,10 @@ public class PersonalInformation {
 
     private static Optional<School> parseSchool(String schoolStr) {
         return Arrays.stream(School.values()).filter(m -> m.toString().equals(schoolStr)).findFirst();
+    }
+
+    private static String nil2Emp(String nullableStr) {
+        return Optional.ofNullable(nullableStr).orElse("");
     }
 
 
