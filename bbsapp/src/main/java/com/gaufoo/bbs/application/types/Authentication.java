@@ -17,4 +17,8 @@ public interface Authentication {
         public String password;
         public String username;
     }
+
+    interface LoggedInToken extends LoginResult, SignupResult {
+        public String getToken();
+    }
 }

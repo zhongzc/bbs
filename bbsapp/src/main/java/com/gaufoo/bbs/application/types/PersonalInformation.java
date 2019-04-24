@@ -4,9 +4,7 @@ public interface PersonalInformation {
     interface PersonalInfo extends
             PersonInfoResult,
             EditPersonInfoResult,
-            Authentication.CurrentUserResult,
-            Authentication.SignupResult,
-            Authentication.LoginResult
+            Authentication.CurrentUserResult
     {
         String getIntroduction();
         String getMajor();

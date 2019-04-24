@@ -3,6 +3,7 @@ package com.gaufoo.bbs.gql;
 import com.coxautodev.graphql.tools.SchemaParserDictionary;
 import com.gaufoo.bbs.application.ComponentFactory;
 import com.gaufoo.bbs.application.error.Error;
+import com.gaufoo.bbs.application.types.Authentication;
 import com.gaufoo.bbs.application.types.PersonalInformation;
 import com.gaufoo.bbs.application.util.StaticResourceConfig;
 import com.gaufoo.bbs.application.util.StaticResourceConfig.FileType;
@@ -45,6 +46,7 @@ public class Application implements WebMvcConfigurer {
     SchemaParserDictionary schemaParserDictionary() {
         Class<?>[] subUnionTypes = {
                 PersonalInformation.PersonalInfo.class,
+                Authentication.LoggedInToken.class,
         };
         SchemaParserDictionary schemaParserDictionary = new SchemaParserDictionary();
         for(Class<?> clazz: subUnionTypes) {

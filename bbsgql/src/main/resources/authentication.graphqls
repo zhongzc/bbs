@@ -1,8 +1,12 @@
 union CurrentUserResult = PersonalInfo | Error
 
-union SignupResult = PersonalInfo | Error
+union SignupResult = Error | LoggedInToken
 
-union LoginResult = PersonalInfo | Error
+union LoginResult = Error | LoggedInToken
+
+type LoggedInToken {
+    token: String!
+}
 
 input SignupInput {
     nickname: String!

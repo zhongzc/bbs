@@ -4,8 +4,10 @@ import com.gaufoo.bbs.application.error.ErrorCode;
 import com.gaufoo.bbs.application.error.Ok;
 import com.gaufoo.bbs.application.types.PersonalInformation;
 import com.gaufoo.bbs.components.authenticator.Authenticator;
+import com.gaufoo.bbs.components.authenticator.common.AuthError;
 import com.gaufoo.bbs.components.authenticator.common.Permission;
 import com.gaufoo.bbs.components.authenticator.common.UserToken;
+import com.gaufoo.bbs.components.user.common.UserId;
 import com.gaufoo.bbs.components.user.common.UserInfo;
 
 import static com.gaufoo.bbs.application.ComponentFactory.componentFactory;
@@ -22,22 +24,25 @@ public class Authentication {
     }
 
     public static SignupResult signup(SignupInput input) {
-        Procedure<ErrorCode, PersonalInformation.PersonalInfo> result = componentFactory.authenticator.signUp(input.username, input.password)
+        Procedure<ErrorCode, LoggedInToken> result = componentFactory.authenticator.signUp(input.username, input.password)
                 .mapE(ErrorCode::fromAuthError)
                 .then(attachable -> Procedure.fromOptional(componentFactory.user.createUser(createUserInfo(input.nickname)), ErrorCode.CreateUserFailed)
                         .then(userId -> Result.of(userId, () -> componentFactory.user.remove(userId)))
                         .then(userId -> attachable.attach(Permission.of(userId.value, Authenticator.Role.USER))
-                                .mapE(ErrorCode::fromAuthError)
-                                .then(ok -> Commons.fetchPersonalInfo(userId))));
+                                .mapE(ErrorCode::fromAuthError)))
+                .then(x -> componentFactory.authenticator.login(input.username, input.password)
+                        .mapE(ErrorCode::fromAuthError))
+                .then(userToken -> Result.of(() -> userToken.value));
+
         if (result.isSuccessful()) return result.retrieveResult().get();
         else return Error.of(result.retrieveError().get());
     }
 
     public static LoginResult login(LoginInput input) {
-        Procedure<ErrorCode, PersonalInformation.PersonalInfo> result = componentFactory.authenticator.login(input.username, input.password)
+        Procedure<ErrorCode, LoggedInToken> result = componentFactory.authenticator.login(input.username, input.password)
                 .mapE(ErrorCode::fromAuthError)
-                .then(Commons::fetchUserId)
-                .then(Commons::fetchPersonalInfo);
+                .then(userToken -> Result.of(() -> userToken.value));
+
         if (result.isSuccessful()) return result.retrieveResult().get();
         else return Error.of(result.retrieveError().get());
     }
