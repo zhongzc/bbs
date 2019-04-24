@@ -1,5 +1,7 @@
 package com.gaufoo.bbs.components.active;
 
+import com.gaufoo.bbs.components.active.common.ActiveInfo;
+
 import java.time.Instant;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -12,20 +14,21 @@ public class ActiveImpl implements Active {
     }
 
     @Override
-    public Optional<Instant> touch(String activeGroup, String id) {
+    public Optional<ActiveInfo> touch(String activeGroup, String itemId, String toucherId) {
         Instant time = Instant.now();
+        ActiveInfo newInfo = ActiveInfo.of(toucherId, time);
 
-        Optional<Optional<Instant>> i = getLatestActiveTime(activeGroup, id).map(__ -> {
-            if (repository.updateActive(activeGroup, id, time)) {
-                return Optional.of(time);
+        Optional<Optional<ActiveInfo>> i = getLatestActiveInfo(activeGroup, itemId).map(__ -> {
+            if (repository.updateActive(activeGroup, itemId, newInfo)) {
+                return Optional.of(newInfo);
             } else {
                 return Optional.empty();
             }
         });
 
         return i.orElseGet(() -> {
-            if (repository.saveActive(activeGroup, id, time)) {
-                return Optional.of(time);
+            if (repository.saveActive(activeGroup, itemId, newInfo)) {
+                return Optional.of(newInfo);
             } else {
                 return Optional.empty();
             }
@@ -33,7 +36,7 @@ public class ActiveImpl implements Active {
     }
 
     @Override
-    public Optional<Instant> getLatestActiveTime(String activeGroup, String id) {
+    public Optional<ActiveInfo> getLatestActiveInfo(String activeGroup, String id) {
         return Optional.ofNullable(repository.getActive(activeGroup, id));
     }
 

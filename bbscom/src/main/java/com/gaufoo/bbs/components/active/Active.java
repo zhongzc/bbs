@@ -1,16 +1,18 @@
 package com.gaufoo.bbs.components.active;
 
+import com.gaufoo.bbs.components.active.common.ActiveInfo;
+
 import java.time.Instant;
 import java.util.Optional;
 import java.util.stream.Stream;
 
 public interface Active {
     // activeGroup ascii 字长最长 14, id ascii 字长最长 14
-    Optional<Instant> touch(String activeGroup, String id);
+    Optional<ActiveInfo> touch(String activeGroup, String itemId, String toucherId);
 
-    Optional<Instant> getLatestActiveTime(String activeGroup, String id);
+    Optional<ActiveInfo> getLatestActiveInfo(String activeGroup, String itemId);
 
-    boolean remove(String activeGroup, String id);
+    boolean remove(String activeGroup, String itemId);
 
     Stream<String> getAllAsc(String activeGroup);
 

@@ -1,7 +1,9 @@
 package com.gaufoo.bbs.components.active;
 
+import com.gaufoo.bbs.components.active.common.ActiveInfo;
 import com.gaufoo.bbs.util.SstUtils;
 import com.gaufoo.sst.SST;
+import com.google.gson.Gson;
 
 import java.nio.file.Path;
 import java.time.Instant;
@@ -12,37 +14,38 @@ import java.util.concurrent.CompletionStage;
 import java.util.stream.Stream;
 
 public class ActiveSstRepository implements ActiveRepository {
-    private final SST idToTime;
+    private static final Gson gson = new Gson();
+    private final SST idToInfo;
     private final SST cluster;
 
     private ActiveSstRepository(Path storingPath) {
-        this.idToTime = SST.of("id-to-time", storingPath);
+        this.idToInfo = SST.of("id-to-time", storingPath);
         this.cluster = SST.of("cluster", storingPath);
     }
 
     @Override
-    public boolean saveActive(String activeGroup, String id, Instant time) {
+    public boolean saveActive(String activeGroup, String id, ActiveInfo activeInfo) {
         String newKey = formatAG(activeGroup) + formatID(id);
-        if (SstUtils.contains(idToTime, newKey)) return false;
+        if (SstUtils.contains(idToInfo, newKey)) return false;
         List<CompletionStage<Boolean>> tasks = new ArrayList<>();
-        tasks.add(SstUtils.setEntryAsync(idToTime, newKey, format(time)));
-        tasks.add(SstUtils.setEntryAsync(cluster, concat(activeGroup, id, time), "GAUFOO"));
+        tasks.add(SstUtils.setEntryAsync(idToInfo, newKey, gson.toJson(activeInfo)));
+        tasks.add(SstUtils.setEntryAsync(cluster, concat(activeGroup, id, activeInfo.time), "GAUFOO"));
 
         return SstUtils.waitAllFutureParT(tasks, true, (a, b) -> a && b);
     }
 
     @Override
-    public Instant getActive(String activeGroup, String id) {
-        return SstUtils.getEntry(idToTime, formatAG(activeGroup) + formatID(id), ActiveSstRepository::retrieveTime);
+    public ActiveInfo getActive(String activeGroup, String id) {
+        return SstUtils.getEntry(idToInfo, formatAG(activeGroup) + formatID(id), ActiveSstRepository::retrieveInfo);
     }
 
     @Override
-    public boolean updateActive(String activeGroup, String id, Instant time) {
-        return Optional.ofNullable(getActive(activeGroup, id)).map(ot -> {
+    public boolean updateActive(String activeGroup, String id, ActiveInfo activeInfo) {
+        return Optional.ofNullable(getActive(activeGroup, id)).map(info -> {
             List<CompletionStage<Boolean>> tasks = new ArrayList<>();
-            tasks.add(SstUtils.setEntryAsync(idToTime, formatAG(activeGroup) + formatID(id), format(time)));
-            tasks.add(cluster.delete(concat(activeGroup, id, ot)).thenApply(Optional::isPresent));
-            tasks.add(SstUtils.setEntryAsync(cluster, concat(activeGroup, id, time), "GAUFOO"));
+            tasks.add(SstUtils.setEntryAsync(idToInfo, formatAG(activeGroup) + formatID(id), gson.toJson(activeInfo)));
+            tasks.add(cluster.delete(concat(activeGroup, id, info.time)).thenApply(Optional::isPresent));
+            tasks.add(SstUtils.setEntryAsync(cluster, concat(activeGroup, id, activeInfo.time), "GAUFOO"));
             return SstUtils.waitAllFutureParT(tasks, true, (a, b) -> a && b);
         }).orElse(false);
     }
@@ -68,15 +71,15 @@ public class ActiveSstRepository implements ActiveRepository {
 
     @Override
     public boolean delete(String activeGroup, String id) {
-        return Optional.ofNullable(SstUtils.removeEntryByKey(idToTime, formatAG(activeGroup) + formatID(id), ActiveSstRepository::retrieveTime))
-                .map(ot -> SstUtils.removeEntryByKey(cluster, concat(activeGroup, id, ot)) != null).orElse(false);
+        return Optional.ofNullable(SstUtils.removeEntryByKey(idToInfo, formatAG(activeGroup) + formatID(id), ActiveSstRepository::retrieveInfo))
+                .map(oi -> SstUtils.removeEntryByKey(cluster, concat(activeGroup, id, oi.time)) != null).orElse(false);
     }
 
     @Override
     public boolean delete(String activeGroup) {
         SstUtils.waitAllFuturesPar(
-                idToTime.rangeKeysAsc(formatAG(activeGroup) + many('0', 14), formatAG(activeGroup) + many('9', 14))
-                        .thenAccept(keys -> SstUtils.waitAllFuturesPar(keys.map(idToTime::delete))),
+                idToInfo.rangeKeysAsc(formatAG(activeGroup) + many('0', 14), formatAG(activeGroup) + many('9', 14))
+                        .thenAccept(keys -> SstUtils.waitAllFuturesPar(keys.map(idToInfo::delete))),
                 cluster.rangeKeysAsc(formatAG(activeGroup) + many('0', 28), formatAG(activeGroup) + many('9', 28))
                         .thenAccept(keys -> SstUtils.waitAllFuturesPar(keys.map(cluster::delete)))
         );
@@ -85,7 +88,7 @@ public class ActiveSstRepository implements ActiveRepository {
 
     @Override
     public void shutdown() {
-        SstUtils.waitAllFuturesPar(idToTime.shutdown(), cluster.shutdown());
+        SstUtils.waitAllFuturesPar(idToInfo.shutdown(), cluster.shutdown());
     }
 
     private static String concat(String activeGroup, String id, Instant time) {
@@ -116,8 +119,8 @@ public class ActiveSstRepository implements ActiveRepository {
         return new String(cs);
     }
 
-    private static Instant retrieveTime(String string) {
-        return Instant.ofEpochMilli(Long.parseLong(string));
+    private static ActiveInfo retrieveInfo(String string) {
+        return gson.fromJson(string, ActiveInfo.class);
     }
 
     public static ActiveRepository get(Path storingPath) {
