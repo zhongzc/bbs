@@ -3,11 +3,10 @@ package com.gaufoo.bbs.application;
 import com.gaufoo.bbs.application.error.Error;
 import com.gaufoo.bbs.application.error.ErrorCode;
 import com.gaufoo.bbs.application.error.Ok;
+import com.gaufoo.bbs.application.types.Found;
 import com.gaufoo.bbs.application.types.PersonalInformation;
 import com.gaufoo.bbs.application.util.StaticResourceConfig;
-import com.gaufoo.bbs.components._depr_schoolHeat.common.PostInfo;
 import com.gaufoo.bbs.components.authenticator.common.UserToken;
-import com.gaufoo.bbs.components.file.FileFactory;
 import com.gaufoo.bbs.components.file.common.FileId;
 import com.gaufoo.bbs.components.found.common.FoundId;
 import com.gaufoo.bbs.components.found.common.FoundInfo;
@@ -23,7 +22,6 @@ import java.util.stream.Collectors;
 
 import static com.gaufoo.bbs.application.ComponentFactory.componentFactory;
 import static com.gaufoo.bbs.util.TaskChain.*;
-import com.gaufoo.bbs.application.types.Found;
 
 
 public class AppFound {
@@ -42,7 +40,7 @@ public class AppFound {
                                 .map(foundInfo -> consFoundInfo(foundId, foundInfo))
                                 .orElse(null))
                         .filter(Objects::nonNull)
-                        .skip(fFirst).limit(fSkip).collect(Collectors.toList());
+                        .skip(fSkip).limit(fFirst).collect(Collectors.toList());
             }
         };
     }
@@ -86,6 +84,12 @@ public class AppFound {
                 .mapF(ErrorCode::fromAuthError)
                 .then(userId -> Result.of(componentFactory.found.claim(FoundId.of(foundId), userId.value)))
                 .reduce(Error::of, op -> op.isPresent() ? Ok.build() : Error.of(ErrorCode.ClaimFoundFailed));
+    }
+
+    public static void reset() {
+        componentFactory.found.allPosts().forEach(id -> {
+            componentFactory.found.removePost(id);
+        });
     }
 
     private static Found.FoundInfo consFoundInfo(FoundId foundId, FoundInfo foundInfo) {
@@ -133,7 +137,7 @@ public class AppFound {
     private static Procedure<ErrorCode, Optional<FileId>> addPictureIfNecessary(@Nullable String pictureBase64) {
         if (pictureBase64 == null) return Result.of(Optional.empty());
         byte[] image = Base64.getDecoder().decode(pictureBase64);
-        Optional<FileId> newPicId = componentFactory.lostFoundImages.createFile(image, UUID.randomUUID().toString());
+        Optional<FileId> newPicId = componentFactory.lostFoundImages.createFile(image);
         return Procedure.fromOptional(newPicId, ErrorCode.CreateFoundImageFailed)
                 .then(fileId -> Result.of(Optional.of(fileId), () -> componentFactory.lostFoundImages.Remove(fileId)));
     }

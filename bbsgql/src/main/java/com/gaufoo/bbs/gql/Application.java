@@ -11,7 +11,6 @@ import com.gaufoo.bbs.application.types.PersonalInformation;
 import com.gaufoo.bbs.application.util.StaticResourceConfig;
 import com.gaufoo.bbs.application.util.StaticResourceConfig.FileType;
 import com.gaufoo.bbs.gql.util.LoggingInterceptor;
-import com.gaufoo.bbs.gql.util.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.aop.framework.ProxyFactory;

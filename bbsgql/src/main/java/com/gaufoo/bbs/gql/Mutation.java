@@ -18,6 +18,11 @@ import static com.gaufoo.bbs.application.types.PersonalInformation.PersonInfoInp
 import static com.gaufoo.bbs.application.types.Found.*;
 
 public class Mutation implements GraphQLMutationResolver {
+    public Boolean reset() {
+        AppFound.reset();
+        return true;
+    }
+
     public EditPersonInfoResult editPersonInfo(PersonInfoInput input, DataFetchingEnvironment env) {
         return Utils.getAuthToken(env).map(
                 userToken -> PersonalInformation.editPersonInfo(input, userToken)
