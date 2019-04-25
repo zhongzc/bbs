@@ -21,20 +21,20 @@ public class Authentication {
 
     public static SignupResult signup(SignupInput input) {
         return componentFactory.authenticator.signUp(input.username, input.password)
-                .mapE(ErrorCode::fromAuthError)
+                .mapF(ErrorCode::fromAuthError)
                 .then(attachable -> Procedure.fromOptional(componentFactory.user.createUser(createUserInfo(input.nickname)), ErrorCode.CreateUserFailed)
                         .then(userId -> Result.of(userId, () -> componentFactory.user.remove(userId)))
                         .then(userId -> attachable.attach(Permission.of(userId.value, Authenticator.Role.USER))
-                                .mapE(ErrorCode::fromAuthError)))
+                                .mapF(ErrorCode::fromAuthError)))
                 .then(x -> componentFactory.authenticator.login(input.username, input.password)
-                        .mapE(ErrorCode::fromAuthError))
+                        .mapF(ErrorCode::fromAuthError))
                 .then(userToken -> Result.of((LoggedInToken)() -> userToken.value))
                 .reduce(Error::of, r -> r);
     }
 
     public static LoginResult login(LoginInput input) {
         return componentFactory.authenticator.login(input.username, input.password)
-                .mapE(ErrorCode::fromAuthError)
+                .mapF(ErrorCode::fromAuthError)
                 .then(userToken -> Result.of((LoggedInToken)() -> userToken.value))
                 .reduce(Error::of, r -> r);
     }

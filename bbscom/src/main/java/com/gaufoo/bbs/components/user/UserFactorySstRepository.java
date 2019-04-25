@@ -40,7 +40,7 @@ public class UserFactorySstRepository implements UserFactoryRepository {
 
     @Override
     public void shutdown() {
-        waitAllFuturesPar(idToInfo.shutdown());
+        waitFuture(idToInfo.shutdown());
     }
 
     public static UserFactorySstRepository get(Path storingDir) {

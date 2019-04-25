@@ -174,17 +174,17 @@ public class ComponentFactory {
 
         //
         FileFactoryRepository lostFoundImagesRepository = FileFactoryFileSystemRepository.get(staticResourceConfig.folderPathOf(StaticResourceConfig.FileType.LostFoundImage));
-        reps.add(userFactoryRepository::shutdown);
+        reps.add(lostFoundImagesRepository::shutdown);
         this.lostFoundImages = FileFactory.defau1t(lostFoundImagesRepository, IdGenerator.seqInteger(idConfig.lostFoundImages, idRepository));
 
         //
         FileFactoryRepository userProfilesRepository = FileFactoryFileSystemRepository.get(staticResourceConfig.folderPathOf(StaticResourceConfig.FileType.UserProfileImage));
-        reps.add(userFactoryRepository::shutdown);
+        reps.add(userProfilesRepository::shutdown);
         this.userProfiles = FileFactory.defau1t(userProfilesRepository, IdGenerator.seqInteger(idConfig.userProfiles, idRepository));
 
         //
         FileFactoryRepository contentImagesRepository = FileFactoryFileSystemRepository.get(staticResourceConfig.folderPathOf(StaticResourceConfig.FileType.ContentImages));
-        reps.add(userFactoryRepository::shutdown);
+        reps.add(contentImagesRepository::shutdown);
         this.contentImages = FileFactory.defau1t(contentImagesRepository, IdGenerator.seqInteger(idConfig.contentImages, idRepository));
     }
 

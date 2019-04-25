@@ -8,18 +8,19 @@ import java.util.function.Function;
 public interface TaskChain {
     interface Procedure<U, T> {
         <R> Procedure<U, R> then(Function<T, Procedure<U, R>> fn);
-        <E> Procedure<E, T> mapE(Function<U, E> efn);
+        <E> Procedure<E, T> mapF(Function<U, E> efn);
+        <R> Procedure<U, R> mapR(Function<T, R> rfn);
         <R> R reduce(Function<U, R> efn, Function<T, R> fn);
         boolean isSuccessful();
         Optional<U> retrieveError();
         Optional<T> retrieveResult();
 
         static <U, T> Procedure<U, T> fromOptional(Optional<T> optional, U error, Runnable rollback) {
-            return optional.map(i -> (Procedure<U, T>) Result.of(i, rollback)).orElse(new Fail<>(error));
+            return optional.map(i -> (Procedure<U, T>) Result.<U, T>of(i, rollback)).orElse(new Fail<>(error));
         }
 
         static <U, T> Procedure<U, T> fromOptional(Optional<T> optional, U error) {
-            return optional.map(i -> (Procedure<U, T>) Result.of(i)).orElse(new Fail<>(error));
+            return optional.map(i -> (Procedure<U, T>) Result.<U, T>of(i)).orElse(new Fail<>(error));
         }
 
         static <U, T> Procedure<U, T> ofNullable(T nullable, U error) {
@@ -53,8 +54,13 @@ public interface TaskChain {
         }
 
         @Override
-        public <E> Procedure<E, T> mapE(Function<U, E> efn) {
+        public <E> Procedure<E, T> mapF(Function<U, E> efn) {
             return Result.of(result);
+        }
+
+        @Override
+        public <R> Procedure<U, R> mapR(Function<T, R> rfn) {
+            return Result.of(rfn.apply(result));
         }
 
         @Override
@@ -99,8 +105,13 @@ public interface TaskChain {
         }
 
         @Override
-        public <E> Procedure<E, T> mapE(Function<U, E> efn) {
+        public <E> Procedure<E, T> mapF(Function<U, E> efn) {
             return Fail.of(efn.apply(error));
+        }
+
+        @Override
+        public <R> Procedure<U, R> mapR(Function<T, R> rfn) {
+            return Fail.of(error);
         }
 
         @Override
