@@ -4,6 +4,8 @@ union SignupResult = Error | LoggedInToken
 
 union LoginResult = Error | LoggedInToken
 
+union LogoutResult = Error | Ok
+
 type LoggedInToken {
     token: String!
 }
@@ -12,4 +14,9 @@ input SignupInput {
     nickname: String!
     password: String!
     username: String!
+}
+
+input LoginInput {
+    username: String!
+    password: String!
 }

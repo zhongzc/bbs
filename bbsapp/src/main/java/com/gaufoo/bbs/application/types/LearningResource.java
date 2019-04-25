@@ -47,16 +47,43 @@ public interface LearningResource {
         public Content content;
         public String course;
         public String base64AttachedFile;
+
+        @Override
+        public String toString() {
+            return "LearningResourceInput{" +
+                    "title='" + title + '\'' +
+                    ", content=" + content +
+                    ", course='" + course + '\'' +
+                    ", base64AttachedFile='" + base64AttachedFile + '\'' +
+                    '}';
+        }
     }
 
     class LearningResourceCommentInput {
         public String postIdCommenting;
         public Content content;
+
+        @Override
+        public String toString() {
+            return "LearningResourceCommentInput{" +
+                    "postIdCommenting='" + postIdCommenting + '\'' +
+                    ", content=" + content +
+                    '}';
+        }
     }
 
     class LearningResourceReplyInput {
         public String commentIdReplying;
         public Content content;
         public String replyTo;
+
+        @Override
+        public String toString() {
+            return "LearningResourceReplyInput{" +
+                    "commentIdReplying='" + commentIdReplying + '\'' +
+                    ", content=" + content +
+                    ", replyTo='" + replyTo + '\'' +
+                    '}';
+        }
     }
 }

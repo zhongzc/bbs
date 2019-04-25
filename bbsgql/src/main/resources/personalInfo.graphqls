@@ -10,13 +10,13 @@ input PersonInfoInput {
 
 type PersonalInfo {
     userId: String!
-    pictureUrl: String!
+    pictureUrl: String
     username: String!
-    gender: String!
-    grade: String!
-    school: String!
-    major: String!
-    introduction: String!
+    gender: String
+    grade: String
+    school: String
+    major: String
+    introduction: String
 }
 
 union PersonInfoResult = Error | PersonalInfo

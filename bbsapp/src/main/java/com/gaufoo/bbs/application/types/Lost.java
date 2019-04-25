@@ -43,5 +43,16 @@ public interface Lost {
         public String pictureBase64;
         public String contact;
         public Long lostTime;
+
+        @Override
+        public String toString() {
+            return "LostInput{" +
+                    "itemName='" + itemName + '\'' +
+                    ", description='" + description + '\'' +
+                    ", position='" + position + '\'' +
+                    ", contact='" + contact + '\'' +
+                    ", lostTime=" + lostTime +
+                    '}';
+        }
     }
 }

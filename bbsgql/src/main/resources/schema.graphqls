@@ -8,10 +8,10 @@ type Query {
 }
 
 type Mutation {
-    editPersonInfo(personInfoInput: PersonInfoInput!, userToken: String!): EditPersonInfoResult!
+    editPersonInfo(personInfoInput: PersonInfoInput!): EditPersonInfoResult!
     signup(signup: SignupInput!): SignupResult!
-#    login(loginInput: LoginInput!): LoginResult!
-#    logout: LogoutResult!
+    login(loginInput: LoginInput!): LoginResult!
+    logout: LogoutResult!
 }
 
 schema {

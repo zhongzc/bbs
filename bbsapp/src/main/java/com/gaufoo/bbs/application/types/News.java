@@ -30,5 +30,13 @@ public interface News {
         public String title;
         public Content content;
         public String pictureBase64;
+
+        @Override
+        public String toString() {
+            return "NewsInput{" +
+                    "title='" + title + '\'' +
+                    ", content=" + content +
+                    '}';
+        }
     }
 }

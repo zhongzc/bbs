@@ -24,6 +24,18 @@ public interface PersonalInformation {
         public String grade;
         public String gender;
         public String username;
+
+        @Override
+        public String toString() {
+            return "PersonInfoInput{" +
+                    "introduction='" + introduction + '\'' +
+                    ", major='" + major + '\'' +
+                    ", school='" + school + '\'' +
+                    ", grade='" + grade + '\'' +
+                    ", gender='" + gender + '\'' +
+                    ", username='" + username + '\'' +
+                    '}';
+        }
     }
 
     interface PersonInfoResult {}

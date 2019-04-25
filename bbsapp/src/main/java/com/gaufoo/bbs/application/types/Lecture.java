@@ -41,5 +41,17 @@ public interface Lecture {
         public Long time;
         public String lecturer;
         public String note;
+
+        @Override
+        public String toString() {
+            return "LectureInput{" +
+                    "title='" + title + '\'' +
+                    ", content='" + content + '\'' +
+                    ", position='" + position + '\'' +
+                    ", time=" + time +
+                    ", lecturer='" + lecturer + '\'' +
+                    ", note='" + note + '\'' +
+                    '}';
+        }
     }
 }

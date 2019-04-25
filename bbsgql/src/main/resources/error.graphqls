@@ -2,3 +2,7 @@ type Error {
     errCode: Int!
     msg: String
 }
+
+type Ok {
+    ok: Boolean!
+}

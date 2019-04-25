@@ -45,16 +45,41 @@ public interface Entertainment {
     class EntertainmentInput {
         public String title;
         public Content content;
+
+        @Override
+        public String toString() {
+            return "EntertainmentInput{" +
+                    "title='" + title + '\'' +
+                    ", content=" + content +
+                    '}';
+        }
     }
 
     class EntertainmentCommentInput {
         public String postIdCommenting;
         public Content content;
+
+        @Override
+        public String toString() {
+            return "EntertainmentCommentInput{" +
+                    "postIdCommenting='" + postIdCommenting + '\'' +
+                    ", content=" + content +
+                    '}';
+        }
     }
 
     class EntertainmentReplyInput {
         public String commentIdReplying;
         public Content content;
         public String replyTo;
+
+        @Override
+        public String toString() {
+            return "EntertainmentReplyInput{" +
+                    "commentIdReplying='" + commentIdReplying + '\'' +
+                    ", content=" + content +
+                    ", replyTo='" + replyTo + '\'' +
+                    '}';
+        }
     }
 }

@@ -50,11 +50,28 @@ public interface SchoolHeat {
     class SchoolHeatCommentInput {
         public String postIdCommenting;
         public Content content;
+
+        @Override
+        public String toString() {
+            return "SchoolHeatCommentInput{" +
+                    "postIdCommenting='" + postIdCommenting + '\'' +
+                    ", content=" + content +
+                    '}';
+        }
     }
 
     class SchoolHeatReplyInput {
         public String commentIdReplying;
         public Content content;
         public String replyTo;
+
+        @Override
+        public String toString() {
+            return "SchoolHeatReplyInput{" +
+                    "commentIdReplying='" + commentIdReplying + '\'' +
+                    ", content=" + content +
+                    ", replyTo='" + replyTo + '\'' +
+                    '}';
+        }
     }
 }

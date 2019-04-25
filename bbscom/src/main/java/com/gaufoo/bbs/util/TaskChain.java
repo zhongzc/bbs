@@ -9,6 +9,7 @@ public interface TaskChain {
     interface Procedure<U, T> {
         <R> Procedure<U, R> then(Function<T, Procedure<U, R>> fn);
         <E> Procedure<E, T> mapE(Function<U, E> efn);
+        <R> R reduce(Function<U, R> efn, Function<T, R> fn);
         boolean isSuccessful();
         Optional<U> retrieveError();
         Optional<T> retrieveResult();
@@ -57,6 +58,11 @@ public interface TaskChain {
         }
 
         @Override
+        public <R> R reduce(Function<U, R> efn, Function<T, R> fn) {
+            return fn.apply(result);
+        }
+
+        @Override
         public boolean isSuccessful() {
             return true;
         }
@@ -95,6 +101,11 @@ public interface TaskChain {
         @Override
         public <E> Procedure<E, T> mapE(Function<U, E> efn) {
             return Fail.of(efn.apply(error));
+        }
+
+        @Override
+        public <R> R reduce(Function<U, R> efn, Function<T, R> fn) {
+            return efn.apply(error);
         }
 
         @Override

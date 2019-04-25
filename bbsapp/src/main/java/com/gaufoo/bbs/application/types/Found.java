@@ -43,5 +43,16 @@ public interface Found {
         public String pictureBase64;
         public String contact;
         public Long foundTime;
+
+        @Override
+        public String toString() {
+            return "FoundInput{" +
+                    "itemName='" + itemName + '\'' +
+                    ", description='" + description + '\'' +
+                    ", position='" + position + '\'' +
+                    ", contact='" + contact + '\'' +
+                    ", foundTime=" + foundTime +
+                    '}';
+        }
     }
 }

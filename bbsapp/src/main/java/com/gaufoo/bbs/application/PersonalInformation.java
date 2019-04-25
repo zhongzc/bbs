@@ -14,9 +14,12 @@ import com.gaufoo.bbs.components.user.common.UserInfo;
 import com.gaufoo.bbs.util.TaskChain.Fail;
 import com.gaufoo.bbs.util.TaskChain.Procedure;
 import com.gaufoo.bbs.util.TaskChain.Result;
+import com.sun.istack.internal.Nullable;
 
+import javax.swing.text.html.Option;
 import java.net.URI;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static com.gaufoo.bbs.application.Commons.fetchPersonalInfo;
@@ -25,44 +28,38 @@ import static com.gaufoo.bbs.application.types.PersonalInformation.*;
 
 public class PersonalInformation {
     public static PersonInfoResult personInfo(String id) {
-        Procedure<ErrorCode, PersonalInfo> personInfoProc = fetchPersonalInfo(UserId.of(id));
-
-        if (personInfoProc.isSuccessful()) return personInfoProc.retrieveResult().get();
-        else return Error.of(personInfoProc.retrieveError().get());
+        return fetchPersonalInfo(UserId.of(id))
+                .reduce(Error::of, r -> r);
     }
 
     public static EditPersonInfoResult editPersonInfo(PersonInfoInput input, String userToken) {
-        Procedure<ErrorCode, PersonalInfo> proc = Commons.fetchUserId(UserToken.of(userToken)).then(userId ->
-                Procedure.fromOptional(componentFactory.user.userInfo(userId), ErrorCode.UserNonExist).then(oldUserInfo -> {
-                    UserFactory users = componentFactory.user;
-                    return Result.<ErrorCode, PersonalInfo>of(null)
-                            .then(ig0 -> {
-                                if (input.gender == null) return Result.of(null);
-                                return updateGender(userId, input.gender, oldUserInfo.gender);
-                            }).then(ig1 -> {
-                                if (input.username == null) return Result.of(null);
-                                return Result.of(users.changeNickname(userId, input.username), () -> users.changeNickname(userId, oldUserInfo.nickname));
-                            }).then(ig2 -> {
-                                if (input.grade == null) return Result.of(null);
-                                return Result.of(users.changeGrade(userId, input.grade), () -> users.changeGrade(userId, oldUserInfo.grade));
-                            }).then(ig3 -> {
-                                if (input.introduction == null) return Result.of(null);
-                                return Result.of(users.changeIntroduction(userId, input.introduction), () -> users.changeIntroduction(userId, oldUserInfo.introduction));
-                            }).then(ig4 -> {
-                                if (input.major == null) return Result.of(null);
-                                return updateMajor(userId, input.major, MajorCode.of(oldUserInfo.majorCode));
-                            }).then(ig5 -> {
-                                if (input.school == null) return Result.of(null);
-                                return updateSchool(userId, input.school, MajorCode.of(oldUserInfo.majorCode));
-                            }).then(ig6 -> {
-                                if (input.pictureBase64 == null) return Result.of(null);
-                                return updateImage(userId, input.pictureBase64, oldUserInfo.profilePicIdentifier);
-                            }).then(updatedFileId -> {
-                                return Result.of(modOldPersonInfo(userId, oldUserInfo, input, updatedFileId));
-                            });
-                }));
-        if (proc.isSuccessful()) return proc.retrieveResult().get();
-        else return Error.of(proc.retrieveError().get());
+        UserFactory users = componentFactory.user;
+        return Commons.fetchUserId(UserToken.of(userToken))
+                .then(userId -> Procedure.fromOptional(users.userInfo(userId), ErrorCode.UserNonExist)
+                        .then(oldUserInfo -> Result.<ErrorCode, PersonalInfo>of(null)
+                        .then(ig0 -> {
+                            if (input.gender == null) return Result.of(null);
+                            return updateGender(userId, input.gender, oldUserInfo.gender);
+                        }).then(ig1 -> {
+                            if (input.username == null) return Result.of(null);
+                            return Result.of(users.changeNickname(userId, input.username), () -> users.changeNickname(userId, oldUserInfo.nickname));
+                        }).then(ig2 -> {
+                            if (input.grade == null) return Result.of(null);
+                            return Result.of(users.changeGrade(userId, input.grade), () -> users.changeGrade(userId, oldUserInfo.grade));
+                        }).then(ig3 -> {
+                            if (input.introduction == null) return Result.of(null);
+                            return Result.of(users.changeIntroduction(userId, input.introduction), () -> users.changeIntroduction(userId, oldUserInfo.introduction));
+                        }).then(ig4 -> {
+                            if (input.major == null) return Result.of(null);
+                            return updateMajor(userId, input.major, MajorCode.of(oldUserInfo.majorCode));
+                        }).then(ig5 -> {
+                            if (input.school == null) return Result.of(null);
+                            return updateSchool(userId, input.school, MajorCode.of(oldUserInfo.majorCode));
+                        }).then(ig6 -> {
+                            if (input.pictureBase64 == null) return Result.of(null);
+                            return updateImage(userId, input.pictureBase64, oldUserInfo.profilePicIdentifier);
+                        }).then(updatedFileId -> Result.of(modOldPersonInfo(userId, oldUserInfo, input, updatedFileId)))))
+                .reduce(Error::of, r -> r);
     }
 
     public static List<String> allMajors() {
@@ -81,7 +78,7 @@ public class PersonalInformation {
         ).orElse(new LinkedList<>());
     }
 
-    public static PersonalInfo consPersonalInfo(UserId userId, UserInfo userInfo) {
+    static PersonalInfo consPersonalInfo(UserId userId, UserInfo userInfo) {
         return new PersonalInfo() {
             public String getIntroduction() { return userInfo.introduction; }
             public String getMajor()        { return Optional.ofNullable(userInfo.majorCode).map(c -> factorOutMajor(MajorCode.of(c))).orElse(null); }
@@ -89,7 +86,7 @@ public class PersonalInformation {
             public String getGrade()        { return userInfo.grade; }
             public String getGender()       { return Optional.ofNullable(userInfo.gender).map(Objects::toString).orElse(null); }
             public String getUsername()     { return userInfo.nickname; }
-            public String getUserId()       { return userId.toString(); }
+            public String getUserId()       { return userId.value; }
             public String getPictureUrl()   { return Optional.ofNullable(userInfo.profilePicIdentifier).map(u -> factorOutPictureUrl(FileId.of(u))).orElse(null) ; }
         };
     }
@@ -157,22 +154,34 @@ public class PersonalInformation {
         });
     }
 
-    private static PersonalInfo modOldPersonInfo(UserId userId, UserInfo oldUserInfo, PersonInfoInput in, FileId updatedId) {
+    private static PersonalInfo modOldPersonInfo(UserId userId, UserInfo oldUserInfo, PersonInfoInput in, @Nullable FileId updatedId) {
         return new PersonalInfo() {
-            public String getIntroduction() { return Optional.ofNullable(in.introduction).orElse(oldUserInfo.introduction); }
-            public String getMajor()        { return Optional.ofNullable(in.major).orElse(factorOutMajor(MajorCode.of(oldUserInfo.majorCode))); }
-            public String getSchool()       { return Optional.ofNullable(in.school).orElse(factorOutSchool(MajorCode.of(oldUserInfo.majorCode))); }
-            public String getGrade()        { return Optional.ofNullable(in.grade).orElse(oldUserInfo.grade); }
-            public String getGender()       { return Optional.ofNullable(in.gender).orElse(oldUserInfo.gender.toString()); }
-            public String getUsername()     { return Optional.ofNullable(in.username).orElse(oldUserInfo.nickname); }
+            public String getIntroduction() { return preferNew(in.introduction, oldUserInfo.introduction); }
+            public String getMajor()        { return preferNew(in.major, oldUserInfo.majorCode, oc -> factorOutMajor(MajorCode.of(oc))); }
+            public String getSchool()       { return preferNew(in.school, oldUserInfo.majorCode, oc -> factorOutSchool(MajorCode.of(oc))); }
+            public String getGrade()        { return preferNew(in.grade, oldUserInfo.grade); }
+            public String getGender()       { return preferNew(in.gender, oldUserInfo.gender, Object::toString); }
+            public String getUsername()     { return preferNew(in.username, oldUserInfo.nickname); }
             public String getPictureUrl() {
-                return factorOutPictureUrl(Optional.ofNullable(in.pictureBase64)
-                        .map(ig -> FileId.of(oldUserInfo.profilePicIdentifier))
-                        .orElse(updatedId)
-                );
+                return Optional.ofNullable(in.pictureBase64)
+                        .map(pictureIsModified -> factorOutPictureUrl(updatedId))
+                        .orElseGet(() -> Optional.ofNullable(oldUserInfo.profilePicIdentifier)
+                                .map(oldPicture -> factorOutPictureUrl(FileId.of(oldPicture)))
+                                .orElse(null));
             }
             public String getUserId()       { return userId.value; }
         };
+    }
+
+    private static <T, U> T preferNew(T newItem, U oldItem, Function<U ,T> oldTransformer) {
+        if (newItem == null) {
+            if (oldItem == null) return null;
+            else return oldTransformer.apply(oldItem);
+        } else return newItem;
+    }
+
+    private static <T> T preferNew(T newItem, T oldItem) {
+        return preferNew(newItem, oldItem, i -> i);
     }
 
 
@@ -200,14 +209,5 @@ public class PersonalInformation {
 
     private static Optional<School> parseSchool(String schoolStr) {
         return Arrays.stream(School.values()).filter(m -> m.toString().equals(schoolStr)).findFirst();
-    }
-
-
-
-    public static void main(String[] args) {
-        System.out.println(parseGender("male").get());
-        System.out.println(parseGender("男").get());
-        System.out.println(parseGender("其他").get());
-        System.out.println(parseGender("secret").get());
     }
 }
