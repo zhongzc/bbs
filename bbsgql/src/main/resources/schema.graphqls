@@ -2,6 +2,7 @@ type Query {
     personInfo(id: ID!): PersonInfoResult!
     allMajors: [String!]!
     allSchools: [String!]!
+    allCourses: [String!]!
     majorsIn(school: String!): [String!]!
 
     currentUser: CurrentUserResult!

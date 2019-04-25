@@ -27,6 +27,10 @@ public class Query implements GraphQLQueryResolver {
         return PersonalInformation.allSchools();
     }
 
+    public List<String> allCourses() {
+        return PersonalInformation.allCourses();
+    }
+
     public List<String> majorsIn(String school) {
         return PersonalInformation.majorsIn(school);
     }

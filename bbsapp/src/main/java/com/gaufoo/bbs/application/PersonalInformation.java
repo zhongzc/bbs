@@ -5,6 +5,7 @@ import com.gaufoo.bbs.application.error.ErrorCode;
 import com.gaufoo.bbs.application.util.StaticResourceConfig;
 import com.gaufoo.bbs.components.authenticator.common.UserToken;
 import com.gaufoo.bbs.components.file.common.FileId;
+import com.gaufoo.bbs.components.scutCourse.CourseFactory;
 import com.gaufoo.bbs.components.scutMajor.common.Major;
 import com.gaufoo.bbs.components.scutMajor.common.MajorCode;
 import com.gaufoo.bbs.components.scutMajor.common.School;
@@ -68,6 +69,11 @@ public class PersonalInformation {
 
     public static List<String> allSchools() {
         return Arrays.stream(School.values()).map(Enum::toString).collect(Collectors.toList());
+    }
+
+    public static List<String> allCourses() {
+        CourseFactory courseFactory = componentFactory.course;
+        return courseFactory.allCourses().map(c -> courseFactory.generateCourseCode(c).value).collect(Collectors.toList());
     }
 
     public static List<String> majorsIn(String school) {
