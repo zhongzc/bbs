@@ -6,6 +6,7 @@ import com.gaufoo.bbs.application.error.Error;
 import com.gaufoo.bbs.application.error.Ok;
 import com.gaufoo.bbs.application.types.AccountAndPassword;
 import com.gaufoo.bbs.application.types.Authentication;
+import com.gaufoo.bbs.application.types.Found;
 import com.gaufoo.bbs.application.types.PersonalInformation;
 import com.gaufoo.bbs.application.util.StaticResourceConfig;
 import com.gaufoo.bbs.application.util.StaticResourceConfig.FileType;
@@ -51,6 +52,8 @@ public class Application implements WebMvcConfigurer {
                 Authentication.LoggedInToken.class,
                 Ok.class,
                 AccountAndPassword.ResetPassToken.class,
+                Found.MultiFoundInfos.class,
+                Found.FoundInfo.class,
         };
         SchemaParserDictionary schemaParserDictionary = new SchemaParserDictionary();
         for(Class<?> clazz: subUnionTypes) {

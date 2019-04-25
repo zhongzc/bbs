@@ -1,18 +1,20 @@
 package com.gaufoo.bbs.gql;
 
 import com.coxautodev.graphql.tools.GraphQLQueryResolver;
+import com.gaufoo.bbs.application.Authentication;
+import com.gaufoo.bbs.application.Found;
 import com.gaufoo.bbs.application.PersonalInformation;
 import com.gaufoo.bbs.application.error.Error;
 import com.gaufoo.bbs.application.error.ErrorCode;
-import com.gaufoo.bbs.application.Authentication;
 import com.gaufoo.bbs.gql.util.Utils;
 import graphql.schema.DataFetchingEnvironment;
-import org.springframework.stereotype.Component;
-
-import static com.gaufoo.bbs.application.types.PersonalInformation.*;
-import static com.gaufoo.bbs.application.types.Authentication.*;
 
 import java.util.List;
+
+import static com.gaufoo.bbs.application.types.Authentication.CurrentUserResult;
+import static com.gaufoo.bbs.application.types.Found.AllFoundsResult;
+import static com.gaufoo.bbs.application.types.Found.FoundInfoResult;
+import static com.gaufoo.bbs.application.types.PersonalInformation.PersonInfoResult;
 
 public class Query implements GraphQLQueryResolver {
     public PersonInfoResult personInfo(String id) {
@@ -39,6 +41,14 @@ public class Query implements GraphQLQueryResolver {
         return Utils.getAuthToken(env).map(
                 Authentication::currentUser
         ).orElse(authError);
+    }
+
+    public AllFoundsResult allFounds(Long skip, Long first) {
+        return Found.allFounds(first, skip);
+    }
+
+    public FoundInfoResult foundInfo(String id) {
+        return Found.foundInfo(id);
     }
 
     private static Error authError = Error.of(ErrorCode.NotLoggedIn);

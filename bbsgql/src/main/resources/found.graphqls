@@ -24,7 +24,7 @@ type FoundInfo {
     name: String!
     description: String!
     position: String!
-    pictureUrl: String!
+    pictureURL: String!
     createTime: Long!
     contact: String!
     foundTime: Long!
