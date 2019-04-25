@@ -30,7 +30,8 @@ public class FileFactoryFileSystemRepository implements FileFactoryRepository {
         if (stateFilePath.toFile().exists()) {
             try {
                 String json = new String(Files.readAllBytes(stateFilePath), StandardCharsets.UTF_8);
-                Map<String, String> tmpMap = gson.fromJson(json, new TypeToken<HashMap<String, String>>(){}.getType());
+                Map<String, String> tmpMap = gson.fromJson(json, new TypeToken<HashMap<String, String>>() {
+                }.getType());
                 idToFilename.putAll(tmpMap);
             } catch (IOException e) {
                 e.printStackTrace();
@@ -48,6 +49,7 @@ public class FileFactoryFileSystemRepository implements FileFactoryRepository {
             idToFilename.put(fileId.value, filename);
             return true;
         } catch (IOException e) {
+            e.printStackTrace();
             return false;
         }
     }
@@ -77,7 +79,8 @@ public class FileFactoryFileSystemRepository implements FileFactoryRepository {
             idToFilename.remove(id.value);
             Files.delete(directory.resolve(id.value));
             updateStateFile();
-        } catch (IOException ignored) {}
+        } catch (IOException ignored) {
+        }
     }
 
     public static FileFactoryRepository get(Path directory) {

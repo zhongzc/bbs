@@ -1,9 +1,6 @@
 package com.gaufoo.bbs.application.error;
 
-import com.gaufoo.bbs.application.types.AccountAndPassword;
-import com.gaufoo.bbs.application.types.Authentication;
-import com.gaufoo.bbs.application.types.Found;
-import com.gaufoo.bbs.application.types.PersonalInformation;
+import com.gaufoo.bbs.application.types.*;
 
 public class Error implements
         PersonalInformation.PersonInfoResult,
@@ -17,7 +14,8 @@ public class Error implements
         Found.FoundInfoResult,
         Found.CreateFoundResult,
         Found.DeleteFoundResult,
-        Found.ClaimFoundResult
+        Found.ClaimFoundResult,
+        SchoolHeat.CreateSchoolHeatResult
 {
     private Integer errCode;
     private String msg;

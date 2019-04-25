@@ -1,7 +1,8 @@
 package com.gaufoo.bbs.util;
 
-import scala.Int;
-
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 
@@ -14,6 +15,14 @@ public interface TaskChain {
         boolean isSuccessful();
         Optional<U> retrieveError();
         Optional<T> retrieveResult();
+
+        static <U, T> Procedure<U, List<T>> sequence(List<Procedure<U, T>> as) {
+            Procedure<U, List<T>> res = Result.of(new ArrayList<>());
+            for (Procedure<U, T> a : as) {
+                res = res.then(l -> a.mapR(p -> {l.add(p); return l;}));
+            }
+            return res;
+        }
 
         static <U, T> Procedure<U, T> fromOptional(Optional<T> optional, U error, Runnable rollback) {
             return optional.map(i -> (Procedure<U, T>) Result.<U, T>of(i, rollback)).orElse(new Fail<>(error));

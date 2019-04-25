@@ -14,13 +14,15 @@ public interface Content {
     }
 
     class ContentInput {
-        public List<ContentItemInput> inputs;
+        public List<ContentElemInput> elems;
     }
-    interface ContentItemInput {}
-    class PictureInput implements ContentItemInput {
-        public String base64Picture;
+    class ContentElemInput {
+        public ElemType type;
+        public String str;
     }
-    class ParagraphInput implements ContentItemInput {
-        public String text;
+    enum ElemType {
+        Picture,
+        Text
     }
+
 }

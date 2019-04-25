@@ -38,6 +38,10 @@ public enum ErrorCode {
     ClaimFoundFailed(30),
     PermissionDenied(31),
 
+    CreatePostFailed(98),
+    UnsupportedOperation(99),
+    SaveFileFailed(100)
+
     ;final Integer innerVal;
     ErrorCode(Integer bindingVal) {
         innerVal = bindingVal;
@@ -74,6 +78,7 @@ public enum ErrorCode {
         put(ErrorCode.ClaimFoundFailed, "认领寻物失败");
         put(ErrorCode.PermissionDenied, "无操作权限");
 
+        put(ErrorCode.SaveFileFailed, "创建文件失败");
         // add more error code mapping here
     }};
 
