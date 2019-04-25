@@ -14,7 +14,6 @@ public interface CourseFactory {
     Optional<Course> getCourseFromCode(CourseCode courseCode);
 
     static CourseFactory defau1t() {
-        // FIXME
-        return null;
+        return new CourseFactoryImpl();
     }
 }

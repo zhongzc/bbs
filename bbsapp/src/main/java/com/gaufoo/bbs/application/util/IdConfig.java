@@ -14,8 +14,9 @@ public class IdConfig {
     public final String content;
     public final String lostFoundImages;
     public final String contentImages;
+    public final String news;
 
-    public IdConfig(String user, String userProfiles, String lost, String found, String schoolHeat, String entertainment, String lecture, String learningResource, String comment, String reply, String content, String lostFoundImages, String contentImages) {
+    public IdConfig(String user, String userProfiles, String lost, String found, String schoolHeat, String entertainment, String lecture, String learningResource, String comment, String reply, String content, String lostFoundImages, String contentImages, String news) {
         this.user = user;
         this.userProfiles = userProfiles;
         this.lost = lost;
@@ -29,9 +30,10 @@ public class IdConfig {
         this.content = content;
         this.lostFoundImages = lostFoundImages;
         this.contentImages = contentImages;
+        this.news = news;
     }
 
     public static IdConfig defau1t() {
-        return new IdConfig("user-id", "user-profile-id", "lost-id", "found-id", "school-heat-id", "entertainment-id", "lecture", "learning-resource-id", "comment-id", "reply-id", "content-id", "lost-found-images", "content-images");
+        return new IdConfig("user-id", "user-profile-id", "lost-id", "found-id", "school-heat-id", "entertainment-id", "lecture", "learning-resource-id", "comment-id", "reply-id", "content-id", "lost-found-images", "content-images", "news");
     }
 }

@@ -42,6 +42,9 @@ import com.gaufoo.bbs.components.lecture.LectureSstRepository;
 import com.gaufoo.bbs.components.lost.Lost;
 import com.gaufoo.bbs.components.lost.LostRepository;
 import com.gaufoo.bbs.components.lost.LostSstRepository;
+import com.gaufoo.bbs.components.news.News;
+import com.gaufoo.bbs.components.news.NewsRepository;
+import com.gaufoo.bbs.components.news.NewsSstRepository;
 import com.gaufoo.bbs.components.schoolHeat.SchoolHeat;
 import com.gaufoo.bbs.components.schoolHeat.SchoolHeatRepository;
 import com.gaufoo.bbs.components.schoolHeat.SchoolHeatSstRepository;
@@ -72,6 +75,7 @@ public class ComponentFactory {
     public final Authenticator authenticator;
     public final MajorFactory major;
     public final CourseFactory course;
+    public final News news;
     public final Lost lost;
     public final Found found;
     public final SchoolHeat schoolHeat;
@@ -119,6 +123,11 @@ public class ComponentFactory {
 
         //
         this.course = CourseFactory.defau1t();
+
+        //
+        NewsRepository newsRepository = NewsSstRepository.get(sstPathConfig.news());
+        reps.add(newsRepository::shutdown);
+        this.news = News.defau1t(newsRepository, IdGenerator.seqInteger(idConfig.news, idRepository));
 
         //
         LostRepository lostRepository = LostSstRepository.get(sstPathConfig.lost());
