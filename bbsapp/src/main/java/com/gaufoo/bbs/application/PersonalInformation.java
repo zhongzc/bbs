@@ -110,10 +110,8 @@ public class PersonalInformation {
     }
 
     private static String factorOutPictureUrl(FileId fileId) {
-        Optional<String> ouri = componentFactory.userProfiles.fileURI(fileId);
-        return ouri.map(fileUri ->
-                componentFactory.staticResourceConfig.makeUrl(StaticResourceConfig.FileType.UserProfileImage, URI.create(fileUri)))
-                .orElse(null);
+        return Commons.fetchPictureUrl(componentFactory.userProfiles, StaticResourceConfig.FileType.UserProfileImage, fileId)
+                .reduce(e -> null, i -> i);
     }
 
     private static Procedure<ErrorCode, Boolean> updateGender(UserId userId, String newGenderStr, UserInfo.Gender oldGender) {

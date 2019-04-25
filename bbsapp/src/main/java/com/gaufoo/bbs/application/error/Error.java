@@ -2,6 +2,7 @@ package com.gaufoo.bbs.application.error;
 
 import com.gaufoo.bbs.application.types.AccountAndPassword;
 import com.gaufoo.bbs.application.types.Authentication;
+import com.gaufoo.bbs.application.types.Found;
 import com.gaufoo.bbs.application.types.PersonalInformation;
 
 public class Error implements
@@ -12,7 +13,8 @@ public class Error implements
         Authentication.LoginResult,
         Authentication.LogoutResult,
         AccountAndPassword.ConfirmPasswordResult,
-        AccountAndPassword.ChangePasswordResult
+        AccountAndPassword.ChangePasswordResult,
+        Found.FoundInfoResult
 {
     private Integer errCode;
     private String msg;

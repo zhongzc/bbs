@@ -30,6 +30,8 @@ public enum ErrorCode {
     NotLoggedIn(22),
     CreateUserFailed(23),
     AuthenticateFailed(24),
+    FileNotFound(25),
+    FoundPostNonExist(26),
 
     ;final Integer innerVal;
     ErrorCode(Integer bindingVal) {
@@ -59,6 +61,8 @@ public enum ErrorCode {
         put(ErrorCode.NotLoggedIn, "用户尚未登录");
         put(ErrorCode.CreateUserFailed, "创建用户失败");
         put(ErrorCode.AuthenticateFailed, "认证失败");
+        put(ErrorCode.FileNotFound, "找不到文件");
+        put(ErrorCode.FoundPostNonExist, "找不到失物");
 
         // add more error code mapping here
     }};

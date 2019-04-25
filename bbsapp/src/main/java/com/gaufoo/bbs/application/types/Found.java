@@ -26,6 +26,7 @@ public interface Found {
         String getContact();
         Long getCreateTime();
         Long getFoundTime();
+        PersonalInformation.PersonalInfo getClaimer();
     }
 
     interface MultiFoundInfos extends

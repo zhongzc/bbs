@@ -6,6 +6,10 @@ type Query {
     majorsIn(school: String!): [String!]!
 
     currentUser: CurrentUserResult!
+
+    allFounds(skip: Long, first: Long): AllFoundsResult!
+#   foundInfo(id: ID!): FoundInfoResult!
+#   searchFounds(object: String!): SearchFoundsResult!
 }
 
 type Mutation {
@@ -16,6 +20,10 @@ type Mutation {
 
     confirmPassword(comfirmInput: LoginInput!): ConfirmPasswordResult!
     changePassword(newPassword: String!, resetToken: String!): ChangePasswordResult!
+
+    createFound(foundInput: FoundInput!): CreateFoundResult!
+    deleteFound(id: ID!): DeleteFoundResult!
+    claimFound(foundId: ID!, userId: ID!): ClaimFoundResult!
 }
 
 schema {

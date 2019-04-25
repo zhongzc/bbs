@@ -1,0 +1,32 @@
+union FoundInfoResult = Error | FoundInfo
+union CreateFoundResult = Error | FoundInfo
+union DeleteFoundResult = Error | Ok
+union ClaimFoundResult = Error | FoundInfo
+union AllFoundsResult = Error | MultiFoundInfos
+union SearchFoundsResult = Error | MultiFoundInfos
+
+input FoundInput {
+    itemName: String!
+    description: String!
+    position: String
+    pictureBase64: String
+    contact: String
+}
+
+type MultiFoundInfos {
+    founds: [FoundInfo!]!
+    totalCount: Long!
+}
+
+type FoundInfo {
+    id: ID!
+    publisher: PersonalInfo!
+    name: String!
+    description: String!
+    position: String!
+    pictureUrl: String!
+    createTime: Long!
+    contact: String!
+    foundTime: Long!
+    claimer: PersonalInfo
+}

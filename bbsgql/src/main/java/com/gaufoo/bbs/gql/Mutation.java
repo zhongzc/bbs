@@ -1,18 +1,19 @@
 package com.gaufoo.bbs.gql;
 
 import com.coxautodev.graphql.tools.GraphQLMutationResolver;
+import com.gaufoo.bbs.application.AccountAndPassword;
+import com.gaufoo.bbs.application.Authentication;
 import com.gaufoo.bbs.application.PersonalInformation;
 import com.gaufoo.bbs.application.error.Error;
 import com.gaufoo.bbs.application.error.ErrorCode;
-import com.gaufoo.bbs.application.Authentication;
 import com.gaufoo.bbs.gql.util.Utils;
 import graphql.schema.DataFetchingEnvironment;
-import com.gaufoo.bbs.application.AccountAndPassword;
-import org.springframework.stereotype.Component;
 
-import static com.gaufoo.bbs.application.types.PersonalInformation.*;
+import static com.gaufoo.bbs.application.types.AccountAndPassword.ChangePasswordResult;
+import static com.gaufoo.bbs.application.types.AccountAndPassword.ConfirmPasswordResult;
 import static com.gaufoo.bbs.application.types.Authentication.*;
-import static com.gaufoo.bbs.application.types.AccountAndPassword.*;
+import static com.gaufoo.bbs.application.types.PersonalInformation.EditPersonInfoResult;
+import static com.gaufoo.bbs.application.types.PersonalInformation.PersonInfoInput;
 
 public class Mutation implements GraphQLMutationResolver {
     public EditPersonInfoResult editPersonInfo(PersonInfoInput input, DataFetchingEnvironment env) {
