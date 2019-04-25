@@ -1,5 +1,6 @@
 package com.gaufoo.bbs.application.error;
 
+import com.gaufoo.bbs.application.types.AccountAndPassword;
 import com.gaufoo.bbs.application.types.Authentication;
 import com.gaufoo.bbs.application.types.PersonalInformation;
 
@@ -9,7 +10,9 @@ public class Error implements
         Authentication.CurrentUserResult,
         Authentication.SignupResult,
         Authentication.LoginResult,
-        Authentication.LogoutResult
+        Authentication.LogoutResult,
+        AccountAndPassword.ConfirmPasswordResult,
+        AccountAndPassword.ChangePasswordResult
 {
     private Integer errCode;
     private String msg;

@@ -7,9 +7,12 @@ import com.gaufoo.bbs.application.error.ErrorCode;
 import com.gaufoo.bbs.application.Authentication;
 import com.gaufoo.bbs.gql.util.Utils;
 import graphql.schema.DataFetchingEnvironment;
+import com.gaufoo.bbs.application.AccountAndPassword;
+import org.springframework.stereotype.Component;
 
 import static com.gaufoo.bbs.application.types.PersonalInformation.*;
 import static com.gaufoo.bbs.application.types.Authentication.*;
+import static com.gaufoo.bbs.application.types.AccountAndPassword.*;
 
 public class Mutation implements GraphQLMutationResolver {
     public EditPersonInfoResult editPersonInfo(PersonInfoInput input, DataFetchingEnvironment env) {
@@ -29,6 +32,18 @@ public class Mutation implements GraphQLMutationResolver {
     public LogoutResult logout(DataFetchingEnvironment env) {
         return Utils.getAuthToken(env).map(
                 Authentication::logout
+        ).orElse(authError);
+    }
+
+    public ConfirmPasswordResult confirmPassword(LoginInput input, DataFetchingEnvironment env) {
+        return Utils.getAuthToken(env).map(
+                tkn -> AccountAndPassword.confirmPassword(input, tkn)
+        ).orElse(authError);
+    }
+
+    public ChangePasswordResult changePassword(String newPassword, DataFetchingEnvironment env) {
+        return Utils.getAuthToken(env).map(
+                tkn -> AccountAndPassword.changePassword(newPassword, tkn)
         ).orElse(authError);
     }
 

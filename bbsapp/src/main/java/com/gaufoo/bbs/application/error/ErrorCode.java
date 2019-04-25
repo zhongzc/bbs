@@ -29,6 +29,7 @@ public enum ErrorCode {
     ChangeImageFailed(21),
     NotLoggedIn(22),
     CreateUserFailed(23),
+    AuthenticateFailed(24),
 
     ;final Integer innerVal;
     ErrorCode(Integer bindingVal) {
@@ -57,6 +58,7 @@ public enum ErrorCode {
         put(ErrorCode.ChangeImageFailed, "更改头像失败");
         put(ErrorCode.NotLoggedIn, "用户尚未登录");
         put(ErrorCode.CreateUserFailed, "创建用户失败");
+        put(ErrorCode.AuthenticateFailed, "认证失败");
 
         // add more error code mapping here
     }};

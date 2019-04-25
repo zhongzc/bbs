@@ -12,6 +12,9 @@ type Mutation {
     signup(signup: SignupInput!): SignupResult!
     login(loginInput: LoginInput!): LoginResult!
     logout: LogoutResult!
+
+    confirmPassword(comfirmInput: LoginInput!): ConfirmPasswordResult!
+    changePassword(resetToken: String!, newPassword: String!): ChangePasswordResult!
 }
 
 schema {
