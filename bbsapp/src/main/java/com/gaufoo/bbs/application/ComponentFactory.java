@@ -1,9 +1,6 @@
 package com.gaufoo.bbs.application;
 
-import com.gaufoo.bbs.application.util.AuthConfig;
-import com.gaufoo.bbs.application.util.IdConfig;
-import com.gaufoo.bbs.application.util.SSTPathConfig;
-import com.gaufoo.bbs.application.util.StaticResourceConfig;
+import com.gaufoo.bbs.application.util.*;
 import com.gaufoo.bbs.components.active.Active;
 import com.gaufoo.bbs.components.active.ActiveRepository;
 import com.gaufoo.bbs.components.active.ActiveSstRepository;
@@ -59,6 +56,7 @@ import com.gaufoo.bbs.components.user.UserFactory;
 import com.gaufoo.bbs.components.user.UserFactoryRepository;
 import com.gaufoo.bbs.components.user.UserFactorySstRepository;
 
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -99,6 +97,8 @@ public class ComponentFactory {
     public ComponentFactory(StaticResourceConfig staticResourceConfig) {
         SSTPathConfig sstPathConfig = SSTPathConfig.defau1t();
         this.staticResourceConfig = staticResourceConfig;
+
+
         IdConfig idConfig = IdConfig.defau1t();
 
         //
@@ -206,5 +206,10 @@ public class ComponentFactory {
         this.reps.forEach(s -> executorService.execute(s::shutdown));
         executorService.shutdown();
         executorService.awaitTermination(Integer.MAX_VALUE, TimeUnit.MINUTES);
+    }
+
+    public static void clearFiles() {
+        Utils.deleteFileRecursively(Paths.get(System.getProperty("user.home"))
+                    .resolve("bbs-temp"));
     }
 }

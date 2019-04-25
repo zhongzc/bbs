@@ -1,11 +1,13 @@
 package com.gaufoo.bbs.application.util;
 
 import com.gaufoo.bbs.util.Tuple;
+import com.gaufoo.bbs.util.Util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.net.URI;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
@@ -28,6 +30,10 @@ public class StaticResourceConfig {
     private StaticResourceConfig(Path resourceFolder, Map<FileType, Tuple<String, String>> uriMapper) {
         this.resourceFolder = resourceFolder;
         this.uriMapper = uriMapper;
+    }
+
+    public Path baseDir() {
+        return resourceFolder;
     }
 
     public Path folderPathOf(FileType fileType) {
@@ -75,7 +81,14 @@ public class StaticResourceConfig {
             if (!isValid) {
                 throw new RuntimeException("StaticResourceConfig is invalid");
             }
+            createFolderIfNecessary();
             return new StaticResourceConfig(resourceFolder, uriMapper);
+        }
+
+        private void createFolderIfNecessary() {
+            uriMapper.values().forEach(tup -> {
+                resourceFolder.resolve(tup.left).toFile().mkdirs();
+            });
         }
     }
 

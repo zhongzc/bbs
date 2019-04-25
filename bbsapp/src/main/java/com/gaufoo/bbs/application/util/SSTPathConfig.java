@@ -45,6 +45,9 @@ public class SSTPathConfig {
         this.news = news;
         this.commentGroup = commentGroup;
     }
+    public Path baseDir() {
+        return baseDir;
+    }
 
     public Path auth() {
         return baseDir.resolve(authenticator);

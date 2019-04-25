@@ -11,6 +11,7 @@ import com.gaufoo.bbs.application.types.PersonalInformation;
 import com.gaufoo.bbs.application.util.StaticResourceConfig;
 import com.gaufoo.bbs.application.util.StaticResourceConfig.FileType;
 import com.gaufoo.bbs.gql.util.LoggingInterceptor;
+import com.gaufoo.bbs.gql.util.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.aop.framework.ProxyFactory;
@@ -65,6 +66,8 @@ public class Application implements WebMvcConfigurer {
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        ComponentFactory.clearFiles();  // fixme: remove this in production
+
         StaticResourceConfig config = StaticResourceConfig.defaultPartialConfig()
                 .addMapping(FileType.UserProfileImage, profileImgMapping)
                 .addMapping(FileType.LostFoundImage, lostFoundMapping)
@@ -91,6 +94,7 @@ public class Application implements WebMvcConfigurer {
             log.debug("ComponentFactory is shutting down..");
             try {
                 ComponentFactory.componentFactory.shutdown();
+                ComponentFactory.clearFiles();  // fixme: remove this in production
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }

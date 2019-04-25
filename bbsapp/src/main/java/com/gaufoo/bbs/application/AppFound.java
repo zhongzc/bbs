@@ -85,8 +85,7 @@ public class AppFound {
                 .then(permission -> Result.of(UserId.of(permission.userId)))
                 .mapF(ErrorCode::fromAuthError)
                 .then(userId -> Result.of(componentFactory.found.claim(FoundId.of(foundId), userId.value)))
-                .mapR(op -> op.isPresent() ? Ok.build() : Error.of(ErrorCode.ClaimFoundFailed))
-                .reduce(Error::of, i -> i);
+                .reduce(Error::of, op -> op.isPresent() ? Ok.build() : Error.of(ErrorCode.ClaimFoundFailed));
     }
 
     private static Found.FoundInfo consFoundInfo(FoundId foundId, FoundInfo foundInfo) {
