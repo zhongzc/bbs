@@ -11,6 +11,7 @@ input FoundInput {
     position: String
     pictureBase64: String
     contact: String
+    foundTime: Long
 }
 
 type MultiFoundInfos {

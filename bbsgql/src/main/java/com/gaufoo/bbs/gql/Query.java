@@ -2,7 +2,7 @@ package com.gaufoo.bbs.gql;
 
 import com.coxautodev.graphql.tools.GraphQLQueryResolver;
 import com.gaufoo.bbs.application.Authentication;
-import com.gaufoo.bbs.application.Found;
+import com.gaufoo.bbs.application.AppFound;
 import com.gaufoo.bbs.application.PersonalInformation;
 import com.gaufoo.bbs.application.error.Error;
 import com.gaufoo.bbs.application.error.ErrorCode;
@@ -44,11 +44,11 @@ public class Query implements GraphQLQueryResolver {
     }
 
     public AllFoundsResult allFounds(Long skip, Long first) {
-        return Found.allFounds(first, skip);
+        return AppFound.allFounds(first, skip);
     }
 
     public FoundInfoResult foundInfo(String id) {
-        return Found.foundInfo(id);
+        return AppFound.foundInfo(id);
     }
 
     private static Error authError = Error.of(ErrorCode.NotLoggedIn);

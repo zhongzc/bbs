@@ -21,9 +21,9 @@ type Mutation {
     confirmPassword(comfirmInput: LoginInput!): ConfirmPasswordResult!
     changePassword(newPassword: String!, resetToken: String!): ChangePasswordResult!
 
-#    createFound(foundInput: FoundInput!): CreateFoundResult!
-#    deleteFound(id: ID!): DeleteFoundResult!
-#    claimFound(foundId: ID!, userId: ID!): ClaimFoundResult!
+    createFound(foundInput: FoundInput!): CreateFoundResult!
+    deleteFound(foundId: ID!): DeleteFoundResult!
+    claimFound(foundId: ID!): ClaimFoundResult!
 }
 
 schema {

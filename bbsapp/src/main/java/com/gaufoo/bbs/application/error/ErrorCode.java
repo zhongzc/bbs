@@ -32,6 +32,11 @@ public enum ErrorCode {
     AuthenticateFailed(24),
     FileNotFound(25),
     FoundPostNonExist(26),
+    CreateFoundImageFailed(27),
+    PublishFoundFailed(28),
+    DeleteFoundFailed(29),
+    ClaimFoundFailed(30),
+    PermissionDenied(31),
 
     ;final Integer innerVal;
     ErrorCode(Integer bindingVal) {
@@ -63,6 +68,11 @@ public enum ErrorCode {
         put(ErrorCode.AuthenticateFailed, "认证失败");
         put(ErrorCode.FileNotFound, "找不到文件");
         put(ErrorCode.FoundPostNonExist, "找不到失物");
+        put(ErrorCode.CreateFoundImageFailed, "创建寻物图片失败");
+        put(ErrorCode.PublishFoundFailed, "创建寻物失败");
+        put(ErrorCode.DeleteFoundFailed, "删除寻物失败");
+        put(ErrorCode.ClaimFoundFailed, "认领寻物失败");
+        put(ErrorCode.PermissionDenied, "无操作权限");
 
         // add more error code mapping here
     }};

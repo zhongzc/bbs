@@ -6,6 +6,7 @@ import com.gaufoo.bbs.application.Authentication;
 import com.gaufoo.bbs.application.PersonalInformation;
 import com.gaufoo.bbs.application.error.Error;
 import com.gaufoo.bbs.application.error.ErrorCode;
+import com.gaufoo.bbs.application.AppFound;
 import com.gaufoo.bbs.gql.util.Utils;
 import graphql.schema.DataFetchingEnvironment;
 
@@ -14,6 +15,7 @@ import static com.gaufoo.bbs.application.types.AccountAndPassword.ConfirmPasswor
 import static com.gaufoo.bbs.application.types.Authentication.*;
 import static com.gaufoo.bbs.application.types.PersonalInformation.EditPersonInfoResult;
 import static com.gaufoo.bbs.application.types.PersonalInformation.PersonInfoInput;
+import static com.gaufoo.bbs.application.types.Found.*;
 
 public class Mutation implements GraphQLMutationResolver {
     public EditPersonInfoResult editPersonInfo(PersonInfoInput input, DataFetchingEnvironment env) {
@@ -45,6 +47,24 @@ public class Mutation implements GraphQLMutationResolver {
     public ChangePasswordResult changePassword(String newPassword, String resetToken, DataFetchingEnvironment env) {
         return Utils.getAuthToken(env).map(
                 tkn -> AccountAndPassword.changePassword(newPassword, resetToken)
+        ).orElse(authError);
+    }
+
+    public CreateFoundResult createFound(FoundInput input, DataFetchingEnvironment env) {
+        return Utils.getAuthToken(env).map(
+                tkn -> AppFound.createFound(tkn, input)
+        ).orElse(authError);
+    }
+
+    public DeleteFoundResult deleteFound(String foundId, DataFetchingEnvironment env) {
+        return Utils.getAuthToken(env).map(
+                tkn -> AppFound.deleteFound(foundId, tkn)
+        ).orElse(authError);
+    }
+
+    public ClaimFoundResult claimFound(String foundId, DataFetchingEnvironment env) {
+        return Utils.getAuthToken(env).map(
+                tkn -> AppFound.claimFound(foundId, tkn)
         ).orElse(authError);
     }
 

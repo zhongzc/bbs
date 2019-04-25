@@ -14,7 +14,10 @@ public class Error implements
         Authentication.LogoutResult,
         AccountAndPassword.ConfirmPasswordResult,
         AccountAndPassword.ChangePasswordResult,
-        Found.FoundInfoResult
+        Found.FoundInfoResult,
+        Found.CreateFoundResult,
+        Found.DeleteFoundResult,
+        Found.ClaimFoundResult
 {
     private Integer errCode;
     private String msg;
