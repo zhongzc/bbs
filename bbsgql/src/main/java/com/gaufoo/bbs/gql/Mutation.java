@@ -41,9 +41,9 @@ public class Mutation implements GraphQLMutationResolver {
         ).orElse(authError);
     }
 
-    public ChangePasswordResult changePassword(String newPassword, DataFetchingEnvironment env) {
+    public ChangePasswordResult changePassword(String newPassword, String resetToken, DataFetchingEnvironment env) {
         return Utils.getAuthToken(env).map(
-                tkn -> AccountAndPassword.changePassword(newPassword, tkn)
+                tkn -> AccountAndPassword.changePassword(newPassword, resetToken)
         ).orElse(authError);
     }
 

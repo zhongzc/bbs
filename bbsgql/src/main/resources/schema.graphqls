@@ -14,7 +14,7 @@ type Mutation {
     logout: LogoutResult!
 
     confirmPassword(comfirmInput: LoginInput!): ConfirmPasswordResult!
-    changePassword(resetToken: String!, newPassword: String!): ChangePasswordResult!
+    changePassword(newPassword: String!, resetToken: String!): ChangePasswordResult!
 }
 
 schema {
