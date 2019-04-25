@@ -12,4 +12,15 @@ public interface Content {
     interface Paragraph extends ContentItem {
         String getText();
     }
+
+    class ContentInput {
+        public List<ContentItemInput> inputs;
+    }
+    interface ContentItemInput {}
+    class PictureInput implements ContentItemInput {
+        public String base64Picture;
+    }
+    class ParagraphInput implements ContentItemInput {
+        public String text;
+    }
 }

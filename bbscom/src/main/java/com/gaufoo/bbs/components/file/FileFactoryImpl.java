@@ -24,6 +24,15 @@ public class FileFactoryImpl implements FileFactory {
     }
 
     @Override
+    public Optional<FileId> createFile(byte[] file) {
+        FileId id = FileId.of(idGenerator.generateId());
+        if (repository.saveFile(id, file, id.value)) {
+            return Optional.of(id);
+        }
+        return Optional.empty();
+    }
+
+    @Override
     public Optional<String> filename(FileId id) {
         return Optional.ofNullable(repository.getFilename(id));
     }

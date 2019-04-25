@@ -44,7 +44,7 @@ public interface LearningResource {
 
     class LearningResourceInput {
         public String title;
-        public Content content;
+        public Content.ContentInput content;
         public String course;
         public String base64AttachedFile;
 
@@ -61,7 +61,7 @@ public interface LearningResource {
 
     class LearningResourceCommentInput {
         public String postIdCommenting;
-        public Content content;
+        public Content.ContentInput content;
 
         @Override
         public String toString() {
@@ -74,7 +74,7 @@ public interface LearningResource {
 
     class LearningResourceReplyInput {
         public String commentIdReplying;
-        public Content content;
+        public Content.ContentInput content;
         public String replyTo;
 
         @Override

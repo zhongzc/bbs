@@ -10,7 +10,9 @@ import com.gaufoo.bbs.components.active.ActiveSstRepository;
 import com.gaufoo.bbs.components.authenticator.Authenticator;
 import com.gaufoo.bbs.components.authenticator.AuthenticatorRepository;
 import com.gaufoo.bbs.components.authenticator.AuthenticatorSstRepository;
-import com.gaufoo.bbs.components.commentGroup.comment.Comment;
+import com.gaufoo.bbs.components.commentGroup.CommentGroup;
+import com.gaufoo.bbs.components.commentGroup.CommentGroupRepository;
+import com.gaufoo.bbs.components.commentGroup.CommentGroupSstRepository;
 import com.gaufoo.bbs.components.commentGroup.comment.CommentRepository;
 import com.gaufoo.bbs.components.commentGroup.comment.CommentSstRepository;
 import com.gaufoo.bbs.components.commentGroup.comment.reply.ReplyRepository;
@@ -58,9 +60,7 @@ import com.gaufoo.bbs.components.user.UserFactoryRepository;
 import com.gaufoo.bbs.components.user.UserFactorySstRepository;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -84,7 +84,7 @@ public class ComponentFactory {
     public final Entertainment entertainment;
     public final Lecture lecture;
     public final LearningResource learningResource;
-    public final Comment comment;
+    public final CommentGroup commentGroup;
     public final Content content;
     public final Active active;
     public final Heat heat;
@@ -166,7 +166,9 @@ public class ComponentFactory {
         reps.add(commentRepository::shutdown);
         ReplyRepository replyRepository = ReplySstRepository.get(sstPathConfig.reply());
         reps.add(replyRepository::shutdown);
-        this.comment = Comment.defau1t(IdGenerator.seqInteger(idConfig.comment, idRepository), IdGenerator.seqInteger(idConfig.reply, idRepository), commentRepository, replyRepository);
+        CommentGroupRepository commentGroupRepository = CommentGroupSstRepository.get(sstPathConfig.commentGroup());
+        reps.add(commentGroupRepository::shutdown);
+        this.commentGroup = CommentGroup.defau1t(IdGenerator.seqInteger(idConfig.commentGroup, idRepository), IdGenerator.seqInteger(idConfig.comment, idRepository), IdGenerator.seqInteger(idConfig.reply, idRepository), commentGroupRepository, commentRepository, replyRepository);
 
         //
         ContentRepository contentRepository = ContentSstRepository.get(sstPathConfig.content());

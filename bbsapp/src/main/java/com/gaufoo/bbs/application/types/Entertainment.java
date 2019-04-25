@@ -44,7 +44,7 @@ public interface Entertainment {
 
     class EntertainmentInput {
         public String title;
-        public Content content;
+        public Content.ContentInput content;
 
         @Override
         public String toString() {
@@ -57,7 +57,7 @@ public interface Entertainment {
 
     class EntertainmentCommentInput {
         public String postIdCommenting;
-        public Content content;
+        public Content.ContentInput content;
 
         @Override
         public String toString() {
@@ -70,7 +70,7 @@ public interface Entertainment {
 
     class EntertainmentReplyInput {
         public String commentIdReplying;
-        public Content content;
+        public Content.ContentInput content;
         public String replyTo;
 
         @Override

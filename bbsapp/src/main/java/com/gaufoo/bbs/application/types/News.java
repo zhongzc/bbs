@@ -28,7 +28,7 @@ public interface News {
 
     class NewsInput {
         public String title;
-        public Content content;
+        public Content.ContentInput content;
         public String pictureBase64;
 
         @Override

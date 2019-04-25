@@ -44,12 +44,12 @@ public interface SchoolHeat {
 
     class SchoolHeatInput {
         public String title;
-        public Content content;
+        public Content.ContentInput content;
     }
 
     class SchoolHeatCommentInput {
         public String postIdCommenting;
-        public Content content;
+        public Content.ContentInput content;
 
         @Override
         public String toString() {
@@ -62,7 +62,7 @@ public interface SchoolHeat {
 
     class SchoolHeatReplyInput {
         public String commentIdReplying;
-        public Content content;
+        public Content.ContentInput content;
         public String replyTo;
 
         @Override

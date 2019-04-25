@@ -7,36 +7,29 @@ import java.util.List;
 import java.util.Objects;
 
 final public class CommentInfo {
-    // 被回复的帖子
-    public final String subject;
-    public final String content;
+    public final String contentId;
     public final String commenter;
 
-    private CommentInfo(String subject, String content, String commenter) {
-        this.subject = subject;
-        this.content = content;
+    private CommentInfo(String contentId, String commenter) {
+        this.contentId = contentId;
         this.commenter = commenter;
     }
 
-    public static CommentInfo of(String subject, String content, String commenter) {
-        return new CommentInfo(subject, content, commenter);
+    public static CommentInfo of(String contentId, String commenter) {
+        return new CommentInfo(contentId, commenter);
     }
 
-    public CommentInfo modSubject(String subject) {
-        return new CommentInfo(subject, this.content, this.commenter);
-    }
-
-    public CommentInfo modContent(String content) {
-        return new CommentInfo(this.subject, content, this.commenter);
+    public CommentInfo modContentId(String contentId) {
+        return new CommentInfo(contentId, this.commenter);
     }
 
     public CommentInfo modCommenter(String commenter) {
-        return new CommentInfo(this.subject, this.content, commenter);
+        return new CommentInfo(this.contentId, commenter);
     }
 
     @Override
     public String toString() {
-        return "CommentInfo" + "(" + "'" + this.subject + "'" + ", " + "'" + this.content + "'" + ", " + "'" + this.commenter + "'" + ')';
+        return "CommentInfo" + "(" + "'" + this.contentId + "'" + ", " + "'" + this.commenter + "'" + ')';
     }
 
     @Override
@@ -44,13 +37,12 @@ final public class CommentInfo {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         CommentInfo other = (CommentInfo) o;
-        return Objects.equals(subject, other.subject) &&
-                Objects.equals(content, other.content) &&
+        return Objects.equals(contentId, other.contentId) &&
                 Objects.equals(commenter, other.commenter);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(subject, content, commenter);
+        return Objects.hash(contentId, commenter);
     }
 }

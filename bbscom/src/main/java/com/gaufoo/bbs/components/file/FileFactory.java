@@ -8,6 +8,8 @@ import java.util.Optional;
 public interface FileFactory {
     Optional<FileId> createFile(byte[] file, String filename);
 
+    Optional<FileId> createFile(byte[] file);
+
     Optional<String> filename(FileId id);
 
     Optional<String> fileURI(FileId id);

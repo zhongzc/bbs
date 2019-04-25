@@ -36,7 +36,7 @@ public interface Lecture {
 
     class LectureInput {
         public String title;
-        public String content;
+        public Content.ContentInput content;
         public String position;
         public Long time;
         public String lecturer;
