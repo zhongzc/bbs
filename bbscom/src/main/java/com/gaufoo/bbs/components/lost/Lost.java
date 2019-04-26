@@ -18,7 +18,9 @@ public interface Lost {
 
     Optional<LostId> publishPost(LostInfo lostInfo);
 
-    Optional<LostInfo> claim(LostId lostId, String founderId) ;
+    Optional<LostInfo> claim(LostId lostId, String founderId);
+
+    Optional<LostInfo> removeClaim(LostId lostId);
 
     boolean removePost(LostId lostId);
 

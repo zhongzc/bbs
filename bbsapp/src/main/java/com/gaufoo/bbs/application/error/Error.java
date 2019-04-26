@@ -15,7 +15,12 @@ public class Error implements
         Found.CreateFoundResult,
         Found.DeleteFoundResult,
         Found.ClaimFoundResult,
+        Found.CancelClaimFoundResult,
+        Lost.DeleteLostResult,
+        Lost.ClaimLostResult,
+        Lost.CancelClaimLostResult,
         SchoolHeat.CreateSchoolHeatResult
+
 {
     private Integer errCode;
     private String msg;

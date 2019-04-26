@@ -1,7 +1,8 @@
 union FoundInfoResult = Error | FoundInfo
 union CreateFoundResult = Error | FoundInfo
 union DeleteFoundResult = Error | Ok
-union ClaimFoundResult = Error | FoundInfo
+union ClaimFoundResult = Error | Ok
+union CancelClaimFoundResult = Error | Ok
 union AllFoundsResult = Error | MultiFoundInfos
 union SearchFoundsResult = Error | MultiFoundInfos
 

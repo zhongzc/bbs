@@ -10,12 +10,11 @@ public interface Found {
     interface CreateFoundResult {}
     interface DeleteFoundResult {}
     interface ClaimFoundResult {}
+    interface CancelClaimFoundResult {}
 
     interface FoundInfo extends
             FoundInfoResult,
-            CreateFoundResult,
-            DeleteFoundResult,
-            ClaimFoundResult
+            CreateFoundResult
     {
         String getId();
         PersonalInformation.PersonalInfo getPublisher();

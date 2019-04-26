@@ -11,13 +11,18 @@ import com.gaufoo.bbs.components.file.common.FileId;
 import com.gaufoo.bbs.components.found.common.FoundId;
 import com.gaufoo.bbs.components.found.common.FoundInfo;
 import com.gaufoo.bbs.components.user.common.UserId;
+import com.gaufoo.bbs.util.TaskChain;
 import com.sun.istack.internal.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.Instant;
-import java.util.*;
+import java.util.Base64;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import static com.gaufoo.bbs.application.ComponentFactory.componentFactory;
@@ -27,22 +32,19 @@ import static com.gaufoo.bbs.util.TaskChain.*;
 public class AppFound {
     private static Logger log = LoggerFactory.getLogger(AppFound.class);
 
-    public static Found.AllFoundsResult allFounds(Long first, Long skip) {
-        final long fFirst = first == null ? Long.MAX_VALUE : first;
+    public static Found.AllFoundsResult allFounds(Long skip, Long first) {
         final long fSkip = skip == null ? 0L : skip;
+        final long fFirst = first == null ? Long.MAX_VALUE : first;
 
-        return new Found.MultiFoundInfos() {
-            public Long getTotalCount() { return componentFactory.found.allPostsCount(); }
+        Supplier<List<Found.FoundInfo>> fs = () -> componentFactory.found.allPosts()
+                .map(foundId -> componentFactory.found.postInfo(foundId)
+                        .map(foundInfo -> consFoundInfo(foundId, foundInfo))
+                        .orElse(null))
+                .filter(Objects::nonNull)
+                .skip(fSkip).limit(fFirst)
+                .collect(Collectors.toList());
 
-            public List<Found.FoundInfo> getFounds() {
-                return componentFactory.found.allPosts()
-                        .map(foundId -> componentFactory.found.postInfo(foundId)
-                                .map(foundInfo -> consFoundInfo(foundId, foundInfo))
-                                .orElse(null))
-                        .filter(Objects::nonNull)
-                        .skip(fSkip).limit(fFirst).collect(Collectors.toList());
-            }
-        };
+        return consMultiFoundsInfo(fs);
     }
 
     public static Found.FoundInfoResult foundInfo(String foundIdStr) {
@@ -52,26 +54,17 @@ public class AppFound {
                 .orElse(Error.of(ErrorCode.FoundPostNonExist));
     }
 
-    public static Found.CreateFoundResult createFound(String userToken, Found.FoundInput input) {
-
-        return componentFactory.authenticator.getLoggedUser(UserToken.of(userToken))
-                .then(permission -> Result.of(UserId.of(permission.userId)))
-                .mapF(ErrorCode::fromAuthError)
+    public static Found.CreateFoundResult createFound(Found.FoundInput input, String userToken) {
+        return Commons.fetchUserId(UserToken.of(userToken))
                 .then(userId -> addPictureIfNecessary(input.pictureBase64)
-                        .then(oFileId -> {
-                            String fileId = oFileId.map(x -> x.value).orElse(null);
-                            Optional<FoundId> oFoundId = componentFactory.found.publishPost(
-                                    FoundInfo.of(input.itemName, userId.value, input.description, input.position, fileId, input.contact, nilOrTr(input.foundTime, Instant::ofEpochMilli))
-                            );
-                            return Procedure.fromOptional(oFoundId, ErrorCode.PublishFoundFailed)
-                                    .then(foundId -> Result.of(consFoundInfo(input, foundId, userId, nilOrTr(fileId, FileId::of))));
-                })).reduce(Error::of, i -> i);
+                        .mapR(oFileId -> oFileId.orElse(null))
+                        .then(fileId -> publishFoundPost(input, userId, fileId)
+                                .mapR(fndId -> consFoundInfo(input, fndId, userId, fileId))))
+                .reduce(Error::of, i -> i);
     }
 
     public static Found.DeleteFoundResult deleteFound(String foundId, String userToken) {
-        return componentFactory.authenticator.getLoggedUser(UserToken.of(userToken))
-                .then(permission -> Result.of(UserId.of(permission.userId)))
-                .mapF(ErrorCode::fromAuthError)
+        return Commons.fetchUserId(UserToken.of(userToken))
                 .then(userId -> ensureOwnPost(userId, FoundId.of(foundId)))
                 .then(ig -> Result.of(componentFactory.found.removePost(FoundId.of(foundId))))
                 .mapR(success -> success ? Ok.build() : Error.of(ErrorCode.DeleteFoundFailed))
@@ -79,17 +72,35 @@ public class AppFound {
     }
 
     public static Found.ClaimFoundResult claimFound(String foundId, String userToken) {
-        return componentFactory.authenticator.getLoggedUser(UserToken.of(userToken))
-                .then(permission -> Result.of(UserId.of(permission.userId)))
-                .mapF(ErrorCode::fromAuthError)
+        return Commons.fetchUserId(UserToken.of(userToken))
                 .then(userId -> Result.of(componentFactory.found.claim(FoundId.of(foundId), userId.value)))
                 .reduce(Error::of, op -> op.isPresent() ? Ok.build() : Error.of(ErrorCode.ClaimFoundFailed));
     }
 
+    public static Found.CancelClaimFoundResult cancelClaimFound(String foundId, String userToken) {
+        Procedure<ErrorCode, UserId> userIdProc = Commons.fetchUserId(UserToken.of(userToken));
+        Procedure<ErrorCode, FoundInfo> foundInfoProc = Procedure.fromOptional(
+                componentFactory.found.postInfo(FoundId.of(foundId)),
+                ErrorCode.FoundPostNonExist);
+
+        return userIdProc.then(userId -> foundInfoProc
+                .then(foundInfo -> Result.of(Objects.equals(foundInfo.losterId, userId.value)))
+                .then(eq -> eq ? Result.of(null) : Fail.of(ErrorCode.PermissionDenied))
+                .then(continued -> Procedure.fromOptional(componentFactory.found.removeClaim(FoundId.of(foundId)), ErrorCode.CancelClaimFailed))
+        ).reduce(Error::of, foundInfo -> Ok.build());
+    }
+
     public static void reset() {
-        componentFactory.found.allPosts().forEach(id -> {
-            componentFactory.found.removePost(id);
-        });
+        componentFactory.found.allPosts().forEach(id ->
+                componentFactory.found.removePost(id)
+        );
+    }
+
+    private static Procedure<ErrorCode, FoundId> publishFoundPost(Found.FoundInput input, UserId publisher, @Nullable FileId pictureId) {
+        return Procedure.fromOptional(componentFactory.found.publishPost(
+                FoundInfo.of(input.itemName, publisher.value, input.description, input.position, nilOrTr(pictureId, x -> x.value),
+                        input.contact, nilOrTr(input.foundTime, Instant::ofEpochMilli))
+        ), ErrorCode.PublishFoundFailed);
     }
 
     private static Found.FoundInfo consFoundInfo(FoundId foundId, FoundInfo foundInfo) {
@@ -103,13 +114,11 @@ public class AppFound {
             public Long getCreateTime()     { return foundInfo.createTime.toEpochMilli(); }
             public Long getFoundTime()      { return foundInfo.foundTime.toEpochMilli(); }
             public PersonalInformation.PersonalInfo getPublisher() {
-                return Commons.fetchPersonalInfo(UserId.of(foundInfo.publisherId))
-                        .reduce(AppFound::warnNil, r -> r);
+                return Commons.fetchPersonalInfo(UserId.of(foundInfo.publisherId)).reduce(AppFound::warnNil, r -> r);
             }
             public PersonalInformation.PersonalInfo getClaimer() {
                 if (foundInfo.losterId == null) return null;
-                return Commons.fetchPersonalInfo(UserId.of(foundInfo.losterId))
-                        .reduce(AppFound::warnNil, r -> r);
+                return Commons.fetchPersonalInfo(UserId.of(foundInfo.losterId)).reduce(AppFound::warnNil, r -> r);
             }
         };
     }
@@ -134,6 +143,13 @@ public class AppFound {
         };
     }
 
+    private static Found.MultiFoundInfos consMultiFoundsInfo(Supplier<List<Found.FoundInfo>> foundInfos) {
+        return new Found.MultiFoundInfos() {
+            public Long getTotalCount() { return componentFactory.found.allPostsCount(); }
+            public List<Found.FoundInfo> getFounds() { return foundInfos.get(); }
+        };
+    }
+
     private static Procedure<ErrorCode, Optional<FileId>> addPictureIfNecessary(@Nullable String pictureBase64) {
         if (pictureBase64 == null) return Result.of(Optional.empty());
         byte[] image = Base64.getDecoder().decode(pictureBase64);
@@ -147,6 +163,11 @@ public class AppFound {
                 .reduce(e -> null, i -> i);
     }
 
+    private static Procedure<ErrorCode, ?> ensureOwnPost(UserId userId, FoundId foundId) {
+        return Procedure.fromOptional(componentFactory.found.postInfo(foundId), ErrorCode.FoundPostNonExist)
+                .then(foundInfo -> foundInfo.publisherId.equals(userId.value) ? Result.of(null) : Fail.of(ErrorCode.PermissionDenied));
+    }
+
     private static <T, E> T warnNil(E error) {
         log.warn("null warning: {}", error);
         return null;
@@ -154,11 +175,7 @@ public class AppFound {
 
     private static <T, R> R nilOrTr(T obj, Function<T, R> transformer) {
         if (obj == null) return null;
-        return transformer.apply(obj);
+        else return transformer.apply(obj);
     }
 
-    private static Procedure<ErrorCode, ?> ensureOwnPost(UserId userId, FoundId foundId) {
-        return Procedure.fromOptional(componentFactory.found.postInfo(foundId), ErrorCode.FoundPostNonExist)
-                .then(foundInfo -> foundInfo.publisherId.equals(userId.value) ? Result.of(null) : Fail.of(ErrorCode.PermissionDenied));
-    }
 }

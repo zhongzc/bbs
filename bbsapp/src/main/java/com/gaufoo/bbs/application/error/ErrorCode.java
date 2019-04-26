@@ -37,6 +37,7 @@ public enum ErrorCode {
     DeleteFoundFailed(29),
     ClaimFoundFailed(30),
     PermissionDenied(31),
+    CancelClaimFailed(32),
 
     CreatePostFailed(98),
     UnsupportedOperation(99),
@@ -77,6 +78,7 @@ public enum ErrorCode {
         put(ErrorCode.DeleteFoundFailed, "删除寻物失败");
         put(ErrorCode.ClaimFoundFailed, "认领寻物失败");
         put(ErrorCode.PermissionDenied, "无操作权限");
+        put(ErrorCode.CancelClaimFailed, "取消认领错误");
 
         put(ErrorCode.SaveFileFailed, "创建文件失败");
         // add more error code mapping here

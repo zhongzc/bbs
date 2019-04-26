@@ -1,0 +1,25 @@
+union LostInfoResult = Error | LostInfo
+union CreateLostResult = Error | LostInfo
+union DeleteLostResult = Error | Ok
+union ClaimLostResult = Error | Ok
+union CancelClaimLostResult = Error | Ok
+union AllLostsResult = Error | MultiLostInfos
+union SearchLostsResult = Error | MultiLostInfos
+
+type LostInfo {
+    id: ID!
+    publisher: PersonalInfo!
+    name: String!
+    description: String!
+    position: String
+    pictureUrl: String
+    createTime: Long!
+    contact: String
+    lostTime: Long
+    claimer: PersonalInfo
+}
+
+type MultiLostInfos {
+    totalCount: Long!
+    losts: [LostInfo!]!
+}

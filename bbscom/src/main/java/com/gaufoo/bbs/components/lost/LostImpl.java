@@ -55,6 +55,18 @@ public class LostImpl implements Lost {
     }
 
     @Override
+    public Optional<LostInfo> removeClaim(LostId lostId) {
+        return postInfo(lostId).flatMap(info -> {
+            LostInfo newInfo = info.modFounderId(null);
+            if (repository.updatePost(lostId, newInfo)) {
+                return Optional.ofNullable(newInfo);
+            } else {
+                return Optional.empty();
+            }
+        });
+    }
+
+    @Override
     public boolean removePost(LostId lostId) {
         return repository.deletePost(lostId);
     }

@@ -44,7 +44,7 @@ public class Query implements GraphQLQueryResolver {
     }
 
     public AllFoundsResult allFounds(Long skip, Long first) {
-        return AppFound.allFounds(first, skip);
+        return AppFound.allFounds(skip, first);
     }
 
     public FoundInfoResult foundInfo(String id) {

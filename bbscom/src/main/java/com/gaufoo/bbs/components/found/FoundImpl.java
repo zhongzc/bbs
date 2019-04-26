@@ -55,6 +55,18 @@ public class FoundImpl implements Found {
     }
 
     @Override
+    public Optional<FoundInfo> removeClaim(FoundId foundId) {
+        return postInfo(foundId).flatMap(info -> {
+            FoundInfo newInfo = info.modLosterId(null);
+            if (repository.updatePost(foundId, newInfo)) {
+                return Optional.ofNullable(newInfo);
+            } else {
+                return Optional.empty();
+            }
+        });
+    }
+
+    @Override
     public boolean removePost(FoundId foundId) {
         return repository.deletePost(foundId);
     }

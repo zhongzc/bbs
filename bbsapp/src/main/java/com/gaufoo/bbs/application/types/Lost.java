@@ -10,12 +10,11 @@ public interface Lost {
     interface CreateLostResult {}
     interface DeleteLostResult {}
     interface ClaimLostResult {}
+    interface CancelClaimLostResult {}
 
     interface LostInfo extends
             LostInfoResult,
-            CreateLostResult,
-            DeleteLostResult,
-            ClaimLostResult
+            CreateLostResult
     {
         String getId();
         PersonalInformation.PersonalInfo getPublisher();

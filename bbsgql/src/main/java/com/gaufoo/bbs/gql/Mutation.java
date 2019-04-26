@@ -57,7 +57,7 @@ public class Mutation implements GraphQLMutationResolver {
 
     public CreateFoundResult createFound(FoundInput input, DataFetchingEnvironment env) {
         return Utils.getAuthToken(env).map(
-                tkn -> AppFound.createFound(tkn, input)
+                tkn -> AppFound.createFound(input, tkn)
         ).orElse(authError);
     }
 
@@ -70,6 +70,12 @@ public class Mutation implements GraphQLMutationResolver {
     public ClaimFoundResult claimFound(String foundId, DataFetchingEnvironment env) {
         return Utils.getAuthToken(env).map(
                 tkn -> AppFound.claimFound(foundId, tkn)
+        ).orElse(authError);
+    }
+
+    public CancelClaimFoundResult cancelClaimFound(String foundId, DataFetchingEnvironment env) {
+        return Utils.getAuthToken(env).map(
+                tkn -> AppFound.cancelClaimFound(foundId, tkn)
         ).orElse(authError);
     }
 

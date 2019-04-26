@@ -26,6 +26,7 @@ type Mutation {
     createFound(foundInput: FoundInput!): CreateFoundResult!
     deleteFound(foundId: ID!): DeleteFoundResult!
     claimFound(foundId: ID!): ClaimFoundResult!
+    cancelClaimFound(foundId: ID!): CancelClaimFoundResult!
 }
 
 schema {
