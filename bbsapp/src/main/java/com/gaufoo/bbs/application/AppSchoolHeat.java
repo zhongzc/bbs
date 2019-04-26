@@ -30,6 +30,7 @@ import static com.gaufoo.bbs.application.ComponentFactory.componentFactory;
 import com.gaufoo.bbs.application.types.SchoolHeat;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
@@ -65,6 +66,27 @@ public class AppSchoolHeat {
     public static SchoolHeat.SchoolHeatInfoResult schoolHeatInfo(String id) {
         return fromOptional(componentFactory.schoolHeat.postInfo(SchoolHeatId.of(id)), ErrorCode.PostNonExist)
                 .reduce(Error::of, info -> consSH(SchoolHeatId.of(id), LazyVal.of(() -> info)));
+    }
+
+    public static SchoolHeat.SchoolHeatsOfAuthorResult schoolHeatsOfAuthor(String userId, Long skip, Long first) {
+        final long fSkip = skip == null ? 0L : skip;
+        final long fFirst = first == null ? Long.MAX_VALUE : first;
+
+        return new SchoolHeat.MultiSchoolHeats() {
+            private final ArrayList<SchoolHeat.SchoolHeatInfo> ls = new ArrayList<>();
+            private long count = 0;
+            {
+                long tail = fFirst + fSkip;
+                componentFactory.schoolHeat.allPostsByAuthor(userId).forEach(id -> {
+                    if (fSkip <= count && count < tail) {
+                        ls.add(consSH(id));
+                    }
+                    count = count + 1;
+                });
+            }
+            public Long getTotalCount()                             { return count; }
+            public List<SchoolHeat.SchoolHeatInfo> getSchoolHeats() { return ls; }
+        };
     }
 
     public static SchoolHeat.CreateSchoolHeatResult createSchoolHeat(SchoolHeat.SchoolHeatInput input, String loginToken) {

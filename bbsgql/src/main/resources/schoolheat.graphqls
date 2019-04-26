@@ -17,6 +17,7 @@ type MultiSchoolHeats {
 union SchoolHeatInfoResult = Error | SchoolHeatInfo
 union CreateSchoolHeatResult = Error | SchoolHeatInfo
 union AllSchoolHeatsResult = Error | MultiSchoolHeats
+union SchoolHeatsOfAuthorResult = Error | MultiSchoolHeats
 union DeleteSchoolHeatResult = Error | Ok
 
 input SchoolHeatInput {

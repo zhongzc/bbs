@@ -16,6 +16,7 @@ type Query {
 
     schoolHeatInfo(id: ID!): SchoolHeatInfoResult!
     allSchoolHeats(skip: Long, first: Long, sortedBy: SortedBy): AllSchoolHeatsResult!
+    schoolHeatsOfAuthor(authorId: ID!, skip: Long, first: Long): SchoolHeatsOfAuthorResult!
 
     allLectures(skip: Long, first: Long): AllLecturesResult! # 按讲座时间降序
     lectureInfo(id: ID!): LectureInfoResult!
