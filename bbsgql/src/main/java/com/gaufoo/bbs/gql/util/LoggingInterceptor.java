@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 public class LoggingInterceptor {
@@ -20,7 +21,7 @@ public class LoggingInterceptor {
     };
 
     private static String stringifyArgs(Object[] args) {
-        return Arrays.stream(args).map(obj -> {
+        return Arrays.stream(args).filter(Objects::nonNull).map(obj -> {
             if (DataFetchingEnvironment.class.isAssignableFrom(obj.getClass())) {
                 String token = Utils.getAuthToken((DataFetchingEnvironment) obj).orElse("");
                 return "token=\"" + token + "\"";

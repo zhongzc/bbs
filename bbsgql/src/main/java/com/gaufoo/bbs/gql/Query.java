@@ -6,6 +6,7 @@ import com.gaufoo.bbs.application.error.Error;
 import com.gaufoo.bbs.application.error.ErrorCode;
 import com.gaufoo.bbs.application.types.Lecture;
 import com.gaufoo.bbs.application.types.Lost;
+import com.gaufoo.bbs.application.types.SchoolHeat;
 import com.gaufoo.bbs.gql.util.Utils;
 import graphql.schema.DataFetchingEnvironment;
 
@@ -58,6 +59,10 @@ public class Query implements GraphQLQueryResolver {
 
     public LostInfoResult lostInfo(String id) {
         return AppLost.lostInfo(id);
+    }
+
+    public SchoolHeat.AllSchoolHeatsResult allSchoolHeats(Long skip, Long first, Commons.SortedBy sortedBy) {
+        return AppSchoolHeat.allSchoolHeats(skip, first, sortedBy);
     }
 
     public Lecture.AllLecturesResult allLectures(Long skip, Long first) {

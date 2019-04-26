@@ -15,6 +15,7 @@ type MultiSchoolHeats {
 }
 
 union CreateSchoolHeatResult = Error | SchoolHeatInfo
+union AllSchoolHeatsResult = Error | MultiSchoolHeats
 
 input SchoolHeatInput {
     title: String!

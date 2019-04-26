@@ -21,7 +21,7 @@ public class HeatSstRepository implements HeatRepository {
 
     @Override
     public boolean saveHeat(String heatGroup, String id, long init) {
-        String newKey = formatHG(heatGroup) + formatID(id);
+        String newKey = formatHG(heatGroup) + id;
         if (SstUtils.contains(idToHeat, newKey)) return false;
         List<CompletionStage<Boolean>> tasks = new ArrayList<>();
         tasks.add(SstUtils.setEntryAsync(idToHeat, newKey, format(init)));
@@ -32,14 +32,14 @@ public class HeatSstRepository implements HeatRepository {
 
     @Override
     public Long getHeat(String heatGroup, String id) {
-        return SstUtils.getEntry(idToHeat, formatHG(heatGroup) + formatID(id), HeatSstRepository::retrieveHeat);
+        return SstUtils.getEntry(idToHeat, formatHG(heatGroup) + id, HeatSstRepository::retrieveHeat);
     }
 
     @Override
     public boolean updateHeat(String heatGroup, String id, long value) {
         return Optional.ofNullable(getHeat(heatGroup, id)).map(oh -> {
             List<CompletionStage<Boolean>> tasks = new ArrayList<>();
-            tasks.add(SstUtils.setEntryAsync(idToHeat, formatHG(heatGroup) + formatID(id), format(value)));
+            tasks.add(SstUtils.setEntryAsync(idToHeat, formatHG(heatGroup) + id, format(value)));
             tasks.add(cluster.delete(concat(heatGroup, id, oh)).thenApply(Optional::isPresent));
             tasks.add(SstUtils.setEntryAsync(cluster, concat(heatGroup, id, value), "GAUFOO"));
             return SstUtils.waitAllFutureParT(tasks, true, (a, b) -> a && b);
@@ -69,7 +69,7 @@ public class HeatSstRepository implements HeatRepository {
     @Override
     public boolean delete(String heatGroup, String id) {
         return Optional.ofNullable(SstUtils.removeEntryByKey(idToHeat,
-                formatHG(heatGroup) + formatID(id), HeatSstRepository::retrieveHeat)).map(h ->
+                formatHG(heatGroup) + id, HeatSstRepository::retrieveHeat)).map(h ->
                 SstUtils.removeEntryByKey(cluster, concat(heatGroup, id, h)) != null).orElse(false);
     }
 
@@ -90,7 +90,7 @@ public class HeatSstRepository implements HeatRepository {
     }
 
     private static String concat(String heatGroup, String id, Long heat) {
-        return formatHG(heatGroup) + format(heat) + formatID(id);
+        return formatHG(heatGroup) + format(heat) + id;
     }
 
     private static String retrieveId(String string) {
@@ -103,10 +103,6 @@ public class HeatSstRepository implements HeatRepository {
 
     private static String formatHG(String heatGroup) {
         return String.format("%14s", heatGroup);
-    }
-
-    private static String formatID(String id) {
-        return String.format("%14s", id);
     }
 
     private static String many(char c, int len) {
