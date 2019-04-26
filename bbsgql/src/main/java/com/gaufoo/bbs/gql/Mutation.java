@@ -8,15 +8,14 @@ import com.gaufoo.bbs.application.types.Lecture;
 import com.gaufoo.bbs.application.types.Lost;
 import com.gaufoo.bbs.application.types.SchoolHeat;
 import com.gaufoo.bbs.gql.util.Utils;
-import com.gaufoo.bbs.util.Util;
 import graphql.schema.DataFetchingEnvironment;
 
 import static com.gaufoo.bbs.application.types.AccountAndPassword.ChangePasswordResult;
 import static com.gaufoo.bbs.application.types.AccountAndPassword.ConfirmPasswordResult;
 import static com.gaufoo.bbs.application.types.Authentication.*;
+import static com.gaufoo.bbs.application.types.Found.*;
 import static com.gaufoo.bbs.application.types.PersonalInformation.EditPersonInfoResult;
 import static com.gaufoo.bbs.application.types.PersonalInformation.PersonInfoInput;
-import static com.gaufoo.bbs.application.types.Found.*;
 
 public class Mutation implements GraphQLMutationResolver {
     public Boolean reset() {
@@ -114,6 +113,18 @@ public class Mutation implements GraphQLMutationResolver {
     public Lecture.CreateLectureResult createLecture(Lecture.LectureInput input, DataFetchingEnvironment env) {
         return Utils.getAuthToken(env).map(
                 tkn -> AppLecture.createLecture(input, tkn)
+        ).orElse(authError);
+    }
+
+    public Lecture.EditLectureResult editLecture(String lectureId, Lecture.LectureInput lectureInput, DataFetchingEnvironment env) {
+        return Utils.getAuthToken(env).map(
+                tkn -> AppLecture.editLecture(lectureId, lectureInput, tkn)
+        ).orElse(authError);
+    }
+
+    public Lecture.DeleteLectureResult deleteLecture(String lectureId, DataFetchingEnvironment env) {
+        return Utils.getAuthToken(env).map(
+                tkn -> AppLecture.deleteLecture(lectureId, tkn)
         ).orElse(authError);
     }
 

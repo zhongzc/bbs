@@ -1,9 +1,6 @@
 package com.gaufoo.bbs.application.error;
 
-import com.gaufoo.bbs.application.types.AccountAndPassword;
-import com.gaufoo.bbs.application.types.Authentication;
-import com.gaufoo.bbs.application.types.Found;
-import com.gaufoo.bbs.application.types.Lost;
+import com.gaufoo.bbs.application.types.*;
 
 public class Ok implements
         Authentication.LogoutResult,
@@ -13,7 +10,8 @@ public class Ok implements
         Found.CancelClaimFoundResult,
         Lost.DeleteLostResult,
         Lost.ClaimLostResult,
-        Lost.CancelClaimLostResult
+        Lost.CancelClaimLostResult,
+        Lecture.DeleteLectureResult
 {
     private Boolean ok;
 

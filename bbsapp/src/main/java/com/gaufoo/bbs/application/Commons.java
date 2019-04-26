@@ -3,6 +3,7 @@ package com.gaufoo.bbs.application;
 import com.gaufoo.bbs.application.error.ErrorCode;
 import com.gaufoo.bbs.application.types.PersonalInformation;
 import com.gaufoo.bbs.application.util.StaticResourceConfig;
+import com.gaufoo.bbs.components.authenticator.Authenticator;
 import com.gaufoo.bbs.components.authenticator.common.UserToken;
 import com.gaufoo.bbs.components.file.FileFactory;
 import com.gaufoo.bbs.components.file.common.FileId;
@@ -23,6 +24,14 @@ public class Commons {
         return componentFactory.authenticator.getLoggedUser(userToken)
                 .then(perm -> TaskChain.Result.of(UserId.of(perm.userId)))
                 .mapF(ErrorCode::fromAuthError);
+    }
+
+    public static TaskChain.Procedure<ErrorCode, UserId> ensureAdmin(UserToken userToken) {
+        return componentFactory.authenticator.getLoggedUser(userToken)
+                .mapF(ErrorCode::fromAuthError)
+                .then(permission -> permission.role.equals(Authenticator.Role.ADMIN) ?
+                        TaskChain.Result.of(UserId.of(permission.userId)) :
+                        TaskChain.Fail.of(ErrorCode.PermissionDenied));
     }
 
     public static TaskChain.Procedure<ErrorCode, PersonalInformation.PersonalInfo> fetchPersonalInfo(UserId userId) {

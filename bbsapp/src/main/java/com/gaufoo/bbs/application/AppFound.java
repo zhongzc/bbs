@@ -109,7 +109,7 @@ public class AppFound {
             public String getPictureURL()   { return factorOutPictureUrl(FileId.of(foundInfo.get().pictureId)); }
             public String getContact()      { return nilOrTr(foundInfo.get(), x -> x.contact); }
             public Long getCreateTime()     { return nilOrTr(foundInfo.get(), x -> x.createTime.toEpochMilli()); }
-            public Long getFoundTime()      { return nilOrTr(foundInfo.get(), x -> x.foundTime.toEpochMilli()); }
+            public Long getFoundTime()      { return nilOrTr(foundInfo.get(), x -> nilOrTr(x.foundTime, Instant::toEpochMilli)); }
             public PersonalInformation.PersonalInfo getPublisher() {
                 return Commons.fetchPersonalInfo(UserId.of(foundInfo.get().publisherId)).reduce(AppFound::warnNil, r -> r);
             }

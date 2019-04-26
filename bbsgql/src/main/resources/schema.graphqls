@@ -42,9 +42,22 @@ type Mutation {
     cancelClaimLost(foundId: ID!): CancelClaimLostResult!
 
     createSchoolHeat(schoolHeatInput: SchoolHeatInput!): CreateSchoolHeatResult!
+
+    createLecture(lectureInput: LectureInput!): CreateLectureResult!
+    editLecture(id: ID!, lectureInput: LectureInput!): EditLectureResult!
+    deleteLecture(id: ID!): DeleteLectureResult!
 }
 
 schema {
     query: Query
     mutation: Mutation
+}
+
+enum SortedBy {
+    ActiveTimeAsc
+    ActiveTimeDes
+    HeatAsc
+    HeatDes
+    NatureAsc
+    NatureDes
 }

@@ -2,16 +2,20 @@ package com.gaufoo.bbs.application;
 
 import com.gaufoo.bbs.application.error.Error;
 import com.gaufoo.bbs.application.error.ErrorCode;
+import com.gaufoo.bbs.application.error.Ok;
 import com.gaufoo.bbs.application.types.Content;
 import com.gaufoo.bbs.application.types.Lecture;
 import com.gaufoo.bbs.application.util.LazyVal;
+import com.gaufoo.bbs.components.authenticator.Authenticator;
 import com.gaufoo.bbs.components.authenticator.common.UserToken;
 import com.gaufoo.bbs.components.content.common.ContentId;
 import com.gaufoo.bbs.components.lecture.common.LectureId;
 import com.gaufoo.bbs.components.lecture.common.LectureInfo;
 import com.gaufoo.bbs.components.user.common.UserId;
+import com.gaufoo.bbs.util.TaskChain;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import scala.reflect.internal.Precedence;
 
 import java.time.Instant;
 import java.util.List;
@@ -47,20 +51,26 @@ public class AppLecture {
     }
 
     public static Lecture.CreateLectureResult createLecture(Lecture.LectureInput lectureInput, String userToken) {
-        return Commons.fetchUserId(UserToken.of(userToken))
-                .then(userId -> consLectureInfo(lectureInput))
+        return Commons.ensureAdmin(UserToken.of(userToken))
+                .then(ok -> consLectureInfo(lectureInput))
                 .then(lectureInfo -> Procedure.fromOptional(componentFactory.lecture.publishPost(lectureInfo), ErrorCode.PublishLectureFailed)
                         .mapR(lectureId -> consLectureInfo(lectureId, lectureInput, ContentId.of(lectureInfo.contentId))))
                 .reduce(Error::of, i -> i);
     }
 
-//    public static Lecture.EditLectureResult editLecture(String lectureId, Lecture.LectureInput lectureInput) {
-//
-//    }
-//
-//    public static Lecture.DeleteLectureResult deleteLecture(String lectureId) {
-//
-//    }
+    public static Lecture.EditLectureResult editLecture(String lectureId, Lecture.LectureInput lectureInput, String userToken) {
+        return Commons.ensureAdmin(UserToken.of(userToken))
+                .then(ok -> Procedure.fromOptional(componentFactory.lecture.postInfo(LectureId.of(lectureId)), ErrorCode.LectureNotfound))
+                .then(lectureInfo -> modLectureInfo(lectureInfo, lectureInput))
+                .reduce(Error::of, i -> (Lecture.EditLectureResult)i);
+    }
+
+    public static Lecture.DeleteLectureResult deleteLecture(String lectureId, String userToken) {
+        return Commons.ensureAdmin(UserToken.of(userToken))
+                .then(ok -> Result.of(componentFactory.lecture.removePost(LectureId.of(lectureId))))
+                .then(success -> success ? Result.of(true) : Fail.of(ErrorCode.DeleteLectureFailed))
+                .reduce(Error::of, ok -> Ok.build());
+    }
 
     private static Lecture.LectureInfo consLectureInfo(LectureId lectureId, LazyVal<LectureInfo> lectureInfo) {
         return new Lecture.LectureInfo() {
@@ -90,41 +100,34 @@ public class AppLecture {
 
     private static Lecture.LectureInfo consLectureInfo(LectureId lectureId, Lecture.LectureInput in, ContentId contentId) {
         return new Lecture.LectureInfo() {
-            @Override
-            public String getId() {
-                return lectureId.value;
-            }
-
-            @Override
-            public String getTitle() {
-                return in.title;
-            }
-
-            @Override
+            public String getId() { return lectureId.value; }
+            public String getTitle() { return in.title; }
             public Content getContent() {
                 return () -> AppContent.fromContentId(contentId).reduce(AppLecture::warnNil, Content::getItems);
             }
-
-            @Override
-            public String getPosition() {
-                return in.position;
-            }
-
-            @Override
-            public Long getTime() {
-                return in.time;
-            }
-
-            @Override
-            public String getLecturer() {
-                return in.lecturer;
-            }
-
-            @Override
-            public String getNote() {
-                return in.note;
-            }
+            public String getPosition() { return in.position; }
+            public Long getTime() { return in.time; }
+            public String getLecturer() { return in.lecturer; }
+            public String getNote() { return in.note; }
         };
+    }
+
+    private static Procedure<ErrorCode, LectureInfo> modLectureInfo(LectureInfo old, Lecture.LectureInput in) {
+        Procedure<ErrorCode, ContentId> result = Result.of(null);
+        if (in.content != null) {
+            result = result.then(ig -> AppContent.consContent(in.content))
+                    .then(contentInfo -> Procedure.fromOptional(componentFactory.content.cons(contentInfo), ErrorCode.CreateContentFailed))
+                    .then(contentId -> Result.of(contentId, () -> componentFactory.content.remove(contentId)));
+            if (!result.isSuccessful()) return Fail.of(result.retrieveError().get());
+        }
+        return result.then(nullableContentId -> Result.of(LectureInfo.of(
+                preferNew(in.title, old.title),
+                preferNew(nilOrTr(nullableContentId, x -> x.value), old.contentId),
+                preferNew(in.position, old.position),
+                preferNew(nilOrTr(in.time, Instant::ofEpochMilli), old.time),
+                preferNew(in.lecturer, old.lecturer),
+                preferNew(in.note, old.note)
+        )));
     }
 
     private static Content fromIdToContent(ContentId contentId) {
@@ -139,5 +142,16 @@ public class AppLecture {
     private static <T, R> R nilOrTr(T obj, Function<T, R> tr) {
         if (obj == null) return null;
         return tr.apply(obj);
+    }
+
+    private static <T, U> T preferNew(T newItem, U oldItem, Function<U ,T> oldTransformer) {
+        if (newItem == null) {
+            if (oldItem == null) return null;
+            else return oldTransformer.apply(oldItem);
+        } else return newItem;
+    }
+
+    private static <T> T preferNew(T newItem, T oldItem) {
+        return preferNew(newItem, oldItem, i -> i);
     }
 }

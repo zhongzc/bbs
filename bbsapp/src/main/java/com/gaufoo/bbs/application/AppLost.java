@@ -108,7 +108,7 @@ public class AppLost {
             public String getPictureURL()   { return factorOutPictureUrl(FileId.of(lostInfo.get().pictureId)); }
             public String getContact()      { return nilOrTr(lostInfo.get(), x -> x.contact); }
             public Long getCreateTime()     { return nilOrTr(lostInfo.get(), x -> x.createTime.toEpochMilli()); }
-            public Long getLostTime()      { return nilOrTr(lostInfo.get(), x -> x.lostTime.toEpochMilli()); }
+            public Long getLostTime()      { return nilOrTr(lostInfo.get(), x -> nilOrTr(x.lostTime, Instant::toEpochMilli)); }
             public PersonalInformation.PersonalInfo getPublisher() {
                 return Commons.fetchPersonalInfo(UserId.of(lostInfo.get().publisherId)).reduce(AppLost::warnNil, r -> r);
             }
