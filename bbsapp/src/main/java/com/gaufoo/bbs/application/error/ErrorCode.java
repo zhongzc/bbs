@@ -38,6 +38,11 @@ public enum ErrorCode {
     ClaimFoundFailed(30),
     PermissionDenied(31),
     CancelClaimFailed(32),
+    LostPostNonExist(33),
+    CreateLostImageFailed(34),
+    PublishLostFailed(35),
+    DeleteLostFailed(36),
+    ClaimLostFailed(37),
 
     ContentNotFound(97),
     CreatePostFailed(98),
@@ -73,13 +78,18 @@ public enum ErrorCode {
         put(ErrorCode.CreateUserFailed, "创建用户失败");
         put(ErrorCode.AuthenticateFailed, "认证失败");
         put(ErrorCode.FileNotFound, "找不到文件");
-        put(ErrorCode.FoundPostNonExist, "找不到失物");
+        put(ErrorCode.FoundPostNonExist, "找不到寻物");
         put(ErrorCode.CreateFoundImageFailed, "创建寻物图片失败");
         put(ErrorCode.PublishFoundFailed, "创建寻物失败");
         put(ErrorCode.DeleteFoundFailed, "删除寻物失败");
         put(ErrorCode.ClaimFoundFailed, "认领寻物失败");
         put(ErrorCode.PermissionDenied, "无操作权限");
         put(ErrorCode.CancelClaimFailed, "取消认领错误");
+        put(ErrorCode.LostPostNonExist, "找不到失物");
+        put(ErrorCode.CreateLostImageFailed, "创建失物图片失败");
+        put(ErrorCode.PublishLostFailed, "创建失物失败");
+        put(ErrorCode.DeleteLostFailed, "删除失物物失败");
+        put(ErrorCode.ClaimLostFailed, "认领失物失败");
 
         put(ErrorCode.SaveFileFailed, "创建文件失败");
         // add more error code mapping here

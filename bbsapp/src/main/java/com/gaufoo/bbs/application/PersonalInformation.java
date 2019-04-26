@@ -93,7 +93,7 @@ public class PersonalInformation {
             public String getGender()       { return Optional.ofNullable(userInfo.gender).map(Objects::toString).orElse(null); }
             public String getUsername()     { return userInfo.nickname; }
             public String getUserId()       { return userId.value; }
-            public String getPictureUrl()   { return Optional.ofNullable(userInfo.profilePicIdentifier).map(u -> factorOutPictureUrl(FileId.of(u))).orElse(null) ; }
+            public String getPictureURL()   { return Optional.ofNullable(userInfo.profilePicIdentifier).map(u -> factorOutPictureUrl(FileId.of(u))).orElse(null) ; }
         };
     }
 
@@ -166,7 +166,7 @@ public class PersonalInformation {
             public String getGrade()        { return preferNew(in.grade, oldUserInfo.grade); }
             public String getGender()       { return preferNew(in.gender, oldUserInfo.gender, Object::toString); }
             public String getUsername()     { return preferNew(in.username, oldUserInfo.nickname); }
-            public String getPictureUrl() {
+            public String getPictureURL() {
                 return Optional.ofNullable(in.pictureBase64)
                         .map(pictureIsModified -> factorOutPictureUrl(updatedId))
                         .orElseGet(() -> Optional.ofNullable(oldUserInfo.profilePicIdentifier)

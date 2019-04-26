@@ -6,13 +6,22 @@ union CancelClaimLostResult = Error | Ok
 union AllLostsResult = Error | MultiLostInfos
 union SearchLostsResult = Error | MultiLostInfos
 
+input LostInput {
+    itemName: String!
+    description: String!
+    position: String
+    pictureBase64: String
+    contact: String
+    lostTime: Long
+}
+
 type LostInfo {
     id: ID!
     publisher: PersonalInfo!
     name: String!
     description: String!
     position: String
-    pictureUrl: String
+    pictureURL: String
     createTime: Long!
     contact: String
     lostTime: Long

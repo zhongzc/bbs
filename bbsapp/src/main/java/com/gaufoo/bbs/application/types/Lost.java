@@ -25,6 +25,7 @@ public interface Lost {
         String getContact();
         Long getCreateTime();
         Long getLostTime();
+        PersonalInformation.PersonalInfo getClaimer();
     }
 
     interface MultiLostInfos extends

@@ -11,7 +11,6 @@ import com.gaufoo.bbs.components.file.common.FileId;
 import com.gaufoo.bbs.components.found.common.FoundId;
 import com.gaufoo.bbs.components.found.common.FoundInfo;
 import com.gaufoo.bbs.components.user.common.UserId;
-import com.gaufoo.bbs.util.TaskChain;
 import com.sun.istack.internal.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

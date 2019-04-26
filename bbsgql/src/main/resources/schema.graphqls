@@ -10,6 +10,9 @@ type Query {
     allFounds(skip: Long, first: Long): AllFoundsResult!
     foundInfo(id: ID!): FoundInfoResult!
 #   searchFounds(object: String!): SearchFoundsResult!
+    allLosts(skip: Long, first: Long): AllLostsResult!
+    lostInfo(id: ID!): LostInfoResult!
+#    searchLosts(object: String!): SearchLostsResult!
 }
 
 type Mutation {
@@ -27,6 +30,10 @@ type Mutation {
     deleteFound(foundId: ID!): DeleteFoundResult!
     claimFound(foundId: ID!): ClaimFoundResult!
     cancelClaimFound(foundId: ID!): CancelClaimFoundResult!
+    createLost(lostInput: LostInput!): CreateLostResult!
+    deleteLost(id: ID!): DeleteLostResult!
+    claimLost(lostId: ID!): ClaimLostResult!
+    cancelClaimLost(foundId: ID!): CancelClaimLostResult!
 }
 
 schema {

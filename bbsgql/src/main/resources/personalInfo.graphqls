@@ -10,7 +10,7 @@ input PersonInfoInput {
 
 type PersonalInfo {
     userId: String!
-    pictureUrl: String
+    pictureURL: String
     username: String!
     gender: String
     grade: String

@@ -1,11 +1,13 @@
 package com.gaufoo.bbs.gql;
 
 import com.coxautodev.graphql.tools.GraphQLQueryResolver;
+import com.gaufoo.bbs.application.AppLost;
 import com.gaufoo.bbs.application.Authentication;
 import com.gaufoo.bbs.application.AppFound;
 import com.gaufoo.bbs.application.PersonalInformation;
 import com.gaufoo.bbs.application.error.Error;
 import com.gaufoo.bbs.application.error.ErrorCode;
+import com.gaufoo.bbs.application.types.Lost;
 import com.gaufoo.bbs.gql.util.Utils;
 import graphql.schema.DataFetchingEnvironment;
 
@@ -15,6 +17,7 @@ import static com.gaufoo.bbs.application.types.Authentication.CurrentUserResult;
 import static com.gaufoo.bbs.application.types.Found.AllFoundsResult;
 import static com.gaufoo.bbs.application.types.Found.FoundInfoResult;
 import static com.gaufoo.bbs.application.types.PersonalInformation.PersonInfoResult;
+import static com.gaufoo.bbs.application.types.Lost.*;
 
 public class Query implements GraphQLQueryResolver {
     public PersonInfoResult personInfo(String id) {
@@ -49,6 +52,14 @@ public class Query implements GraphQLQueryResolver {
 
     public FoundInfoResult foundInfo(String id) {
         return AppFound.foundInfo(id);
+    }
+
+    public AllLostsResult allLosts(Long skip, Long first) {
+        return AppLost.allLosts(skip, first);
+    }
+
+    public LostInfoResult lostInfo(String id) {
+        return AppLost.lostInfo(id);
     }
 
     private static Error authError = Error.of(ErrorCode.NotLoggedIn);

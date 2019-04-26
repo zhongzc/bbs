@@ -16,6 +16,8 @@ public class Error implements
         Found.DeleteFoundResult,
         Found.ClaimFoundResult,
         Found.CancelClaimFoundResult,
+        Lost.LostInfoResult,
+        Lost.CreateLostResult,
         Lost.DeleteLostResult,
         Lost.ClaimLostResult,
         Lost.CancelClaimLostResult,

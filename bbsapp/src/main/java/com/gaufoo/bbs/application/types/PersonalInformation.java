@@ -12,7 +12,7 @@ public interface PersonalInformation {
         String getGrade();
         String getGender();
         String getUsername();
-        String getPictureUrl();
+        String getPictureURL();
         String getUserId();
     }
 

@@ -1,12 +1,10 @@
 package com.gaufoo.bbs.gql;
 
 import com.coxautodev.graphql.tools.GraphQLMutationResolver;
-import com.gaufoo.bbs.application.AccountAndPassword;
-import com.gaufoo.bbs.application.Authentication;
-import com.gaufoo.bbs.application.PersonalInformation;
+import com.gaufoo.bbs.application.*;
 import com.gaufoo.bbs.application.error.Error;
 import com.gaufoo.bbs.application.error.ErrorCode;
-import com.gaufoo.bbs.application.AppFound;
+import com.gaufoo.bbs.application.types.Lost;
 import com.gaufoo.bbs.gql.util.Utils;
 import graphql.schema.DataFetchingEnvironment;
 
@@ -20,6 +18,7 @@ import static com.gaufoo.bbs.application.types.Found.*;
 public class Mutation implements GraphQLMutationResolver {
     public Boolean reset() {
         AppFound.reset();
+        AppLost.reset();
         return true;
     }
 
@@ -76,6 +75,30 @@ public class Mutation implements GraphQLMutationResolver {
     public CancelClaimFoundResult cancelClaimFound(String foundId, DataFetchingEnvironment env) {
         return Utils.getAuthToken(env).map(
                 tkn -> AppFound.cancelClaimFound(foundId, tkn)
+        ).orElse(authError);
+    }
+
+    public Lost.CreateLostResult createLost(Lost.LostInput input, DataFetchingEnvironment env) {
+        return Utils.getAuthToken(env).map(
+                tkn -> AppLost.createLost(input, tkn)
+        ).orElse(authError);
+    }
+
+    public Lost.DeleteLostResult deleteLost(String lostId, DataFetchingEnvironment env) {
+        return Utils.getAuthToken(env).map(
+                tkn -> AppLost.deleteLost(lostId, tkn)
+        ).orElse(authError);
+    }
+
+    public Lost.ClaimLostResult claimLost(String lostId, DataFetchingEnvironment env) {
+        return Utils.getAuthToken(env).map(
+                tkn -> AppLost.claimLost(lostId, tkn)
+        ).orElse(authError);
+    }
+
+    public Lost.CancelClaimLostResult cancelClaimLost(String lostId, DataFetchingEnvironment env) {
+        return Utils.getAuthToken(env).map(
+                tkn -> AppLost.cancelClaimLost(lostId, tkn)
         ).orElse(authError);
     }
 
