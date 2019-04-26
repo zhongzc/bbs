@@ -65,6 +65,10 @@ public class Query implements GraphQLQueryResolver {
         return AppSchoolHeat.allSchoolHeats(skip, first, sortedBy);
     }
 
+    public SchoolHeat.SchoolHeatInfoResult schoolHeatInfo(String id) {
+        return AppSchoolHeat.schoolHeatInfo(id);
+    }
+
     public Lecture.AllLecturesResult allLectures(Long skip, Long first) {
         return AppLecture.allLectures(skip, first);
     }

@@ -26,7 +26,8 @@ public class Error implements
         Lecture.EditLectureResult,
         Lecture.DeleteLectureResult,
         SchoolHeat.CreateSchoolHeatResult,
-        SchoolHeat.DeleteSchoolHeatResult
+        SchoolHeat.DeleteSchoolHeatResult,
+        SchoolHeat.SchoolHeatInfoResult
 {
     private Integer errCode;
     private String msg;

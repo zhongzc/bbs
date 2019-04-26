@@ -14,6 +14,7 @@ type MultiSchoolHeats {
     schoolHeats: [SchoolHeatInfo!]!
 }
 
+union SchoolHeatInfoResult = Error | SchoolHeatInfo
 union CreateSchoolHeatResult = Error | SchoolHeatInfo
 union AllSchoolHeatsResult = Error | MultiSchoolHeats
 union DeleteSchoolHeatResult = Error | Ok

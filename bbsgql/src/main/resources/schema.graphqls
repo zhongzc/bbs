@@ -14,6 +14,7 @@ type Query {
     lostInfo(id: ID!): LostInfoResult!
 #    searchLosts(object: String!): SearchLostsResult!
 
+    schoolHeatInfo(id: ID!): SchoolHeatInfoResult!
     allSchoolHeats(skip: Long, first: Long, sortedBy: SortedBy): AllSchoolHeatsResult!
 
     allLectures(skip: Long, first: Long): AllLecturesResult! # 按讲座时间降序

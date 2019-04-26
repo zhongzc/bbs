@@ -62,6 +62,11 @@ public class AppSchoolHeat {
         };
     }
 
+    public static SchoolHeat.SchoolHeatInfoResult schoolHeatInfo(String id) {
+        return fromOptional(componentFactory.schoolHeat.postInfo(SchoolHeatId.of(id)), ErrorCode.PostNonExist)
+                .reduce(Error::of, info -> consSH(SchoolHeatId.of(id), LazyVal.of(() -> info)));
+    }
+
     public static SchoolHeat.CreateSchoolHeatResult createSchoolHeat(SchoolHeat.SchoolHeatInput input, String loginToken) {
         CommentGroup commentGroup = componentFactory.commentGroup;
         Heat heat = componentFactory.heat;
@@ -117,15 +122,6 @@ public class AppSchoolHeat {
             public Comment.AllComments getAllComments(Long skip, Long first) { return AppComment.consAllComments(commentGroupId, skip, first); }
         };
     }
-
-//    private static SchoolHeat.SchoolHeatInfo consSH(SchoolHeatId schoolHeatId) {
-//        String g = Commons.getGroupId(Commons.PostType.SchoolHeat);
-//        return componentFactory.schoolHeat.postInfo(schoolHeatId)                          .flatMap(
-//                info -> componentFactory.heat.getHeat(g, schoolHeatId.value)               .flatMap(
-//                ht -> componentFactory.active.getLatestActiveInfo(g, schoolHeatId.value)   .flatMap(
-//                aInfo -> componentFactory.content.contentInfo(ContentId.of(info.contentId)).map(
-//                ctInfo -> consSH(info, schoolHeatId, ht, aInfo, ctInfo, CommentGroupId.of(info.commentGroupId)))))).orElse(null);
-//    }
 
     private static SchoolHeat.SchoolHeatInfo consSH(SchoolHeatId schoolHeatId) {
         return consSH(schoolHeatId, LazyVal.of(() -> componentFactory.schoolHeat.postInfo(schoolHeatId).orElse(null)));
