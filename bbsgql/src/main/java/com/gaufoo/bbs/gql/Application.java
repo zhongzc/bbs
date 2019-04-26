@@ -3,11 +3,15 @@ package com.gaufoo.bbs.gql;
 import com.coxautodev.graphql.tools.SchemaParserDictionary;
 import com.gaufoo.bbs.application.ComponentFactory;
 import com.gaufoo.bbs.application.error.Error;
+import com.gaufoo.bbs.application.error.ErrorCode;
 import com.gaufoo.bbs.application.error.Ok;
 import com.gaufoo.bbs.application.types.*;
 import com.gaufoo.bbs.application.util.StaticResourceConfig;
-import com.gaufoo.bbs.application.util.StaticResourceConfig.FileType;
+import com.gaufoo.bbs.components.authenticator.Authenticator;
+import com.gaufoo.bbs.components.authenticator.common.Permission;
+import com.gaufoo.bbs.components.user.common.UserInfo;
 import com.gaufoo.bbs.gql.util.LoggingInterceptor;
+import com.gaufoo.bbs.util.TaskChain;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.aop.framework.ProxyFactory;
@@ -20,6 +24,7 @@ import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import javax.annotation.PostConstruct;
+import java.time.Instant;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -70,16 +75,18 @@ public class Application implements WebMvcConfigurer {
         return schemaParserDictionary;
     }
 
+
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         ComponentFactory.clearFiles();  // fixme: remove this in production
 
         StaticResourceConfig config = StaticResourceConfig.defaultPartialConfig()
-                .addMapping(FileType.UserProfileImage, profileImgMapping)
-                .addMapping(FileType.LostFoundImage, lostFoundMapping)
-                .addMapping(FileType.ContentImages, contentMapping).build();
+                .addMapping(StaticResourceConfig.FileType.UserProfileImage, profileImgMapping)
+                .addMapping(StaticResourceConfig.FileType.LostFoundImage, lostFoundMapping)
+                .addMapping(StaticResourceConfig.FileType.ContentImages, contentMapping).build();
 
         ComponentFactory.componentFactory = new ComponentFactory(config);
+        addAdminUser();
 
         List<String> allUrlPrefixes = new LinkedList<>();
         List<String> allFolderPaths = new LinkedList<>();
@@ -106,6 +113,23 @@ public class Application implements WebMvcConfigurer {
             }
         }));
         log.debug("added shutdown hook");
+    }
+
+    private void addAdminUser() {
+        String username = "admin";
+        String password = "letmein";  // fixme: insecure
+        String nickname = "admin";
+        log.debug("post construct {}", ComponentFactory.componentFactory);
+        Boolean success = ComponentFactory.componentFactory.authenticator.createSuperUser(username, password)
+                .mapF(ErrorCode::fromAuthError)
+                .then(attachable -> TaskChain.Procedure.fromOptional(
+                        ComponentFactory.componentFactory.user.createUser(UserInfo.of(nickname, null, null, null, null, null, Instant.now())),
+                        ErrorCode.CreateUserFailed)
+                        .then(userId -> attachable.attach(Permission.of(userId.value, Authenticator.Role.ADMIN))
+                                .mapF(ErrorCode::fromAuthError)))
+                .reduce(e -> false, i -> i);
+        if (!success) log.warn("unable to create super user");
+        else log.debug("created super user: " + username);
     }
 
     @Bean

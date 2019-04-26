@@ -10,6 +10,8 @@ public interface Authenticator {
 
     Procedure<AuthError, Attachable> signUp(String username, String password);
 
+    Procedure<AuthError, Attachable> createSuperUser(String username, String password);
+
     Procedure<AuthError, UserToken> login(String username, String password);
 
     Procedure<AuthError, Permission> getLoggedUser(UserToken userToken);
@@ -23,6 +25,7 @@ public interface Authenticator {
     void remove(String username);
 
     boolean isAuthenticated(String username, String password);
+
 
     enum Role {
         USER,

@@ -2,6 +2,7 @@ package com.gaufoo.bbs.components.authenticator;
 
 import com.gaufoo.bbs.components.authenticator.common.*;
 import com.gaufoo.bbs.components.tokenGenerator.TokenGenerator;
+import com.gaufoo.bbs.components.user.common.UserId;
 import com.gaufoo.bbs.components.validator.Validator;
 
 import java.time.*;
@@ -32,6 +33,15 @@ class AuthenticatorImpl implements Authenticator {
 
         return Result.of(permission -> {
             if (!repository.saveUser(username, password, permission)) return Fail.of(AuthError.RegisterFailed);
+            else return Result.of(true);
+        });
+    }
+
+    @Override
+    public Procedure<AuthError, Attachable> createSuperUser(String username, String password) {
+        if (repository.contains(username)) return Fail.of(AuthError.UsernameDuplicate);
+        return Result.of(permission -> {
+            if (!repository.saveUser(username, password, permission)) return Fail.of(AuthError.ResetFailed);
             else return Result.of(true);
         });
     }
