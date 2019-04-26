@@ -42,6 +42,7 @@ type Mutation {
     cancelClaimLost(foundId: ID!): CancelClaimLostResult!
 
     createSchoolHeat(schoolHeatInput: SchoolHeatInput!): CreateSchoolHeatResult!
+    deleteSchoolHeat(id: ID!): DeleteSchoolHeatResult!
 
     createLecture(lectureInput: LectureInput!): CreateLectureResult!
     editLecture(id: ID!, lectureInput: LectureInput!): EditLectureResult!

@@ -47,7 +47,7 @@ public class AppContent {
     }
 
     public static TaskChain.Procedure<ErrorCode, Content> fromContentId(ContentId contentId) {
-        return TaskChain.Procedure.fromOptional(componentFactory.content.contentInfo(contentId), ErrorCode.ContentNotFound)
+        return TaskChain.Procedure.fromOptional(componentFactory.content.contentInfo(contentId), ErrorCode.ContentNonExit)
                 .mapR(AppContent::fromContentInfo);
     }
 

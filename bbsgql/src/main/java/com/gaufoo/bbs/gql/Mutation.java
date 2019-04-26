@@ -21,6 +21,7 @@ public class Mutation implements GraphQLMutationResolver {
     public Boolean reset() {
         AppFound.reset();
         AppLost.reset();
+        AppSchoolHeat.reset();
         return true;
     }
 
@@ -107,6 +108,12 @@ public class Mutation implements GraphQLMutationResolver {
     public SchoolHeat.CreateSchoolHeatResult createSchoolHeat(SchoolHeat.SchoolHeatInput input, DataFetchingEnvironment env) {
         return Utils.getAuthToken(env).map(
                 tkn -> AppSchoolHeat.createSchoolHeat(input, tkn)
+        ).orElse(authError);
+    }
+
+    public SchoolHeat.DeleteSchoolHeatResult deleteSchoolHeat(String id, DataFetchingEnvironment env) {
+        return Utils.getAuthToken(env).map(
+                tkn -> AppSchoolHeat.deleteSchoolHeat(id, tkn)
         ).orElse(authError);
     }
 

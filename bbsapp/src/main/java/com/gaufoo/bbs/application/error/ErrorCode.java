@@ -48,7 +48,8 @@ public enum ErrorCode {
     PublishLectureFailed(40),
     DeleteLectureFailed(41),
 
-    ContentNotFound(97),
+    PostNonExist(96),
+    ContentNonExit(97),
     CreatePostFailed(98),
     UnsupportedOperation(99),
     SaveFileFailed(100)

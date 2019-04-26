@@ -11,7 +11,8 @@ public class Ok implements
         Lost.DeleteLostResult,
         Lost.ClaimLostResult,
         Lost.CancelClaimLostResult,
-        Lecture.DeleteLectureResult
+        Lecture.DeleteLectureResult,
+        SchoolHeat.DeleteSchoolHeatResult
 {
     private Boolean ok;
 

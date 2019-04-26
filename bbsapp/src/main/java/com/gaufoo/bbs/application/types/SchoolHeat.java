@@ -18,7 +18,6 @@ public interface SchoolHeat {
     interface SchoolHeatInfo extends
             SchoolHeatInfoResult,
             CreateSchoolHeatResult,
-            DeleteSchoolHeatResult,
             Hot.HotItem,
             Latest.LatestItem
     {
