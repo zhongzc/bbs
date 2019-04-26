@@ -19,7 +19,7 @@ public interface Lecture {
     {
         String getId();
         String getTitle();
-        String getContent();
+        Content getContent();
         String getPosition();
         Long getTime();
         String getLecturer();

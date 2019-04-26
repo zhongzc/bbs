@@ -60,7 +60,9 @@ public class Application implements WebMvcConfigurer {
                 SchoolHeat.SchoolHeatInput.class,
                 Content.Picture.class,
                 Content.Paragraph.class,
-                Comment.CommentInfo.class
+                Comment.CommentInfo.class,
+                Lecture.MultiLectures.class,
+                Lecture.LectureInfo.class,
         };
         SchemaParserDictionary schemaParserDictionary = new SchemaParserDictionary();
         for(Class<?> clazz: subUnionTypes) {

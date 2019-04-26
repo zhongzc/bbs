@@ -43,6 +43,9 @@ public enum ErrorCode {
     PublishLostFailed(35),
     DeleteLostFailed(36),
     ClaimLostFailed(37),
+    LectureNotfound(38),
+    CreateContentFailed(39),
+    PublishLectureFailed(40),
 
     ContentNotFound(97),
     CreatePostFailed(98),
@@ -90,6 +93,9 @@ public enum ErrorCode {
         put(ErrorCode.PublishLostFailed, "创建失物失败");
         put(ErrorCode.DeleteLostFailed, "删除失物物失败");
         put(ErrorCode.ClaimLostFailed, "认领失物失败");
+        put(ErrorCode.LectureNotfound, "找不到讲座");
+        put(ErrorCode.CreateContentFailed, "无法创建文本");
+        put(ErrorCode.PublishLectureFailed, "发布讲座失败");
 
         put(ErrorCode.SaveFileFailed, "创建文件失败");
         // add more error code mapping here

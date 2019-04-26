@@ -76,11 +76,11 @@ public class AppFound {
 
     public static Found.CancelClaimFoundResult cancelClaimFound(String foundId, String userToken) {
         Procedure<ErrorCode, UserId> userIdProc = Commons.fetchUserId(UserToken.of(userToken));
-        Procedure<ErrorCode, FoundInfo> foundInfoProc = Procedure.fromOptional(
+        Supplier<Procedure<ErrorCode, FoundInfo>> foundInfoProcSup = () -> Procedure.fromOptional(
                 componentFactory.found.postInfo(FoundId.of(foundId)),
                 ErrorCode.FoundPostNonExist);
 
-        return userIdProc.then(userId -> foundInfoProc
+        return userIdProc.then(userId -> foundInfoProcSup.get()
                 .then(foundInfo -> Result.of(Objects.equals(foundInfo.losterId, userId.value)))
                 .then(eq -> eq ? Result.of(null) : Fail.of(ErrorCode.PermissionDenied))
                 .then(continued -> Procedure.fromOptional(componentFactory.found.removeClaim(FoundId.of(foundId)), ErrorCode.CancelClaimFailed))

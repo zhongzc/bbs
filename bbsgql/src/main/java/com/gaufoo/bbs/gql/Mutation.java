@@ -4,6 +4,7 @@ import com.coxautodev.graphql.tools.GraphQLMutationResolver;
 import com.gaufoo.bbs.application.*;
 import com.gaufoo.bbs.application.error.Error;
 import com.gaufoo.bbs.application.error.ErrorCode;
+import com.gaufoo.bbs.application.types.Lecture;
 import com.gaufoo.bbs.application.types.Lost;
 import com.gaufoo.bbs.application.types.SchoolHeat;
 import com.gaufoo.bbs.gql.util.Utils;
@@ -107,6 +108,12 @@ public class Mutation implements GraphQLMutationResolver {
     public SchoolHeat.CreateSchoolHeatResult createSchoolHeat(SchoolHeat.SchoolHeatInput input, DataFetchingEnvironment env) {
         return Utils.getAuthToken(env).map(
                 tkn -> AppSchoolHeat.createSchoolHeat(input, tkn)
+        ).orElse(authError);
+    }
+
+    public Lecture.CreateLectureResult createLecture(Lecture.LectureInput input, DataFetchingEnvironment env) {
+        return Utils.getAuthToken(env).map(
+                tkn -> AppLecture.createLecture(input, tkn)
         ).orElse(authError);
     }
 

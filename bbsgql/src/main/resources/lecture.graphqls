@@ -1,0 +1,29 @@
+type LectureInfo {
+    id: ID!
+    title: String!
+    content: Content!
+    position: String!
+    time: Long!
+    lecturer: String!
+    note: String! # 备注
+}
+type MultiLectures {
+    totalCount: Long!
+    lectures: [LectureInfo!]!
+}
+
+union LectureInfoResult = Error | LectureInfo
+union CreateLectureResult = Error | LectureInfo
+union EditLectureResult = Error | LectureInfo
+union DeleteLectureResult = Error | Ok
+union AllLecturesResult = Error | MultiLectures
+union SearchLecturesResult = Error | MultiLectures
+
+input LectureInput {
+    title: String!
+    content: ContentInput!
+    position: String!
+    time: Long!
+    lecturer: String!
+    note: String! # 备注
+}

@@ -75,11 +75,11 @@ public class AppLost {
 
     public static Lost.CancelClaimLostResult cancelClaimLost(String lostId, String userToken) {
         Procedure<ErrorCode, UserId> userIdProc = Commons.fetchUserId(UserToken.of(userToken));
-        Procedure<ErrorCode, LostInfo> lostInfoProc = Procedure.fromOptional(
+        Supplier<Procedure<ErrorCode, LostInfo>> lostInfoProcSup = () -> Procedure.fromOptional(
                 componentFactory.lost.postInfo(LostId.of(lostId)),
                 ErrorCode.LostPostNonExist);
 
-        return userIdProc.then(userId -> lostInfoProc
+        return userIdProc.then(userId -> lostInfoProcSup.get()
                 .then(lostInfo -> Result.of(Objects.equals(lostInfo.founderId, userId.value)))
                 .then(eq -> eq ? Result.of(null) : Fail.of(ErrorCode.PermissionDenied))
                 .then(continued -> Procedure.fromOptional(componentFactory.lost.removeClaim(LostId.of(lostId)), ErrorCode.CancelClaimFailed))

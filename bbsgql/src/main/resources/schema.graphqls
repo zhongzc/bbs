@@ -13,6 +13,10 @@ type Query {
     allLosts(skip: Long, first: Long): AllLostsResult!
     lostInfo(id: ID!): LostInfoResult!
 #    searchLosts(object: String!): SearchLostsResult!
+
+   allLectures(skip: Long, first: Long): AllLecturesResult! # 按讲座时间降序
+   lectureInfo(id: ID!): LectureInfoResult!
+#   searchLectures(title: String!, skip: Long, first: Long): SearchLecturesResult!
 }
 
 type Mutation {
@@ -36,6 +40,10 @@ type Mutation {
     cancelClaimLost(foundId: ID!): CancelClaimLostResult!
 
     createSchoolHeat(schoolHeatInput: SchoolHeatInput!): CreateSchoolHeatResult!
+
+    createLecture(lectureInput: LectureInput!): CreateLectureResult!
+#    editLecture(id: ID!, lectureInput: LectureInput!): EditLectureResult!
+#    deleteLecture(id: ID!): DeleteLectureResult!
 }
 
 schema {

@@ -1,12 +1,10 @@
 package com.gaufoo.bbs.gql;
 
 import com.coxautodev.graphql.tools.GraphQLQueryResolver;
-import com.gaufoo.bbs.application.AppLost;
-import com.gaufoo.bbs.application.Authentication;
-import com.gaufoo.bbs.application.AppFound;
-import com.gaufoo.bbs.application.PersonalInformation;
+import com.gaufoo.bbs.application.*;
 import com.gaufoo.bbs.application.error.Error;
 import com.gaufoo.bbs.application.error.ErrorCode;
+import com.gaufoo.bbs.application.types.Lecture;
 import com.gaufoo.bbs.application.types.Lost;
 import com.gaufoo.bbs.gql.util.Utils;
 import graphql.schema.DataFetchingEnvironment;
@@ -60,6 +58,14 @@ public class Query implements GraphQLQueryResolver {
 
     public LostInfoResult lostInfo(String id) {
         return AppLost.lostInfo(id);
+    }
+
+    public Lecture.AllLecturesResult allLectures(Long skip, Long first) {
+        return AppLecture.allLectures(skip, first);
+    }
+
+    public Lecture.LectureInfoResult lectureInfo(String lectureId) {
+        return AppLecture.lectureInfo(lectureId);
     }
 
     private static Error authError = Error.of(ErrorCode.NotLoggedIn);

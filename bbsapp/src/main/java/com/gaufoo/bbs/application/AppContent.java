@@ -16,7 +16,7 @@ import java.util.stream.Stream;
 import static com.gaufoo.bbs.application.ComponentFactory.componentFactory;
 
 public class AppContent {
-    public static Logger log = LoggerFactory.getLogger(AppContent.class);
+    private static Logger log = LoggerFactory.getLogger(AppContent.class);
 
     public static TaskChain.Procedure<ErrorCode, ContentInfo> consContent(Content.ContentInput contentInput) {
         Stream<TaskChain.Procedure<ErrorCode, ContentElem>> items = contentInput.elems.stream().map(i -> {

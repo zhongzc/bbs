@@ -21,6 +21,8 @@ public class Error implements
         Lost.DeleteLostResult,
         Lost.ClaimLostResult,
         Lost.CancelClaimLostResult,
+        Lecture.LectureInfoResult,
+        Lecture.CreateLectureResult,
         SchoolHeat.CreateSchoolHeatResult
 
 {
