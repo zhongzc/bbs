@@ -36,6 +36,6 @@ public class IdConfig {
     }
 
     public static IdConfig defau1t() {
-        return new IdConfig("user-id", "user-profile-id", "lost-id", "found-id", "school-heat-id", "entertainment-id", "lecture", "learning-resource-id", "comment-id", "reply-id", "contentId-id", "lost-found-images", "contentId-images", "news", "comment-group");
+        return new IdConfig("user-id", "user-profile-id", "lost-id", "found-id", "school-heat-id", "entertainment-id", "lecture", "learning-resource-id", "comment-id", "reply-id", "content-id", "lost-found-images", "content-images", "news", "comment-group");
     }
 }
