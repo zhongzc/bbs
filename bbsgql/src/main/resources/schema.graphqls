@@ -34,6 +34,8 @@ type Mutation {
     deleteLost(id: ID!): DeleteLostResult!
     claimLost(lostId: ID!): ClaimLostResult!
     cancelClaimLost(foundId: ID!): CancelClaimLostResult!
+
+    createSchoolHeat(schoolHeatInput: SchoolHeatInput!): CreateSchoolHeatResult!
 }
 
 schema {

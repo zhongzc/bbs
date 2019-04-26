@@ -1,0 +1,26 @@
+type Content {
+    items: [ContentItem!]!
+}
+
+union ContentItem = Picture | Paragraph
+
+type Picture {
+    url: String!
+}
+type Paragraph {
+    text: String!
+}
+
+input ContentInput {
+    elems: [ContentElemInput!]!
+}
+
+input ContentElemInput {
+    type: ElemType!
+    str: String!
+}
+
+enum ElemType {
+    Picture
+    Text
+}

@@ -54,7 +54,13 @@ public class Application implements WebMvcConfigurer {
                 Found.MultiFoundInfos.class,
                 Found.FoundInfo.class,
                 Lost.MultiLostInfos.class,
-                Lost.LostInfo.class
+                Lost.LostInfo.class,
+                SchoolHeat.SchoolHeatInfo.class,
+                SchoolHeat.MultiSchoolHeats.class,
+                SchoolHeat.SchoolHeatInput.class,
+                Content.Picture.class,
+                Content.Paragraph.class,
+                Comment.CommentInfo.class
         };
         SchemaParserDictionary schemaParserDictionary = new SchemaParserDictionary();
         for(Class<?> clazz: subUnionTypes) {

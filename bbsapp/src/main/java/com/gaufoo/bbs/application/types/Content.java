@@ -7,7 +7,7 @@ public interface Content {
 
     interface ContentItem {}
     interface Picture extends ContentItem {
-        String getURL();
+        String getUrl();
     }
     interface Paragraph extends ContentItem {
         String getText();

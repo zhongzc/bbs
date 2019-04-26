@@ -1,0 +1,22 @@
+type SchoolHeatInfo {
+    id: ID!
+    title: String!
+    content: Content!
+    author: PersonalInfo!
+    latestCommenter: PersonalInfo
+    latestActiveTime: Long!
+    createTime: Long!
+    heat: Int!
+    allComments(skip: Long, first: Long): AllComments!
+}
+type MultiSchoolHeats {
+    totalCount: Long!
+    schoolHeats: [SchoolHeatInfo!]!
+}
+
+union CreateSchoolHeatResult = Error | SchoolHeatInfo
+
+input SchoolHeatInput {
+    title: String!
+    content: ContentInput!
+}

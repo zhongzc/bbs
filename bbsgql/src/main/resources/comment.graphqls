@@ -1,0 +1,20 @@
+type AllComments {
+    totalCount: Long!
+    comments: [CommentInfo!]!
+}
+type CommentInfo {
+    id: ID!
+    content: Content!
+    author: PersonalInfo!
+    allReplies(skip: Long, first: Long): AllReplies!
+}
+type AllReplies {
+    totalCount: Long!
+    replies: [ReplyInfo!]!
+}
+type ReplyInfo {
+    id: ID!
+    content: Content!
+    author: PersonalInfo!
+    replyTo: PersonalInfo
+}

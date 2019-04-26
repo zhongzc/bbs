@@ -5,7 +5,9 @@ import com.gaufoo.bbs.application.*;
 import com.gaufoo.bbs.application.error.Error;
 import com.gaufoo.bbs.application.error.ErrorCode;
 import com.gaufoo.bbs.application.types.Lost;
+import com.gaufoo.bbs.application.types.SchoolHeat;
 import com.gaufoo.bbs.gql.util.Utils;
+import com.gaufoo.bbs.util.Util;
 import graphql.schema.DataFetchingEnvironment;
 
 import static com.gaufoo.bbs.application.types.AccountAndPassword.ChangePasswordResult;
@@ -99,6 +101,12 @@ public class Mutation implements GraphQLMutationResolver {
     public Lost.CancelClaimLostResult cancelClaimLost(String lostId, DataFetchingEnvironment env) {
         return Utils.getAuthToken(env).map(
                 tkn -> AppLost.cancelClaimLost(lostId, tkn)
+        ).orElse(authError);
+    }
+
+    public SchoolHeat.CreateSchoolHeatResult createSchoolHeat(SchoolHeat.SchoolHeatInput input, DataFetchingEnvironment env) {
+        return Utils.getAuthToken(env).map(
+                tkn -> AppSchoolHeat.createSchoolHeat(input, tkn)
         ).orElse(authError);
     }
 
