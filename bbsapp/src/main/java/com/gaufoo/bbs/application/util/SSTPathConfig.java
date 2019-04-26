@@ -154,7 +154,7 @@ public class SSTPathConfig {
                 "schoolHeat",
                 "comment",
                 "reply",
-                "id", "content", "active", "heat", "news", "commentGroup");
+                "id", "contentId", "active", "heat", "news", "commentGroup");
     }
 
 }

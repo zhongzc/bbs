@@ -28,15 +28,15 @@ public interface CommentGroup {
 
     boolean removeComment(CommentGroupId commentGroupId, CommentId commentId);
 
-    boolean removeReply(CommentGroupId commentGroupId, CommentId commentId, ReplyId replyId);
+    boolean removeReply(CommentId commentId, ReplyId replyId);
 
     Long getCommentsCount(CommentGroupId commentGroupId);
 
-    Long getRepliesCount(CommentGroupId commentGroupId, CommentId commentId);
+    Long getRepliesCount(CommentId commentId);
 
     Stream<CommentId> allComments(CommentGroupId commentGroupId);
 
-    Stream<ReplyId> allReplies(CommentGroupId commentGroupId, CommentId commentId);
+    Stream<ReplyId> allReplies(CommentId commentId);
 
     static CommentGroup defau1t(IdGenerator cmmtGpIds, IdGenerator cmmtIds, IdGenerator rpyIds, CommentGroupRepository cmmtGpRepository, CommentRepository cmmtRepository, ReplyRepository rpyRepository) {
         return new CommentGroupImpl(cmmtGpIds, cmmtIds, rpyIds, cmmtGpRepository, cmmtRepository, rpyRepository);

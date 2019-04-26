@@ -39,6 +39,7 @@ public enum ErrorCode {
     PermissionDenied(31),
     CancelClaimFailed(32),
 
+    ContentNotFound(97),
     CreatePostFailed(98),
     UnsupportedOperation(99),
     SaveFileFailed(100)

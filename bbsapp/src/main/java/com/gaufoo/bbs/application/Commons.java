@@ -11,8 +11,8 @@ import com.gaufoo.bbs.util.TaskChain;
 
 import java.net.URI;
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 
 import static com.gaufoo.bbs.application.ComponentFactory.componentFactory;
@@ -37,19 +37,22 @@ public class Commons {
     }
 
     public static String lastHeatTimeWindow(Instant now) {
-        return DateTimeFormatter.ofPattern("MMddHH").withZone(ZoneId.systemDefault()).format(now.minus(5, ChronoUnit.HOURS));
+        return currentHeatTimeWindow(now.minus(5, ChronoUnit.HOURS));
     }
 
     public static String currentHeatTimeWindow(Instant now) {
-        return DateTimeFormatter.ofPattern("MMddHH").withZone(ZoneId.systemDefault()).format(now);
+        LocalDateTime ldt = LocalDateTime.ofInstant(now, ZoneId.systemDefault());
+        int hWindow = ldt.getHour() - (ldt.getHour() % 5);
+        return String.format("%02d%02d%02d", ldt.getMonthValue(), ldt.getDayOfMonth(), hWindow );
     }
 
     public static String lastActiveTimeWindow(Instant now) {
-        return DateTimeFormatter.ofPattern("MMddHH").withZone(ZoneId.systemDefault()).format(now.minus(1, ChronoUnit.HOURS));
+        return currentActiveTimeWindow(now.minus(1, ChronoUnit.HOURS));
     }
 
     public static String currentActiveTimeWindow(Instant now) {
-        return DateTimeFormatter.ofPattern("MMddHH").withZone(ZoneId.systemDefault()).format(now);
+        LocalDateTime ldt = LocalDateTime.ofInstant(now, ZoneId.systemDefault());
+        return String.format("%02d%02d%02d", ldt.getMonthValue(), ldt.getDayOfMonth(), ldt.getHour() );
     }
 
     public static String getGroupId(PostType postType) {
@@ -64,5 +67,14 @@ public class Commons {
         SchoolHeat,
         Entertainment,
         LearningResource
+    }
+
+    public enum SortedBy {
+        ActiveTimeAsc,
+        ActiveTimeDes,
+        HeatAsc,
+        HeatDes,
+        NatureAsc,
+        NatureDes
     }
 }

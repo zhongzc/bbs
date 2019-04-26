@@ -52,7 +52,7 @@ public interface LearningResource {
         public String toString() {
             return "LearningResourceInput{" +
                     "title='" + title + '\'' +
-                    ", content=" + content +
+                    ", contentId=" + content +
                     ", course='" + course + '\'' +
                     ", base64AttachedFile='" + base64AttachedFile + '\'' +
                     '}';
@@ -67,7 +67,7 @@ public interface LearningResource {
         public String toString() {
             return "LearningResourceCommentInput{" +
                     "postIdCommenting='" + postIdCommenting + '\'' +
-                    ", content=" + content +
+                    ", contentId=" + content +
                     '}';
         }
     }
@@ -81,7 +81,7 @@ public interface LearningResource {
         public String toString() {
             return "LearningResourceReplyInput{" +
                     "commentIdReplying='" + commentIdReplying + '\'' +
-                    ", content=" + content +
+                    ", contentId=" + content +
                     ", replyTo='" + replyTo + '\'' +
                     '}';
         }

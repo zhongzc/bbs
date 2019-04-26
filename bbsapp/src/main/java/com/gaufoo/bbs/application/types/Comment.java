@@ -19,7 +19,7 @@ public interface Comment {
         String getId();
         Content getContent();
         PersonalInformation.PersonalInfo getAuthor();
-        AllReplies getAllReplies();
+        AllReplies getAllReplies(Long skip, Long first);
     }
 
     interface AllReplies {

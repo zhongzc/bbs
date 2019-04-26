@@ -46,7 +46,7 @@ public interface Lecture {
         public String toString() {
             return "LectureInput{" +
                     "title='" + title + '\'' +
-                    ", content='" + content + '\'' +
+                    ", contentId='" + content + '\'' +
                     ", position='" + position + '\'' +
                     ", time=" + time +
                     ", lecturer='" + lecturer + '\'' +

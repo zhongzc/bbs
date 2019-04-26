@@ -50,7 +50,7 @@ public interface Entertainment {
         public String toString() {
             return "EntertainmentInput{" +
                     "title='" + title + '\'' +
-                    ", content=" + content +
+                    ", contentId=" + content +
                     '}';
         }
     }
@@ -63,7 +63,7 @@ public interface Entertainment {
         public String toString() {
             return "EntertainmentCommentInput{" +
                     "postIdCommenting='" + postIdCommenting + '\'' +
-                    ", content=" + content +
+                    ", contentId=" + content +
                     '}';
         }
     }
@@ -77,7 +77,7 @@ public interface Entertainment {
         public String toString() {
             return "EntertainmentReplyInput{" +
                     "commentIdReplying='" + commentIdReplying + '\'' +
-                    ", content=" + content +
+                    ", contentId=" + content +
                     ", replyTo='" + replyTo + '\'' +
                     '}';
         }

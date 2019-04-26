@@ -3,10 +3,7 @@ package com.gaufoo.bbs.application;
 import com.gaufoo.bbs.application.error.ErrorCode;
 import com.gaufoo.bbs.application.types.Content;
 import com.gaufoo.bbs.application.util.StaticResourceConfig;
-import com.gaufoo.bbs.components.content.common.ContentElem;
-import com.gaufoo.bbs.components.content.common.ContentFig;
-import com.gaufoo.bbs.components.content.common.ContentInfo;
-import com.gaufoo.bbs.components.content.common.ContentParag;
+import com.gaufoo.bbs.components.content.common.*;
 import com.gaufoo.bbs.components.file.common.FileId;
 import com.gaufoo.bbs.util.TaskChain;
 import org.slf4j.Logger;
@@ -47,6 +44,11 @@ public class AppContent {
                 return (Content.Paragraph) () -> ((ContentParag) e).paragraph;
             }
         }).collect(Collectors.toList());
+    }
+
+    public static TaskChain.Procedure<ErrorCode, Content> fromContentId(ContentId contentId) {
+        return TaskChain.Procedure.fromOptional(componentFactory.content.contentInfo(contentId), ErrorCode.ContentNotFound)
+                .mapR(AppContent::fromContentInfo);
     }
 
     private static <T, E> T warnNil(E error) {

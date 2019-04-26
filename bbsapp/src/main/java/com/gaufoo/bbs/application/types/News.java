@@ -35,7 +35,7 @@ public interface News {
         public String toString() {
             return "NewsInput{" +
                     "title='" + title + '\'' +
-                    ", content=" + content +
+                    ", contentId=" + content +
                     '}';
         }
     }

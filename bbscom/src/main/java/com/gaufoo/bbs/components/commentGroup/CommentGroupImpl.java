@@ -77,7 +77,7 @@ public class CommentGroupImpl implements CommentGroup {
     }
 
     @Override
-    public boolean removeReply(CommentGroupId commentGroupId, CommentId commentId, ReplyId replyId) {
+    public boolean removeReply(CommentId commentId, ReplyId replyId) {
         return comment.removeReply(commentId, replyId);
     }
 
@@ -87,7 +87,7 @@ public class CommentGroupImpl implements CommentGroup {
     }
 
     @Override
-    public Long getRepliesCount(CommentGroupId commentGroupId, CommentId commentId) {
+    public Long getRepliesCount(CommentId commentId) {
         return comment.getRepliesCount(commentId);
     }
 
@@ -96,7 +96,7 @@ public class CommentGroupImpl implements CommentGroup {
     }
 
     @Override
-    public Stream<ReplyId> allReplies(CommentGroupId commentGroupId, CommentId commentId) {
+    public Stream<ReplyId> allReplies(CommentId commentId) {
         return comment.allReplies(commentId);
     }
 }

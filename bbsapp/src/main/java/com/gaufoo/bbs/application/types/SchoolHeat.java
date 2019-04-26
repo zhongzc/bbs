@@ -55,7 +55,7 @@ public interface SchoolHeat {
         public String toString() {
             return "SchoolHeatCommentInput{" +
                     "postIdCommenting='" + postIdCommenting + '\'' +
-                    ", content=" + content +
+                    ", contentId=" + content +
                     '}';
         }
     }
@@ -69,7 +69,7 @@ public interface SchoolHeat {
         public String toString() {
             return "SchoolHeatReplyInput{" +
                     "commentIdReplying='" + commentIdReplying + '\'' +
-                    ", content=" + content +
+                    ", contentId=" + content +
                     ", replyTo='" + replyTo + '\'' +
                     '}';
         }
