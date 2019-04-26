@@ -4,8 +4,9 @@ import com.gaufoo.bbs.application.error.Error;
 import com.gaufoo.bbs.application.error.ErrorCode;
 import com.gaufoo.bbs.application.error.Ok;
 import com.gaufoo.bbs.application.types.Lost;
-import com.gaufoo.bbs.application.util.StaticResourceConfig;
 import com.gaufoo.bbs.application.types.PersonalInformation;
+import com.gaufoo.bbs.application.util.LazyVal;
+import com.gaufoo.bbs.application.util.StaticResourceConfig;
 import com.gaufoo.bbs.components.authenticator.common.UserToken;
 import com.gaufoo.bbs.components.file.common.FileId;
 import com.gaufoo.bbs.components.lost.common.LostId;
@@ -35,10 +36,7 @@ public class AppLost {
         final long fFirst = first == null ? Long.MAX_VALUE : first;
 
         Supplier<List<Lost.LostInfo>> fs = () -> componentFactory.lost.allPosts()
-                .map(lostId -> componentFactory.lost.postInfo(lostId)
-                        .map(lostInfo -> consLostInfo(lostId, lostInfo))
-                        .orElse(null))
-                .filter(Objects::nonNull)
+                .map(lostId -> consLostInfo(lostId, LazyVal.of(() -> componentFactory.lost.postInfo(lostId).orElse(null))))
                 .skip(fSkip).limit(fFirst)
                 .collect(Collectors.toList());
 
@@ -48,7 +46,7 @@ public class AppLost {
     public static Lost.LostInfoResult lostInfo(String lostIdStr) {
         LostId lostId = LostId.of(lostIdStr);
         return componentFactory.lost.postInfo(lostId)
-                .map(lostInfo -> (Lost.LostInfoResult) consLostInfo(lostId, lostInfo))
+                .map(lostInfo -> (Lost.LostInfoResult) consLostInfo(lostId, LazyVal.with(lostInfo)))
                 .orElse(Error.of(ErrorCode.LostPostNonExist));
     }
 
@@ -101,22 +99,22 @@ public class AppLost {
         ), ErrorCode.PublishLostFailed);
     }
 
-    private static Lost.LostInfo consLostInfo(LostId lostId, LostInfo lostInfo) {
+    private static Lost.LostInfo consLostInfo(LostId lostId, LazyVal<LostInfo> lostInfo) {
         return new Lost.LostInfo() {
             public String getId()           { return lostId.value; }
-            public String getName()         { return lostInfo.name; }
-            public String getDescription()  { return lostInfo.description; }
-            public String getPosition()     { return lostInfo.position; }
-            public String getPictureURL()   { return factorOutPictureUrl(FileId.of(lostInfo.pictureId)); }
-            public String getContact()      { return lostInfo.contact; }
-            public Long getCreateTime()     { return lostInfo.createTime.toEpochMilli(); }
-            public Long getLostTime()      { return lostInfo.lostTime.toEpochMilli(); }
+            public String getName()         { return nilOrTr(lostInfo.get(), x -> x.name); }
+            public String getDescription()  { return nilOrTr(lostInfo.get(), x -> x.description); }
+            public String getPosition()     { return nilOrTr(lostInfo.get(), x -> x.position); }
+            public String getPictureURL()   { return factorOutPictureUrl(FileId.of(lostInfo.get().pictureId)); }
+            public String getContact()      { return nilOrTr(lostInfo.get(), x -> x.contact); }
+            public Long getCreateTime()     { return nilOrTr(lostInfo.get(), x -> x.createTime.toEpochMilli()); }
+            public Long getLostTime()      { return nilOrTr(lostInfo.get(), x -> x.lostTime.toEpochMilli()); }
             public PersonalInformation.PersonalInfo getPublisher() {
-                return Commons.fetchPersonalInfo(UserId.of(lostInfo.publisherId)).reduce(AppLost::warnNil, r -> r);
+                return Commons.fetchPersonalInfo(UserId.of(lostInfo.get().publisherId)).reduce(AppLost::warnNil, r -> r);
             }
             public PersonalInformation.PersonalInfo getClaimer() {
-                if (lostInfo.founderId == null) return null;
-                return Commons.fetchPersonalInfo(UserId.of(lostInfo.founderId)).reduce(AppLost::warnNil, r -> r);
+                if (lostInfo.get().founderId == null) return null;
+                return Commons.fetchPersonalInfo(UserId.of(lostInfo.get().founderId)).reduce(AppLost::warnNil, r -> r);
             }
         };
     }

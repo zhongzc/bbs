@@ -5,6 +5,7 @@ import com.gaufoo.bbs.application.error.ErrorCode;
 import com.gaufoo.bbs.application.error.Ok;
 import com.gaufoo.bbs.application.types.Found;
 import com.gaufoo.bbs.application.types.PersonalInformation;
+import com.gaufoo.bbs.application.util.LazyVal;
 import com.gaufoo.bbs.application.util.StaticResourceConfig;
 import com.gaufoo.bbs.components.authenticator.common.UserToken;
 import com.gaufoo.bbs.components.file.common.FileId;
@@ -36,10 +37,7 @@ public class AppFound {
         final long fFirst = first == null ? Long.MAX_VALUE : first;
 
         Supplier<List<Found.FoundInfo>> fs = () -> componentFactory.found.allPosts()
-                .map(foundId -> componentFactory.found.postInfo(foundId)
-                        .map(foundInfo -> consFoundInfo(foundId, foundInfo))
-                        .orElse(null))
-                .filter(Objects::nonNull)
+                .map(foundId -> consFoundInfo(foundId, LazyVal.of(() -> componentFactory.found.postInfo(foundId).orElse(null))))
                 .skip(fSkip).limit(fFirst)
                 .collect(Collectors.toList());
 
@@ -49,7 +47,7 @@ public class AppFound {
     public static Found.FoundInfoResult foundInfo(String foundIdStr) {
         FoundId foundId = FoundId.of(foundIdStr);
         return componentFactory.found.postInfo(foundId)
-                .map(foundInfo -> (Found.FoundInfoResult)consFoundInfo(foundId, foundInfo))
+                .map(foundInfo -> (Found.FoundInfoResult)consFoundInfo(foundId, LazyVal.with(foundInfo)))
                 .orElse(Error.of(ErrorCode.FoundPostNonExist));
     }
 
@@ -102,22 +100,22 @@ public class AppFound {
         ), ErrorCode.PublishFoundFailed);
     }
 
-    private static Found.FoundInfo consFoundInfo(FoundId foundId, FoundInfo foundInfo) {
+    private static Found.FoundInfo consFoundInfo(FoundId foundId, LazyVal<FoundInfo> foundInfo) {
         return new Found.FoundInfo() {
             public String getId()           { return foundId.value; }
-            public String getName()         { return foundInfo.name; }
-            public String getDescription()  { return foundInfo.description; }
-            public String getPosition()     { return foundInfo.position; }
-            public String getPictureURL()   { return factorOutPictureUrl(FileId.of(foundInfo.pictureId)); }
-            public String getContact()      { return foundInfo.contact; }
-            public Long getCreateTime()     { return foundInfo.createTime.toEpochMilli(); }
-            public Long getFoundTime()      { return foundInfo.foundTime.toEpochMilli(); }
+            public String getName()         { return nilOrTr(foundInfo.get(), x -> x.name); }
+            public String getDescription()  { return nilOrTr(foundInfo.get(), x -> x.description); }
+            public String getPosition()     { return nilOrTr(foundInfo.get(), x -> x.position); }
+            public String getPictureURL()   { return factorOutPictureUrl(FileId.of(foundInfo.get().pictureId)); }
+            public String getContact()      { return nilOrTr(foundInfo.get(), x -> x.contact); }
+            public Long getCreateTime()     { return nilOrTr(foundInfo.get(), x -> x.createTime.toEpochMilli()); }
+            public Long getFoundTime()      { return nilOrTr(foundInfo.get(), x -> x.foundTime.toEpochMilli()); }
             public PersonalInformation.PersonalInfo getPublisher() {
-                return Commons.fetchPersonalInfo(UserId.of(foundInfo.publisherId)).reduce(AppFound::warnNil, r -> r);
+                return Commons.fetchPersonalInfo(UserId.of(foundInfo.get().publisherId)).reduce(AppFound::warnNil, r -> r);
             }
             public PersonalInformation.PersonalInfo getClaimer() {
-                if (foundInfo.losterId == null) return null;
-                return Commons.fetchPersonalInfo(UserId.of(foundInfo.losterId)).reduce(AppFound::warnNil, r -> r);
+                if (foundInfo.get().losterId == null) return null;
+                return Commons.fetchPersonalInfo(UserId.of(foundInfo.get().losterId)).reduce(AppFound::warnNil, r -> r);
             }
         };
     }
