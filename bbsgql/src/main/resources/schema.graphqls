@@ -1,3 +1,5 @@
+scalar Long
+
 type Query {
     personInfo(id: ID!): PersonInfoResult!
     allMajors: [String!]!
@@ -18,9 +20,15 @@ type Query {
     allSchoolHeats(skip: Long, first: Long, sortedBy: SortedBy): AllSchoolHeatsResult!
     schoolHeatsOfAuthor(authorId: ID!, skip: Long, first: Long): SchoolHeatsOfAuthorResult!
 
-    allLectures(skip: Long, first: Long): AllLecturesResult! # 按讲座时间降序
+    allLectures(skip: Long, first: Long): AllLecturesResult!
     lectureInfo(id: ID!): LectureInfoResult!
 #   searchLectures(title: String!, skip: Long, first: Long): SearchLecturesResult!
+
+#    allLearningResource(skip: Long, first: Long, course: String, sortedBy: SortedBy): AllLearningResourceResult!
+#    allCourses: [String!]!
+#    learningResourceInfo(id: ID!): LearningResourceInfoResult!
+#    learningResourcesOfAuthor(authorId: ID!, skip: Long, first: Long): LearningResourcesOfAuthorResult!
+#    searchLearningResources(title: String!): SearchLearningResourcesResult!
 }
 
 type Mutation {
@@ -49,6 +57,13 @@ type Mutation {
     createLecture(lectureInput: LectureInput!): CreateLectureResult!
     editLecture(id: ID!, lectureInput: LectureOptionalInput!): EditLectureResult!
     deleteLecture(id: ID!): DeleteLectureResult!
+
+    createLearningResource(learningResourceInput: LearningResourceInput): CreateLearningResourceResult!
+    deleteLearningResource(id: ID!): DeleteLearningResourceResult!
+#    createLearningResourceComment(learningResourceCommentInput: LearningResourceCommentInput!): CreateLearningResourceCommentResult!
+#    deleteLearningResourceComment(lrId: ID!, cmmtId: ID!): DeleteLearningResourceCommentResult!
+#    createLearningResourceCommentReply(learningResourceReplyInput: LearningResourceReplyInput): CreateLearningResourceCommentReplyResult!
+#    deleteLearningResourceCommentReply(lrId: ID!, cmmtId: ID!, rpyId: ID!): DeleteLearningResourceCommentReplyResult!
 }
 
 schema {

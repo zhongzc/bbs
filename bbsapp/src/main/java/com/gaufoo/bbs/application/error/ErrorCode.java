@@ -48,9 +48,16 @@ public enum ErrorCode {
     PublishLectureFailed(40),
     DeleteLectureFailed(41),
     UpdateLectureFailed(42),
+    ParseCourseError(43),
+    CreateCommentGroupFailed(44),
+    PublishLearningResourceFailed(45),
+    ClearActiveAndHeatFailed(46),
+    CreateActiveAndHeatFailed(47),
+    LearningResourceNonExist(48),
+    DeleteLearningResourceFailed(49),
 
     PostNonExist(96),
-    ContentNonExit(97),
+    ContentNonExist(97),
     CreatePostFailed(98),
     UnsupportedOperation(99),
     SaveFileFailed(100)
@@ -101,6 +108,13 @@ public enum ErrorCode {
         put(ErrorCode.PublishLectureFailed, "发布讲座信息失败");
         put(ErrorCode.DeleteLectureFailed, "删除讲座信息失败");
         put(ErrorCode.UpdateLectureFailed, "更新讲座信息失败");
+        put(ErrorCode.ParseCourseError, "无法解析课程");
+        put(ErrorCode.CreateCommentGroupFailed, "创建评论组失败");
+        put(ErrorCode.PublishLearningResourceFailed, "发布学习资源失败");
+        put(ErrorCode.ClearActiveAndHeatFailed, "清除活跃或热度失败");
+        put(ErrorCode.CreateActiveAndHeatFailed, "创建活跃或热度失败");
+        put(ErrorCode.LearningResourceNonExist, "学习资源不存在");
+        put(ErrorCode.DeleteLearningResourceFailed, "删除学习资源失败");
 
         put(ErrorCode.SaveFileFailed, "创建文件失败");
         // add more error code mapping here

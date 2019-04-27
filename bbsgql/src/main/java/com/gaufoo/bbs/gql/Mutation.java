@@ -4,6 +4,7 @@ import com.coxautodev.graphql.tools.GraphQLMutationResolver;
 import com.gaufoo.bbs.application.*;
 import com.gaufoo.bbs.application.error.Error;
 import com.gaufoo.bbs.application.error.ErrorCode;
+import com.gaufoo.bbs.application.types.LearningResource;
 import com.gaufoo.bbs.application.types.Lecture;
 import com.gaufoo.bbs.application.types.Lost;
 import com.gaufoo.bbs.application.types.SchoolHeat;
@@ -135,6 +136,19 @@ public class Mutation implements GraphQLMutationResolver {
                 tkn -> AppLecture.deleteLecture(lectureId, tkn)
         ).orElse(authError);
     }
+
+    public LearningResource.CreateLearningResourceResult createLearningResource(LearningResource.LearningResourceInput learningResourceInput, DataFetchingEnvironment env) {
+        return Utils.getAuthToken(env).map(
+                tkn -> AppLearningResource.createLearningResource(learningResourceInput, tkn)
+        ).orElse(authError);
+    }
+
+    public LearningResource.DeleteLearningResourceResult deleteLearningResource(String learningResourceId, DataFetchingEnvironment env) {
+        return Utils.getAuthToken(env).map(
+                tkn -> AppLearningResource.deleteLearningResource(learningResourceId, tkn)
+        ).orElse(authError);
+    }
+
 
     private static Error authError = Error.of(ErrorCode.NotLoggedIn);
 }

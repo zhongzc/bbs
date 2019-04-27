@@ -89,6 +89,7 @@ public class ComponentFactory {
     public final FileFactory userProfiles;
     public final FileFactory lostFoundImages;
     public final FileFactory contentImages;
+    public final FileFactory learningResourceAttachFiles;
 
     public StaticResourceConfig staticResourceConfig;
 
@@ -199,6 +200,11 @@ public class ComponentFactory {
         FileFactoryRepository contentImagesRepository = FileFactoryFileSystemRepository.get(staticResourceConfig.folderPathOf(StaticResourceConfig.FileType.ContentImages));
         reps.add(contentImagesRepository::shutdown);
         this.contentImages = FileFactory.defau1t(contentImagesRepository, IdGenerator.seqInteger(idConfig.contentImages, idRepository));
+
+        //
+        FileFactoryRepository learnSrcAttachFilesRepository = FileFactoryFileSystemRepository.get(staticResourceConfig.folderPathOf(StaticResourceConfig.FileType.AttachFiles));
+        reps.add(learnSrcAttachFilesRepository::shutdown);
+        this.learningResourceAttachFiles = FileFactory.defau1t(learnSrcAttachFilesRepository, IdGenerator.seqInteger(idConfig.attachFiles, idRepository));
     }
 
     public void shutdown() throws InterruptedException {

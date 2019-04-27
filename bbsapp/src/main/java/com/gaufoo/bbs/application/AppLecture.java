@@ -6,16 +6,12 @@ import com.gaufoo.bbs.application.error.Ok;
 import com.gaufoo.bbs.application.types.Content;
 import com.gaufoo.bbs.application.types.Lecture;
 import com.gaufoo.bbs.application.util.LazyVal;
-import com.gaufoo.bbs.components.authenticator.Authenticator;
 import com.gaufoo.bbs.components.authenticator.common.UserToken;
 import com.gaufoo.bbs.components.content.common.ContentId;
 import com.gaufoo.bbs.components.lecture.common.LectureId;
 import com.gaufoo.bbs.components.lecture.common.LectureInfo;
-import com.gaufoo.bbs.components.user.common.UserId;
-import com.gaufoo.bbs.util.TaskChain;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import scala.reflect.internal.Precedence;
 
 import java.time.Instant;
 import java.util.List;
@@ -113,15 +109,13 @@ public class AppLecture {
 
     private static Lecture.LectureInfo consLectureInfo(LectureId lectureId, Lecture.LectureInput in, ContentId contentId) {
         return new Lecture.LectureInfo() {
-            public String getId() { return lectureId.value; }
-            public String getTitle() { return in.title; }
-            public Content getContent() {
-                return () -> AppContent.fromContentId(contentId).reduce(AppLecture::warnNil, Content::getItems);
-            }
-            public String getPosition() { return in.position; }
-            public Long getTime() { return in.time; }
-            public String getLecturer() { return in.lecturer; }
-            public String getNote() { return in.note; }
+            public String  getId()       { return lectureId.value; }
+            public String  getTitle()    { return in.title; }
+            public Content getContent()  { return fromIdToContent(contentId); }
+            public String  getPosition() { return in.position; }
+            public Long    getTime()     { return in.time; }
+            public String  getLecturer() { return in.lecturer; }
+            public String  getNote()     { return in.note; }
         };
     }
 

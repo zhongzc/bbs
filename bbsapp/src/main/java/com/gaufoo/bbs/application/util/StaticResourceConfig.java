@@ -21,7 +21,8 @@ public class StaticResourceConfig {
     public enum FileType {
         UserProfileImage,
         LostFoundImage,
-        ContentImages
+        ContentImages,
+        AttachFiles,
     }
 
     private final Path resourceFolder;

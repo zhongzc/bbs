@@ -1,0 +1,39 @@
+type LearningResourceInfo {
+    id: ID!
+    author: PersonalInfo!
+    title: String!
+    content: Content!
+    course: String!
+    attachedFileURL: String!
+    latestCommenter: PersonalInfo
+    latestActiveTime: Long!
+    createTime: Long!
+    allComments(skip: Long, first: Long): AllComments!
+}
+
+type MultiLearningResources {
+    totalCount: Long!
+    learningResources: [LearningResourceInfo!]!
+}
+union LearningResourceInfoResult = Error | LearningResourceInfo
+union CreateLearningResourceResult = Error | LearningResourceInfo
+union DeleteLearningResourceResult = Error | Ok
+union AllLearningResourceResult = Error | MultiLearningResources
+union LearningResourcesOfAuthorResult = Error | MultiLearningResources
+union SearchLearningResourcesResult = Error | MultiLearningResources
+
+input LearningResourceInput {
+    title: String!
+    content: ContentInput!
+    course: String!
+    base64AttachedFile: String!
+}
+input LearningResourceCommentInput {
+    postIdCommenting: ID!
+    content: ContentInput!
+}
+input LearningResourceReplyInput {
+    commentIdReplying: ID!
+    content: ContentInput!
+    replyTo: ID
+}

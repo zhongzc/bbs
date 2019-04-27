@@ -1,9 +1,11 @@
 package com.gaufoo.bbs.application;
 
+import com.gaufoo.bbs.application.error.Error;
 import com.gaufoo.bbs.application.error.ErrorCode;
 import com.gaufoo.bbs.application.types.PersonalInformation;
 import com.gaufoo.bbs.application.util.StaticResourceConfig;
 import com.gaufoo.bbs.components.authenticator.Authenticator;
+import com.gaufoo.bbs.components.authenticator.common.Permission;
 import com.gaufoo.bbs.components.authenticator.common.UserToken;
 import com.gaufoo.bbs.components.file.FileFactory;
 import com.gaufoo.bbs.components.file.common.FileId;
@@ -15,14 +17,19 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
+import java.util.Base64;
 
 import static com.gaufoo.bbs.application.ComponentFactory.componentFactory;
 import static com.gaufoo.bbs.application.PersonalInformation.consPersonalInfo;
 
 public class Commons {
     public static TaskChain.Procedure<ErrorCode, UserId> fetchUserId(UserToken userToken) {
+        return fetchPermission(userToken)
+                .then(permission -> TaskChain.Result.of(UserId.of(permission.userId)));
+    }
+
+    public static TaskChain.Procedure<ErrorCode, Permission> fetchPermission(UserToken userToken) {
         return componentFactory.authenticator.getLoggedUser(userToken)
-                .then(perm -> TaskChain.Result.of(UserId.of(perm.userId)))
                 .mapF(ErrorCode::fromAuthError);
     }
 
@@ -40,9 +47,15 @@ public class Commons {
         );
     }
 
-    public static TaskChain.Procedure<ErrorCode, String> fetchPictureUrl(FileFactory fileFactory, StaticResourceConfig.FileType fileType, FileId fileId) {
+    public static TaskChain.Procedure<ErrorCode, String> fetchFileUrl(FileFactory fileFactory, StaticResourceConfig.FileType fileType, FileId fileId) {
         return TaskChain.Procedure.fromOptional(fileFactory.fileURI(fileId), ErrorCode.FileNotFound)
                 .then(uri -> TaskChain.Result.of(componentFactory.staticResourceConfig.makeUrl(fileType, URI.create(uri))));
+    }
+
+    public static TaskChain.Procedure<ErrorCode, FileId> storeBase64File(FileFactory fileFactory, String base64File) {
+        byte[] file = Base64.getDecoder().decode(base64File);
+        return TaskChain.Procedure.fromOptional(fileFactory.createFile(file), ErrorCode.SaveFileFailed)
+                .then(fileId -> TaskChain.Result.of(fileId, () -> fileFactory.Remove(fileId)));
     }
 
     public static String lastHeatTimeWindow(Instant now) {
@@ -52,7 +65,7 @@ public class Commons {
     public static String currentHeatTimeWindow(Instant now) {
         LocalDateTime ldt = LocalDateTime.ofInstant(now, ZoneId.systemDefault());
         int hWindow = ldt.getHour() - (ldt.getHour() % 5);
-        return String.format("%02d%02d%02d", ldt.getMonthValue(), ldt.getDayOfMonth(), hWindow );
+        return String.format("%02d%02d%02d", ldt.getMonthValue(), ldt.getDayOfMonth(), hWindow);
     }
 
     public static String lastActiveTimeWindow(Instant now) {
@@ -61,7 +74,7 @@ public class Commons {
 
     public static String currentActiveTimeWindow(Instant now) {
         LocalDateTime ldt = LocalDateTime.ofInstant(now, ZoneId.systemDefault());
-        return String.format("%02d%02d%02d", ldt.getMonthValue(), ldt.getDayOfMonth(), ldt.getHour() );
+        return String.format("%02d%02d%02d", ldt.getMonthValue(), ldt.getDayOfMonth(), ldt.getHour());
     }
 
     public static String getGroupId(PostType postType) {

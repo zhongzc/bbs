@@ -185,8 +185,8 @@ public class AppSchoolHeat {
 
     private static boolean clearSchoolHeat(String id) {
         String shg = Commons.getGroupId(Commons.PostType.SchoolHeat);
-        String aTimeWindow = Commons.lastActiveTimeWindow(Instant.now());
-        String hTimeWindow = Commons.lastHeatTimeWindow(Instant.now());
+        String aTimeWindow = Commons.currentActiveTimeWindow(Instant.now());
+        String hTimeWindow = Commons.currentHeatTimeWindow(Instant.now());
         return componentFactory.active.remove(shg, id) &&
                 componentFactory.heat.remove(shg, id) &&
                 componentFactory.active.remove(aTimeWindow, shg + id) &&
@@ -200,8 +200,8 @@ public class AppSchoolHeat {
 
     public static void reset() {
         String shg = Commons.getGroupId(Commons.PostType.SchoolHeat);
-        String aTimeWindow = Commons.lastActiveTimeWindow(Instant.now());
-        String hTimeWindow = Commons.lastHeatTimeWindow(Instant.now());
+        String aTimeWindow = Commons.currentActiveTimeWindow(Instant.now());
+        String hTimeWindow = Commons.currentHeatTimeWindow(Instant.now());
         componentFactory.schoolHeat.allPosts().forEach(i -> {
             componentFactory.schoolHeat.removePost(i);
             clearSchoolHeat(i.value);

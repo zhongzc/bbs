@@ -18,6 +18,14 @@ import static com.gaufoo.bbs.application.ComponentFactory.componentFactory;
 public class AppContent {
     private static Logger log = LoggerFactory.getLogger(AppContent.class);
 
+    public static TaskChain.Procedure<ErrorCode, ContentId> storeContentInput(Content.ContentInput contentInput) {
+        return consContent(contentInput)
+                .then(contentInfo -> TaskChain.Procedure.fromOptional(
+                        componentFactory.content.cons(contentInfo),
+                        ErrorCode.CreateContentFailed))
+                .then(contentId -> TaskChain.Result.of(contentId, () -> componentFactory.content.remove(contentId)));
+    }
+
     public static TaskChain.Procedure<ErrorCode, ContentInfo> consContent(Content.ContentInput contentInput) {
         Stream<TaskChain.Procedure<ErrorCode, ContentElem>> items = contentInput.elems.stream().map(i -> {
             if (i.type == Content.ElemType.Picture) {
@@ -38,7 +46,7 @@ public class AppContent {
         return () -> contentInfo.elems.stream().map(e -> {
             if (e instanceof ContentFig) {
                 return (Content.Picture) () ->
-                        Commons.fetchPictureUrl(componentFactory.contentImages, StaticResourceConfig.FileType.ContentImages,
+                        Commons.fetchFileUrl(componentFactory.contentImages, StaticResourceConfig.FileType.ContentImages,
                                 FileId.of(((ContentFig) e).figureId)).reduce(AppContent::warnNil, i -> i);
             } else {
                 return (Content.Paragraph) () -> ((ContentParag) e).paragraph;
@@ -47,7 +55,7 @@ public class AppContent {
     }
 
     public static TaskChain.Procedure<ErrorCode, Content> fromContentId(ContentId contentId) {
-        return TaskChain.Procedure.fromOptional(componentFactory.content.contentInfo(contentId), ErrorCode.ContentNonExit)
+        return TaskChain.Procedure.fromOptional(componentFactory.content.contentInfo(contentId), ErrorCode.ContentNonExist)
                 .mapR(AppContent::fromContentInfo);
     }
 

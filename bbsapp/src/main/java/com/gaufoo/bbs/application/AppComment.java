@@ -1,6 +1,8 @@
 package com.gaufoo.bbs.application;
 
 import static com.gaufoo.bbs.application.types.Comment.*;
+
+import com.gaufoo.bbs.application.error.ErrorCode;
 import com.gaufoo.bbs.application.types.Content;
 import static com.gaufoo.bbs.application.types.PersonalInformation.*;
 import com.gaufoo.bbs.components.commentGroup.CommentGroup;
@@ -9,6 +11,7 @@ import com.gaufoo.bbs.components.commentGroup.comment.reply.common.ReplyId;
 import com.gaufoo.bbs.components.commentGroup.common.CommentGroupId;
 import com.gaufoo.bbs.components.content.common.ContentId;
 import com.gaufoo.bbs.components.user.common.UserId;
+import com.gaufoo.bbs.util.TaskChain;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,6 +26,11 @@ import static com.gaufoo.bbs.application.Commons.*;
 
 public class AppComment {
     public static Logger log = LoggerFactory.getLogger(AppComment.class);
+
+    public static TaskChain.Procedure<ErrorCode, CommentGroupId> createCommentGroup() {
+        return TaskChain.Procedure.fromOptional(componentFactory.commentGroup.cons(), ErrorCode.CreateCommentGroupFailed)
+                .then(commentGroupId -> TaskChain.Result.of(commentGroupId, () -> componentFactory.commentGroup.removeComments(commentGroupId)));
+    }
 
     public static AllComments consAllComments(CommentGroupId commentGroupId, Long skip, Long first) {
         final CommentGroup cg = componentFactory.commentGroup;

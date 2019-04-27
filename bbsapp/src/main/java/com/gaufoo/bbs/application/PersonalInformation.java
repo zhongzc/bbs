@@ -17,8 +17,6 @@ import com.gaufoo.bbs.util.TaskChain.Procedure;
 import com.gaufoo.bbs.util.TaskChain.Result;
 import com.sun.istack.internal.Nullable;
 
-import javax.swing.text.html.Option;
-import java.net.URI;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -110,7 +108,7 @@ public class PersonalInformation {
     }
 
     private static String factorOutPictureUrl(FileId fileId) {
-        return Commons.fetchPictureUrl(componentFactory.userProfiles, StaticResourceConfig.FileType.UserProfileImage, fileId)
+        return Commons.fetchFileUrl(componentFactory.userProfiles, StaticResourceConfig.FileType.UserProfileImage, fileId)
                 .reduce(e -> null, i -> i);
     }
 

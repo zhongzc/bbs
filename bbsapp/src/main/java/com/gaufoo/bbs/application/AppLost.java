@@ -155,7 +155,7 @@ public class AppLost {
     }
 
     private static String factorOutPictureUrl(FileId fileId) {
-        return Commons.fetchPictureUrl(componentFactory.lostFoundImages, StaticResourceConfig.FileType.LostFoundImage, fileId)
+        return Commons.fetchFileUrl(componentFactory.lostFoundImages, StaticResourceConfig.FileType.LostFoundImage, fileId)
                 .reduce(e -> null, i -> i);
     }
 

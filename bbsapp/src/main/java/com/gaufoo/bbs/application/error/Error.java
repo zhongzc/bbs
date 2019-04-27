@@ -28,7 +28,9 @@ public class Error implements
         SchoolHeat.CreateSchoolHeatResult,
         SchoolHeat.DeleteSchoolHeatResult,
         SchoolHeat.SchoolHeatInfoResult,
-        SchoolHeat.SchoolHeatsOfAuthorResult
+        SchoolHeat.SchoolHeatsOfAuthorResult,
+        LearningResource.CreateLearningResourceResult,
+        LearningResource.DeleteLearningResourceResult
 {
     private Integer errCode;
     private String msg;
