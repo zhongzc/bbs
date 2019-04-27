@@ -27,3 +27,12 @@ input LectureInput {
     lecturer: String!
     note: String! # 备注
 }
+
+input LectureOptionalInput {
+    title: String
+    content: ContentInput
+    position: String
+    time: Long
+    lecturer: String
+    note: String
+}

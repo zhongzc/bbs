@@ -58,11 +58,15 @@ public class AppLecture {
                 .reduce(Error::of, i -> i);
     }
 
-    public static Lecture.EditLectureResult editLecture(String lectureId, Lecture.LectureInput lectureInput, String userToken) {
+    public static Lecture.EditLectureResult editLecture(String lectureIdStr, Lecture.LectureOptionalInput lectureInput, String userToken) {
+        LectureId lectureId = LectureId.of(lectureIdStr);
         return Commons.ensureAdmin(UserToken.of(userToken))
-                .then(ok -> Procedure.fromOptional(componentFactory.lecture.postInfo(LectureId.of(lectureId)), ErrorCode.LectureNotfound))
+                .then(ok -> Procedure.fromOptional(componentFactory.lecture.postInfo(lectureId), ErrorCode.LectureNotfound))
                 .then(lectureInfo -> modLectureInfo(lectureInfo, lectureInput))
-                .reduce(Error::of, i -> (Lecture.EditLectureResult)i);
+                .then(newLectureInfo -> Result.<ErrorCode, Boolean>of(componentFactory.lecture.changePost(lectureId, newLectureInfo))
+                        .then(ok -> ok ? Result.of(newLectureInfo) : Fail.of(ErrorCode.UpdateLectureFailed)))
+                .then(newLectureInfo -> Result.of(consLectureInfo(lectureId, LazyVal.with(newLectureInfo))))
+                .reduce(Error::of, i -> i);
     }
 
     public static Lecture.DeleteLectureResult deleteLecture(String lectureId, String userToken) {
@@ -70,6 +74,15 @@ public class AppLecture {
                 .then(ok -> Result.of(componentFactory.lecture.removePost(LectureId.of(lectureId))))
                 .then(success -> success ? Result.of(true) : Fail.of(ErrorCode.DeleteLectureFailed))
                 .reduce(Error::of, ok -> Ok.build());
+    }
+
+    public static void reset() {
+        componentFactory.lecture.allPosts().forEach(lectureId -> {
+            componentFactory.lecture.postInfo(lectureId)
+                    .map(lectureInfo -> lectureInfo.contentId)
+                    .map(contentId -> componentFactory.content.remove(ContentId.of(contentId)));
+            componentFactory.lecture.removePost(lectureId);
+        });
     }
 
     private static Lecture.LectureInfo consLectureInfo(LectureId lectureId, LazyVal<LectureInfo> lectureInfo) {
@@ -112,7 +125,7 @@ public class AppLecture {
         };
     }
 
-    private static Procedure<ErrorCode, LectureInfo> modLectureInfo(LectureInfo old, Lecture.LectureInput in) {
+    private static Procedure<ErrorCode, LectureInfo> modLectureInfo(LectureInfo old, Lecture.LectureOptionalInput in) {
         Procedure<ErrorCode, ContentId> result = Result.of(null);
         if (in.content != null) {
             result = result.then(ig -> AppContent.consContent(in.content))

@@ -47,7 +47,7 @@ type Mutation {
     deleteSchoolHeat(id: ID!): DeleteSchoolHeatResult!
 
     createLecture(lectureInput: LectureInput!): CreateLectureResult!
-    editLecture(id: ID!, lectureInput: LectureInput!): EditLectureResult!
+    editLecture(id: ID!, lectureInput: LectureOptionalInput!): EditLectureResult!
     deleteLecture(id: ID!): DeleteLectureResult!
 }
 

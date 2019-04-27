@@ -45,6 +45,12 @@ public class LectureImpl implements Lecture {
     }
 
     @Override
+    public boolean changePost(LectureId lectureId, LectureInfo lectureInfo) {
+        if (!repository.deletePost(lectureId)) return false;
+        return repository.savePost(lectureId, lectureInfo);
+    }
+
+    @Override
     public boolean removePost(LectureId lectureId) {
         return repository.deletePost(lectureId);
     }

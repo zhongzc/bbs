@@ -22,6 +22,7 @@ public class Mutation implements GraphQLMutationResolver {
         AppFound.reset();
         AppLost.reset();
         AppSchoolHeat.reset();
+        AppLecture.reset();
         return true;
     }
 
@@ -123,7 +124,7 @@ public class Mutation implements GraphQLMutationResolver {
         ).orElse(authError);
     }
 
-    public Lecture.EditLectureResult editLecture(String lectureId, Lecture.LectureInput lectureInput, DataFetchingEnvironment env) {
+    public Lecture.EditLectureResult editLecture(String lectureId, Lecture.LectureOptionalInput lectureInput, DataFetchingEnvironment env) {
         return Utils.getAuthToken(env).map(
                 tkn -> AppLecture.editLecture(lectureId, lectureInput, tkn)
         ).orElse(authError);
