@@ -187,10 +187,14 @@ public class AppSchoolHeat {
         String shg = Commons.getGroupId(Commons.PostType.SchoolHeat);
         String aTimeWindow = Commons.currentActiveTimeWindow(Instant.now());
         String hTimeWindow = Commons.currentHeatTimeWindow(Instant.now());
+        String aLastTimeWindow = Commons.lastActiveTimeWindow(Instant.now());
+        String hLastTimeWindow = Commons.lastHeatTimeWindow(Instant.now());
         return componentFactory.active.remove(shg, id) &&
                 componentFactory.heat.remove(shg, id) &&
-                componentFactory.active.remove(aTimeWindow, shg + id) &&
-                componentFactory.heat.remove(hTimeWindow, shg + id);
+                (componentFactory.active.remove(aTimeWindow, shg + id) ||
+                componentFactory.active.remove(aLastTimeWindow, shg + id)) &&
+                (componentFactory.heat.remove(hTimeWindow, shg + id) ||
+                componentFactory.heat.remove(hLastTimeWindow, shg + id));
     }
 
     private static <T, R> R nilOrTr(T obj, Function<T, R> transformer) {

@@ -60,7 +60,7 @@ type Mutation {
 
     createLearningResource(learningResourceInput: LearningResourceInput): CreateLearningResourceResult!
     deleteLearningResource(id: ID!): DeleteLearningResourceResult!
-#    createLearningResourceComment(learningResourceCommentInput: LearningResourceCommentInput!): CreateLearningResourceCommentResult!
+    createLearningResourceComment(learningResourceCommentInput: LearningResourceCommentInput!): CreateLearningResourceCommentResult!
 #    deleteLearningResourceComment(lrId: ID!, cmmtId: ID!): DeleteLearningResourceCommentResult!
 #    createLearningResourceCommentReply(learningResourceReplyInput: LearningResourceReplyInput): CreateLearningResourceCommentReplyResult!
 #    deleteLearningResourceCommentReply(lrId: ID!, cmmtId: ID!, rpyId: ID!): DeleteLearningResourceCommentReplyResult!

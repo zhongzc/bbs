@@ -55,6 +55,8 @@ public enum ErrorCode {
     CreateActiveAndHeatFailed(47),
     LearningResourceNonExist(48),
     DeleteLearningResourceFailed(49),
+    DeleteContentFailed(50),
+    AddCommentFailed(51),
 
     PostNonExist(96),
     ContentNonExist(97),
@@ -115,6 +117,8 @@ public enum ErrorCode {
         put(ErrorCode.CreateActiveAndHeatFailed, "创建活跃或热度失败");
         put(ErrorCode.LearningResourceNonExist, "学习资源不存在");
         put(ErrorCode.DeleteLearningResourceFailed, "删除学习资源失败");
+        put(ErrorCode.DeleteContentFailed, "删除内容失败");
+        put(ErrorCode.AddCommentFailed, "插入评论失败");
 
         put(ErrorCode.SaveFileFailed, "创建文件失败");
         // add more error code mapping here

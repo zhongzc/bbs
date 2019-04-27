@@ -22,6 +22,11 @@ union AllLearningResourceResult = Error | MultiLearningResources
 union LearningResourcesOfAuthorResult = Error | MultiLearningResources
 union SearchLearningResourcesResult = Error | MultiLearningResources
 
+union CreateLearningResourceCommentResult = Error | CommentInfo
+union DeleteLearningResourceCommentResult = Error | Ok
+union CreateLearningResourceCommentReplyResult = Error | ReplyInfo
+union DeleteLearningResourceCommentReplyResult = Error | Ok
+
 input LearningResourceInput {
     title: String!
     content: ContentInput!

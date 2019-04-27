@@ -12,6 +12,8 @@ import com.gaufoo.bbs.components.active.common.ActiveInfo;
 import com.gaufoo.bbs.components.authenticator.Authenticator;
 import com.gaufoo.bbs.components.authenticator.common.Permission;
 import com.gaufoo.bbs.components.authenticator.common.UserToken;
+import com.gaufoo.bbs.components.commentGroup.comment.common.CommentId;
+import com.gaufoo.bbs.components.commentGroup.comment.common.CommentInfo;
 import com.gaufoo.bbs.components.commentGroup.common.CommentGroupId;
 import com.gaufoo.bbs.components.content.common.ContentId;
 import com.gaufoo.bbs.components.file.common.FileId;
@@ -38,8 +40,8 @@ public class AppLearningResource {
     public static LearningResource.CreateLearningResourceResult createLearningResource(LearningResource.LearningResourceInput learningResourceInput, String userToken) {
         class Ctx {
             UserId userId;                            Void put(UserId userId)            { this.userId = userId;          return null; }
-            LearningResourceInfo contructedLearnInfo; Void put(LearningResourceInfo lri) {this.contructedLearnInfo = lri; return null; }
-            LearningResourceId learningResourceId;    Void put(LearningResourceId lri)   {this.learningResourceId = lri;  return null; }
+            LearningResourceInfo contructedLearnInfo; Void put(LearningResourceInfo lri) { this.contructedLearnInfo = lri; return null; }
+            LearningResourceId learningResourceId;    Void put(LearningResourceId lri)   { this.learningResourceId = lri;  return null; }
         }
         Ctx ctx = new Ctx();
 
@@ -47,18 +49,41 @@ public class AppLearningResource {
                 .then(__ -> consLearningResourceInfo(ctx.userId, learningResourceInput)).mapR(ctx::put)
                 .then(__ -> publishLearningResource(ctx.contructedLearnInfo)).mapR(ctx::put)
                 .then(__ -> consActiveAndHeat(ctx.learningResourceId, ctx.userId))
-                .reduce(Error::of, __ -> consLearningResourceInfo(ctx.userId, ctx.learningResourceId, learningResourceInput, ctx.contructedLearnInfo));
+                .reduce(Error::of, __ -> consLearningResourceInfoRet(ctx.userId, ctx.learningResourceId, learningResourceInput, ctx.contructedLearnInfo));
     }
 
     public static LearningResource.DeleteLearningResourceResult deleteLearningResource(String learningResourceId, String userToken) {
         LearningResourceId learnId = LearningResourceId.of(learningResourceId);
+        class Ctx {
+            LearningResourceInfo learnInfo; Void put(LearningResourceInfo info) { this.learnInfo = info; return null; }
+        }
+        Ctx ctx = new Ctx();
 
         return Commons.fetchPermission(UserToken.of(userToken))
                 .then(permission -> ensurePermission(learnId, permission))
+                .then(__ -> fetchLearningResourceInfo(learnId)).mapR(ctx::put)
+                .then(__ -> deleteLearnResourceInfoRefs(ctx.learnInfo))
                 .then(__ -> clearActiveAndHeat(learnId))
-                .then(__ -> Result.of(componentFactory.learningResource.removePost(learnId)))
-                .then(success -> success ? Result.of(Ok.build()) : Fail.of(ErrorCode.DeleteLearningResourceFailed))
-                .reduce(Error::of, i -> i);
+                .then(__ -> deleteLearnResourceInfo(learnId))
+                .reduce(Error::of, __ -> Ok.build());
+    }
+
+    public static LearningResource.CreateLearningResourceCommentResult createLearningResourceComment(LearningResource.LearningResourceCommentInput input, String userToken) {
+        class Ctx {
+            UserId userId;                  Void put(UserId userId)             { this.userId = userId;    return null; }
+            LearningResourceInfo learnInfo; Void put(LearningResourceInfo info) { this.learnInfo = info;   return null; }
+            ContentId contentId;            Void put(ContentId id)              { this.contentId = id;     return null; }
+            CommentId commentId;            Void put(CommentId id)              { this.commentId = id;     return null; }
+        }
+        Ctx ctx = new Ctx();
+
+        LearningResourceId learnId = LearningResourceId.of(input.postIdCommenting);
+        return Commons.fetchUserId(UserToken.of(userToken)).mapR(ctx::put)
+                .then(__ -> fetchLearningResourceInfo(learnId)).mapR(ctx::put)
+                .then(__ -> AppContent.storeContentInput(input.content)).mapR(ctx::put)
+                .then(__ -> Result.of(CommentInfo.of(ctx.contentId.value, ctx.userId.value)))
+                .then(__ -> AppComment.postComment(CommentGroupId.of(ctx.learnInfo.commentGroupId), input.content, ctx.userId)).mapR(ctx::put)
+                .reduce(Error::of, __ -> consCommentInfo(ctx.commentId, ctx.contentId, ctx.userId));
     }
 
     private static Procedure<ErrorCode, LearningResourceId> publishLearningResource(LearningResourceInfo learningResourceInfo) {
@@ -97,24 +122,52 @@ public class AppLearningResource {
 
     private static Procedure<ErrorCode, Void> clearActiveAndHeat(LearningResourceId learningResourceId) {
         String currentActiveTimeWin = Commons.currentActiveTimeWindow(Instant.now());
+        String lastActiveTimeWin = Commons.lastActiveTimeWindow(Instant.now());
         String groupId = Commons.getGroupId(Commons.PostType.LearningResource);
 
         boolean rmActive = componentFactory.active.remove(groupId, learningResourceId.value);
         boolean rmMostActive = componentFactory.active.remove(currentActiveTimeWin, groupId + learningResourceId.value);
+        boolean rmLastMostActive = componentFactory.active.remove(lastActiveTimeWin, groupId + learningResourceId.value);
         boolean rmHeat = componentFactory.heat.remove(groupId, learningResourceId.value);
         boolean rmHottest = componentFactory.heat.remove(currentActiveTimeWin, groupId + learningResourceId.value);
+        boolean rmLastHottest = componentFactory.heat.remove(lastActiveTimeWin, groupId + learningResourceId.value);
 
-        boolean success = rmActive && rmMostActive && rmHeat && rmHottest;
+        boolean success = rmActive && (rmMostActive || rmLastMostActive) && rmHeat && (rmHottest || rmLastHottest);
         return success ? Result.of(null) : Fail.of(ErrorCode.ClearActiveAndHeatFailed);
     }
 
-    private static Procedure<ErrorCode, Void> ensurePermission(LearningResourceId learningResourceId, Permission permission) {
-        return Procedure.fromOptional(componentFactory.learningResource.postInfo(learningResourceId), ErrorCode.LearningResourceNonExist)
-                .then(learningResourceInfo -> Result.of(learningResourceInfo.authorId.equals(permission.userId) || permission.role.equals(Authenticator.Role.ADMIN)))
-                .then(success -> success ? Result.of(null) : Fail.of(ErrorCode.PermissionDenied));
+    private static Procedure<ErrorCode, Void> deleteLearnResourceInfoRefs(LearningResourceInfo info) {
+        componentFactory.learningResourceAttachFiles.Remove(FileId.of(info.attachedFileId));
+        boolean rmContent = componentFactory.content.remove(ContentId.of(info.contentId));
+        boolean rmComment = componentFactory.commentGroup.removeComments(CommentGroupId.of(info.commentGroupId));
+
+        boolean success = rmContent && rmComment;
+        return success ? Result.of(null) : Fail.of(ErrorCode.DeleteLearningResourceFailed);
     }
 
-    private static LearningResource.LearningResourceInfo consLearningResourceInfo(UserId userId, LearningResourceId resourceId, LearningResource.LearningResourceInput input, LearningResourceInfo commonInfo) {
+    private static Procedure<ErrorCode, Void> deleteLearnResourceInfo(LearningResourceId id) {
+        return componentFactory.learningResource.removePost(id) ? Result.of(null) : Fail.of(ErrorCode.DeleteLearningResourceFailed);
+    }
+
+    private static Comment.CommentInfo consCommentInfo(CommentId commentId, ContentId contentId, UserId authorId) {
+        return new Comment.CommentInfo() {
+            public String getId() { return commentId.value; }
+            public Content getContent() {
+                return AppContent.fromContentId(contentId).reduce(AppLearningResource::warnNil, i -> i);
+            }
+            public PersonalInformation.PersonalInfo getAuthor() {
+                return Commons.fetchPersonalInfo(authorId).reduce(AppLearningResource::warnNil, i -> i);
+            }
+            public Comment.AllReplies getAllReplies(Long skip, Long first) {
+                return new Comment.AllReplies() {
+                    public Long getTotalCount()                 { return 0L;                 }
+                    public List<Comment.ReplyInfo> getReplies() { return new LinkedList<>(); }
+                };
+            }
+        };
+    }
+
+    private static LearningResource.LearningResourceInfo consLearningResourceInfoRet(UserId userId, LearningResourceId resourceId, LearningResource.LearningResourceInput input, LearningResourceInfo commonInfo) {
         return new LearningResource.LearningResourceInfo() {
             public String getId()               { return resourceId.value; }
             public String getTitle()            { return input.title; }
@@ -137,6 +190,16 @@ public class AppLearningResource {
                 };
             }
         };
+    }
+
+    private static Procedure<ErrorCode, Void> ensurePermission(LearningResourceId learningResourceId, Permission permission) {
+        return fetchLearningResourceInfo(learningResourceId)
+                .then(learningResourceInfo -> Result.of(learningResourceInfo.authorId.equals(permission.userId) || permission.role.equals(Authenticator.Role.ADMIN)))
+                .then(success -> success ? Result.of(null) : Fail.of(ErrorCode.PermissionDenied));
+    }
+
+    private static Procedure<ErrorCode, LearningResourceInfo> fetchLearningResourceInfo(LearningResourceId id) {
+        return Procedure.fromOptional(componentFactory.learningResource.postInfo(id), ErrorCode.LearningResourceNonExist);
     }
 
     private static Procedure<ErrorCode, CourseCode> parseCourse(String courseStr) {
