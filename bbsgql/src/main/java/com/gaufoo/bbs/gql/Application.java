@@ -37,6 +37,8 @@ public class Application implements WebMvcConfigurer {
     private String lostFoundMapping;
     @Value("${content-images-mapping}")
     private String contentMapping;
+    @Value("${attached-files-mapping}")
+    private String attachFilesMapping;
 
     public static void main(String[] args) {
         SpringApplication.run(Application.class, args);
@@ -66,6 +68,7 @@ public class Application implements WebMvcConfigurer {
                 Comment.CommentInfo.class,
                 Lecture.MultiLectures.class,
                 Lecture.LectureInfo.class,
+                LearningResource.LearningResourceInfo.class,
         };
         SchemaParserDictionary schemaParserDictionary = new SchemaParserDictionary();
         for(Class<?> clazz: subUnionTypes) {
@@ -83,7 +86,8 @@ public class Application implements WebMvcConfigurer {
         StaticResourceConfig config = StaticResourceConfig.defaultPartialConfig()
                 .addMapping(StaticResourceConfig.FileType.UserProfileImage, profileImgMapping)
                 .addMapping(StaticResourceConfig.FileType.LostFoundImage, lostFoundMapping)
-                .addMapping(StaticResourceConfig.FileType.ContentImages, contentMapping).build();
+                .addMapping(StaticResourceConfig.FileType.ContentImages, contentMapping)
+                .addMapping(StaticResourceConfig.FileType.AttachFiles, attachFilesMapping).build();
 
         ComponentFactory.componentFactory = new ComponentFactory(config);
         addAdminUser();

@@ -75,8 +75,7 @@ public class AppLearningResource {
         }
         Ctx ctx = new Ctx();
 
-        return Result.<ErrorCode, String>of("bootstrap")
-                .then(__ -> parseCourse(input.course)).mapR(ctx::put)
+        return parseCourse(input.course).mapR(ctx::put)
                 .then(__ -> AppContent.storeContentInput(input.content)).mapR(ctx::put)
                 .then(__ -> Commons.storeBase64File(componentFactory.learningResourceAttachFiles, input.base64AttachedFile)).mapR(ctx::put)
                 .then(__ -> AppComment.createCommentGroup()).mapR(ctx::put)

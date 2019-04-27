@@ -1,20 +1,19 @@
 package com.gaufoo.bbs.application.util;
 
 import com.gaufoo.bbs.util.Tuple;
-import com.gaufoo.bbs.util.Util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.net.URI;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
-import static com.gaufoo.bbs.application.util.StaticResourceConfig.FileType.LostFoundImage;
-import static com.gaufoo.bbs.application.util.StaticResourceConfig.FileType.UserProfileImage;
-import static com.gaufoo.bbs.application.util.StaticResourceConfig.FileType.ContentImages;
+import static com.gaufoo.bbs.application.util.StaticResourceConfig.FileType.*;
 
 public class StaticResourceConfig {
     private static Logger log = LoggerFactory.getLogger(StaticResourceConfig.class);
@@ -99,6 +98,7 @@ public class StaticResourceConfig {
             add(Tuple.of(UserProfileImage, "profiles"));
             add(Tuple.of(LostFoundImage, "lostAndFound"));
             add(Tuple.of(ContentImages, "contentImg"));
+            add(Tuple.of(AttachFiles, "attachFiles"));
             // add more mappings here
         }};
 
