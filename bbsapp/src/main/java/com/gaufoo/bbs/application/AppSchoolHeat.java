@@ -95,8 +95,8 @@ public class AppSchoolHeat {
         Active active = componentFactory.active;
         ErrorCode e = ErrorCode.CreatePostFailed;
         String shg = Commons.getGroupId(Commons.PostType.SchoolHeat);
-        String aTimeWindow = Commons.currentActiveTimeWindow(Instant.now());
-        String hTimeWindow = Commons.currentHeatTimeWindow(Instant.now());
+        String aTimeWindow = Commons.currentActiveTimeWindow();
+        String hTimeWindow = Commons.currentHeatTimeWindow();
 
         return Commons.fetchUserId(UserToken.of(loginToken))
         /* 构造评论句柄     */ .then(userId -> fromOptional(commentGroup.cons(), e)
@@ -114,8 +114,8 @@ public class AppSchoolHeat {
 
     public static SchoolHeat.DeleteSchoolHeatResult deleteSchoolHeat(String id, String token) {
         String shg = Commons.getGroupId(Commons.PostType.SchoolHeat);
-        String aTimeWindow = Commons.lastActiveTimeWindow(Instant.now());
-        String hTimeWindow = Commons.lastHeatTimeWindow(Instant.now());
+        String aTimeWindow = Commons.lastActiveTimeWindow();
+        String hTimeWindow = Commons.lastHeatTimeWindow();
         return Commons.fetchUserId(UserToken.of(token))
                 .then(uid -> fromOptional(Optional.ofNullable(consSH(SchoolHeatId.of(id)).getAuthor()), ErrorCode.PostNonExist)
                 .then(info -> {
@@ -183,18 +183,27 @@ public class AppSchoolHeat {
         };
     }
 
-    private static boolean clearSchoolHeat(String id) {
+    private static boolean clearSchoolHeat(String schoolHeatId) {
         String shg = Commons.getGroupId(Commons.PostType.SchoolHeat);
-        String aTimeWindow = Commons.currentActiveTimeWindow(Instant.now());
-        String hTimeWindow = Commons.currentHeatTimeWindow(Instant.now());
-        String aLastTimeWindow = Commons.lastActiveTimeWindow(Instant.now());
-        String hLastTimeWindow = Commons.lastHeatTimeWindow(Instant.now());
-        return componentFactory.active.remove(shg, id) &&
-                componentFactory.heat.remove(shg, id) &&
-                (componentFactory.active.remove(aTimeWindow, shg + id) ||
-                componentFactory.active.remove(aLastTimeWindow, shg + id)) &&
-                (componentFactory.heat.remove(hTimeWindow, shg + id) ||
-                componentFactory.heat.remove(hLastTimeWindow, shg + id));
+        String aTimeWindow = Commons.currentActiveTimeWindow();
+        String hTimeWindow = Commons.currentHeatTimeWindow();
+        String aLastTimeWindow = Commons.lastActiveTimeWindow();
+        String hLastTimeWindow = Commons.lastHeatTimeWindow();
+
+        boolean rmActive = componentFactory.active.remove(shg, schoolHeatId);
+        boolean rmHeat = componentFactory.heat.remove(shg, schoolHeatId);
+        componentFactory.active.remove(aTimeWindow, shg + schoolHeatId);
+        componentFactory.active.remove(aLastTimeWindow, shg + schoolHeatId);
+        componentFactory.heat.remove(hTimeWindow, shg + schoolHeatId);
+        componentFactory.heat.remove(hLastTimeWindow, shg + schoolHeatId);
+
+        boolean rmComments = componentFactory.schoolHeat.postInfo(SchoolHeatId.of(schoolHeatId))
+                .map(info -> AppComment.deleteAllComments(CommentGroupId.of(info.commentGroupId)))
+                .map(Procedure::isSuccessful)
+                .orElse(false);
+
+        return rmActive && rmHeat && rmComments;
+
     }
 
     private static <T, R> R nilOrTr(T obj, Function<T, R> transformer) {
@@ -204,8 +213,8 @@ public class AppSchoolHeat {
 
     public static void reset() {
         String shg = Commons.getGroupId(Commons.PostType.SchoolHeat);
-        String aTimeWindow = Commons.currentActiveTimeWindow(Instant.now());
-        String hTimeWindow = Commons.currentHeatTimeWindow(Instant.now());
+        String aTimeWindow = Commons.currentActiveTimeWindow();
+        String hTimeWindow = Commons.currentHeatTimeWindow();
         componentFactory.schoolHeat.allPosts().forEach(i -> {
             componentFactory.schoolHeat.removePost(i);
             clearSchoolHeat(i.value);

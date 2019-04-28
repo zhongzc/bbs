@@ -2,6 +2,7 @@ package com.gaufoo.bbs.application;
 
 import static com.gaufoo.bbs.application.types.Comment.*;
 
+import com.gaufoo.bbs.application.error.Error;
 import com.gaufoo.bbs.application.error.ErrorCode;
 import com.gaufoo.bbs.application.types.Comment;
 import com.gaufoo.bbs.application.types.Content;
@@ -14,12 +15,14 @@ import com.gaufoo.bbs.components.commentGroup.common.CommentGroupId;
 import com.gaufoo.bbs.components.content.common.ContentId;
 import com.gaufoo.bbs.components.user.common.UserId;
 import com.gaufoo.bbs.util.TaskChain;
+import com.gaufoo.bbs.util.Tuple;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import static com.gaufoo.bbs.application.ComponentFactory.componentFactory;
@@ -34,13 +37,46 @@ public class AppComment {
                 .then(commentGroupId -> TaskChain.Result.of(commentGroupId, () -> componentFactory.commentGroup.removeComments(commentGroupId)));
     }
 
-    public static TaskChain.Procedure<ErrorCode, CommentId> postComment(CommentGroupId groupId, Content.ContentInput contentInput, UserId commenterId) {
+    public static TaskChain.Procedure<ErrorCode, Tuple<CommentId, CommentInfo>> postComment(CommentGroupId groupId, Content.ContentInput contentInput, UserId commenterId) {
         return AppContent.storeContentInput(contentInput)
                 .then(contentId -> TaskChain.Result.of(CommentInfo.of(contentId.value, commenterId.value)))
                 .then(commentInfo -> TaskChain.Procedure.fromOptional(
-                        componentFactory.commentGroup.addComment(groupId, commentInfo),
+                        componentFactory.commentGroup.addComment(groupId, commentInfo).map(id -> Tuple.of(id, commentInfo)),
                         ErrorCode.AddCommentFailed
                 ));
+    }
+
+    public static TaskChain.Procedure<ErrorCode, CommentInfo> fetchCommentInfo(CommentId commentId) {
+        return TaskChain.Procedure.fromOptional(componentFactory.commentGroup.commentInfo(commentId),
+                ErrorCode.CommentInfoNotFound);
+    }
+
+    public static TaskChain.Procedure<ErrorCode, Void> deleteAllComments(CommentGroupId groupId) {
+        return TaskChain.Procedure.sequence(componentFactory.commentGroup.allComments(groupId)
+                .map(commentId -> deleteComment(groupId, commentId))
+                .collect(Collectors.toList())
+        ).then(__ -> componentFactory.commentGroup.removeComments(groupId) ?
+                TaskChain.Result.of(null) :
+                TaskChain.Fail.of(ErrorCode.DeleteCommentFailed)
+        );
+
+    }
+
+    public static TaskChain.Procedure<ErrorCode, Void> deleteComment(CommentGroupId commentGroupId, CommentId commentId) {
+        Supplier<Void> clearUp = () -> componentFactory.commentGroup.allReplies(commentId)
+                .map(replyId -> componentFactory.commentGroup.replyInfo(replyId).orElse(null))
+                .filter(Objects::nonNull)
+                .map(replyInfo -> componentFactory.content.remove(ContentId.of(replyInfo.contentId)))
+                .map(__ -> (Void)null)
+                .reduce(null, (a, b) -> null);
+
+        return componentFactory.commentGroup.commentInfo(commentId)
+                .map(commentInfo -> componentFactory.content.remove(ContentId.of(commentInfo.contentId)))
+                .filter(ok -> ok)
+                .map(__ -> componentFactory.commentGroup.removeComment(commentGroupId, commentId))
+                .filter(ok -> ok)
+                .map(__ -> (TaskChain.Procedure<ErrorCode, Void>)TaskChain.Result.<ErrorCode, Void>of(clearUp.get()))
+                .orElse(TaskChain.Fail.of(ErrorCode.DeleteCommentFailed));
     }
 
     public static AllComments consAllComments(CommentGroupId commentGroupId, Long skip, Long first) {
@@ -48,7 +84,7 @@ public class AppComment {
         return new AllComments() {
             public Long              getTotalCount() { return cg.getCommentsCount(commentGroupId); }
             public List<Comment.CommentInfo> getComments()   {
-                return cg.allComments(commentGroupId).map(AppComment::fetchCommentInfo)
+                return cg.allComments(commentGroupId).map(AppComment::consCommentInfo)
                         .filter(Objects::nonNull).skip(skip == null ? 0L : skip)
                         .limit(first == null ? Long.MAX_VALUE : first)
                         .collect(Collectors.toList());
@@ -56,22 +92,23 @@ public class AppComment {
         };
     }
 
-    public static Comment.CommentInfo fetchCommentInfo(CommentId cid) {
+    public static Comment.CommentInfo consCommentInfo(CommentId cid) {
         final CommentGroup cg = componentFactory.commentGroup;
         return cg.commentInfo(cid).map(cinfo -> new Comment.CommentInfo() {
             public String       getId()      { return cid.value; }
             public Content      getContent() { return fromContentId(ContentId.of(cinfo.contentId)).reduce(AppComment::warnNil, i -> i); }
             public PersonalInfo getAuthor()  { return fetchPersonalInfo(UserId.of(cinfo.commenter)).reduce(AppComment::warnNil, i -> i); }
-            public AllReplies   getAllReplies(Long skip, Long first) { return fetchAllReplies(cid, skip, first); }
+            public AllReplies   getAllReplies(Long skip, Long first) { return consAllReplies(cid, skip, first); }
+            public Long getCreationTime()    { return cinfo.creationTime.toEpochMilli(); }
         }).orElse(null);
     }
 
-    public static Comment.AllReplies fetchAllReplies(CommentId cid, Long skip, Long first) {
+    public static Comment.AllReplies consAllReplies(CommentId cid, Long skip, Long first) {
         final CommentGroup cg = componentFactory.commentGroup;
         return new Comment.AllReplies() {
             public Long getTotalCount() { return cg.getRepliesCount(cid); }
             public List<ReplyInfo> getReplies() {
-                return cg.allReplies(cid).map(AppComment::fetchReplyInfo)
+                return cg.allReplies(cid).map(AppComment::consReplyInfo)
                         .filter(Objects::nonNull).skip(skip == null ? 0L : skip)
                         .limit(first == null ? Long.MAX_VALUE : first)
                         .collect(Collectors.toList());
@@ -79,7 +116,7 @@ public class AppComment {
         };
     }
 
-    public static Comment.ReplyInfo fetchReplyInfo(ReplyId rid) {
+    public static Comment.ReplyInfo consReplyInfo(ReplyId rid) {
         final CommentGroup cg = componentFactory.commentGroup;
         return cg.replyInfo(rid).map(rinfo ->
             new Comment.ReplyInfo() {
@@ -87,6 +124,7 @@ public class AppComment {
                 public Content      getContent() { return fromContentId(ContentId.of(rinfo.contentId)).reduce(AppComment::warnNil, i -> i); }
                 public PersonalInfo getAuthor()  { return fetchPersonalInfo(UserId.of(rinfo.replier)).reduce(AppComment::warnNil, i -> i); }
                 public PersonalInfo getReplyTo() { return Optional.ofNullable(rinfo.replyTo).map(rpt -> fetchPersonalInfo(UserId.of(rpt)).reduce(AppComment::warnNil, i -> i)).orElse(null); }
+                public Long getCreationTime()    { return rinfo.creationTime.toEpochMilli(); }
             }).orElse(null);
     }
 

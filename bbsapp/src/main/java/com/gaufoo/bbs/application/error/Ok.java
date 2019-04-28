@@ -13,7 +13,8 @@ public class Ok implements
         Lost.CancelClaimLostResult,
         Lecture.DeleteLectureResult,
         SchoolHeat.DeleteSchoolHeatResult,
-        LearningResource.DeleteLearningResourceResult
+        LearningResource.DeleteLearningResourceResult,
+        LearningResource.DeleteLearningResourceCommentResult
 {
     private Boolean ok;
 

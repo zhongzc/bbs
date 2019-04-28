@@ -20,6 +20,7 @@ public interface Comment {
         Content getContent();
         PersonalInformation.PersonalInfo getAuthor();
         AllReplies getAllReplies(Long skip, Long first);
+        Long getCreationTime();
     }
 
     interface AllReplies {
@@ -39,5 +40,6 @@ public interface Comment {
         Content getContent();
         PersonalInformation.PersonalInfo getAuthor();
         PersonalInformation.PersonalInfo getReplyTo();
+        Long getCreationTime();
     }
 }

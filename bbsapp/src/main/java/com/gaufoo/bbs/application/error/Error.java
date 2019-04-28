@@ -31,7 +31,9 @@ public class Error implements
         SchoolHeat.SchoolHeatsOfAuthorResult,
         LearningResource.CreateLearningResourceResult,
         LearningResource.DeleteLearningResourceResult,
-        LearningResource.CreateLearningResourceCommentResult
+        LearningResource.CreateLearningResourceCommentResult,
+        LearningResource.DeleteLearningResourceCommentResult,
+        LearningResource.AllLearningResourceResult
 {
     private Integer errCode;
     private String msg;

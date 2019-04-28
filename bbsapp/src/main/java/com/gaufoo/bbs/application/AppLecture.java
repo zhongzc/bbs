@@ -48,7 +48,7 @@ public class AppLecture {
 
     public static Lecture.CreateLectureResult createLecture(Lecture.LectureInput lectureInput, String userToken) {
         return Commons.ensureAdmin(UserToken.of(userToken))
-                .then(ok -> consLectureInfo(lectureInput))
+                .then(__ -> consLectureInfo(lectureInput))
                 .then(lectureInfo -> Procedure.fromOptional(componentFactory.lecture.publishPost(lectureInfo), ErrorCode.PublishLectureFailed)
                         .mapR(lectureId -> consLectureInfo(lectureId, lectureInput, ContentId.of(lectureInfo.contentId))))
                 .reduce(Error::of, i -> i);
@@ -57,7 +57,7 @@ public class AppLecture {
     public static Lecture.EditLectureResult editLecture(String lectureIdStr, Lecture.LectureOptionalInput lectureInput, String userToken) {
         LectureId lectureId = LectureId.of(lectureIdStr);
         return Commons.ensureAdmin(UserToken.of(userToken))
-                .then(ok -> Procedure.fromOptional(componentFactory.lecture.postInfo(lectureId), ErrorCode.LectureNotfound))
+                .then(__ -> Procedure.fromOptional(componentFactory.lecture.postInfo(lectureId), ErrorCode.LectureNotfound))
                 .then(lectureInfo -> modLectureInfo(lectureInfo, lectureInput))
                 .then(newLectureInfo -> Result.<ErrorCode, Boolean>of(componentFactory.lecture.changePost(lectureId, newLectureInfo))
                         .then(ok -> ok ? Result.of(newLectureInfo) : Fail.of(ErrorCode.UpdateLectureFailed)))
@@ -67,7 +67,7 @@ public class AppLecture {
 
     public static Lecture.DeleteLectureResult deleteLecture(String lectureId, String userToken) {
         return Commons.ensureAdmin(UserToken.of(userToken))
-                .then(ok -> Result.of(componentFactory.lecture.removePost(LectureId.of(lectureId))))
+                .then(__ -> Result.of(componentFactory.lecture.removePost(LectureId.of(lectureId))))
                 .then(success -> success ? Result.of(true) : Fail.of(ErrorCode.DeleteLectureFailed))
                 .reduce(Error::of, ok -> Ok.build());
     }
