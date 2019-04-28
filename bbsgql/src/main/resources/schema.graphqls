@@ -24,8 +24,8 @@ type Query {
     lectureInfo(id: ID!): LectureInfoResult!
 #   searchLectures(title: String!, skip: Long, first: Long): SearchLecturesResult!
 
-#    allLearningResource(skip: Long, first: Long, course: String, sortedBy: SortedBy): AllLearningResourceResult!
-#    allCourses: [String!]!
+    allLearningResources(skip: Long, first: Long, course: String, sortedBy: SortedBy): AllLearningResourceResult!
+    allCourses: [String!]!
 #    learningResourceInfo(id: ID!): LearningResourceInfoResult!
 #    learningResourcesOfAuthor(authorId: ID!, skip: Long, first: Long): LearningResourcesOfAuthorResult!
 #    searchLearningResources(title: String!): SearchLearningResourcesResult!
@@ -61,7 +61,7 @@ type Mutation {
     createLearningResource(learningResourceInput: LearningResourceInput): CreateLearningResourceResult!
     deleteLearningResource(id: ID!): DeleteLearningResourceResult!
     createLearningResourceComment(learningResourceCommentInput: LearningResourceCommentInput!): CreateLearningResourceCommentResult!
-#    deleteLearningResourceComment(lrId: ID!, cmmtId: ID!): DeleteLearningResourceCommentResult!
+    deleteLearningResourceComment(lrId: ID!, cmmtId: ID!): DeleteLearningResourceCommentResult!
 #    createLearningResourceCommentReply(learningResourceReplyInput: LearningResourceReplyInput): CreateLearningResourceCommentReplyResult!
 #    deleteLearningResourceCommentReply(lrId: ID!, cmmtId: ID!, rpyId: ID!): DeleteLearningResourceCommentReplyResult!
 }

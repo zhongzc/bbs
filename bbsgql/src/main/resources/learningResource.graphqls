@@ -31,7 +31,7 @@ input LearningResourceInput {
     title: String!
     content: ContentInput!
     course: String!
-    base64AttachedFile: String!
+    base64AttachedFile: String
 }
 input LearningResourceCommentInput {
     postIdCommenting: ID!

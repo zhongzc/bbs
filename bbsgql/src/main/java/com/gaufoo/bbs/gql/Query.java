@@ -4,6 +4,7 @@ import com.coxautodev.graphql.tools.GraphQLQueryResolver;
 import com.gaufoo.bbs.application.*;
 import com.gaufoo.bbs.application.error.Error;
 import com.gaufoo.bbs.application.error.ErrorCode;
+import com.gaufoo.bbs.application.types.LearningResource;
 import com.gaufoo.bbs.application.types.Lecture;
 import com.gaufoo.bbs.application.types.Lost;
 import com.gaufoo.bbs.application.types.SchoolHeat;
@@ -79,6 +80,10 @@ public class Query implements GraphQLQueryResolver {
 
     public Lecture.LectureInfoResult lectureInfo(String lectureId) {
         return AppLecture.lectureInfo(lectureId);
+    }
+
+    public LearningResource.AllLearningResourceResult allLearningResources(Long skip, Long first, String course, Commons.SortedBy sortedBy) {
+        return AppLearningResource.allLearningResources(skip, first, course, sortedBy);
     }
 
     private static Error authError = Error.of(ErrorCode.NotLoggedIn);

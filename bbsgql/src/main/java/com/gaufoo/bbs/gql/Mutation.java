@@ -155,6 +155,12 @@ public class Mutation implements GraphQLMutationResolver {
         ).orElse(authError);
     }
 
+    public LearningResource.DeleteLearningResourceCommentResult deleteLearningResourceComment(String learningResourceId, String commentId, DataFetchingEnvironment env) {
+        return Utils.getAuthToken(env).map(
+                tkn -> AppLearningResource.deleteLearningResourceComment(learningResourceId, commentId, tkn)
+        ).orElse(authError);
+    }
+
 
     private static Error authError = Error.of(ErrorCode.NotLoggedIn);
 }

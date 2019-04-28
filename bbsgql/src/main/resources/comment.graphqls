@@ -7,6 +7,7 @@ type CommentInfo {
     content: Content!
     author: PersonalInfo!
     allReplies(skip: Long, first: Long): AllReplies!
+    creationTime: Long!
 }
 type AllReplies {
     totalCount: Long!
@@ -17,4 +18,5 @@ type ReplyInfo {
     content: Content!
     author: PersonalInfo!
     replyTo: PersonalInfo
+    creationTime: Long!
 }
