@@ -86,5 +86,9 @@ public class Query implements GraphQLQueryResolver {
         return AppLearningResource.allLearningResources(skip, first, course, sortedBy);
     }
 
+    public LearningResource.LearningResourceInfoResult learningResourceInfo(String learningResourceId) {
+        return AppLearningResource.learningResourceInfo(learningResourceId);
+    }
+
     private static Error authError = Error.of(ErrorCode.NotLoggedIn);
 }

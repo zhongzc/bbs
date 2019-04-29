@@ -26,7 +26,7 @@ type Query {
 
     allLearningResources(skip: Long, first: Long, course: String, sortedBy: SortedBy): AllLearningResourceResult!
     allCourses: [String!]!
-#    learningResourceInfo(id: ID!): LearningResourceInfoResult!
+    learningResourceInfo(id: ID!): LearningResourceInfoResult!
 #    learningResourcesOfAuthor(authorId: ID!, skip: Long, first: Long): LearningResourcesOfAuthorResult!
 #    searchLearningResources(title: String!): SearchLearningResourcesResult!
 }

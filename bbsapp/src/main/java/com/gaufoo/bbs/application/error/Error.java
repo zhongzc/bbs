@@ -29,6 +29,7 @@ public class Error implements
         SchoolHeat.DeleteSchoolHeatResult,
         SchoolHeat.SchoolHeatInfoResult,
         SchoolHeat.SchoolHeatsOfAuthorResult,
+        LearningResource.LearningResourceInfoResult,
         LearningResource.CreateLearningResourceResult,
         LearningResource.DeleteLearningResourceResult,
         LearningResource.CreateLearningResourceCommentResult,

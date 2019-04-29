@@ -4,7 +4,7 @@ type LearningResourceInfo {
     title: String!
     content: Content!
     course: String!
-    attachedFileURL: String!
+    attachedFileURL: String
     latestCommenter: PersonalInfo
     latestActiveTime: Long!
     createTime: Long!

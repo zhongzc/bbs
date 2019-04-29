@@ -15,10 +15,25 @@ public interface Content {
 
     class ContentInput {
         public List<ContentElemInput> elems;
+
+        @Override
+        public String toString() {
+            return "ContentInput{" +
+                    "elems=" + elems +
+                    '}';
+        }
     }
     class ContentElemInput {
         public ElemType type;
         public String str;
+
+        @Override
+        public String toString() {
+            return "ContentElemInput{" +
+                    "type=" + type +
+                    ", str='" + str + '\'' +
+                    '}';
+        }
     }
     enum ElemType {
         Picture,

@@ -46,7 +46,7 @@ public class AppLearningResource {
 
     public static LearningResource.AllLearningResourceResult allLearningResources(Long skip, Long first, String courseStr, Commons.SortedBy sortedBy) {
         final long fSkip = skip == null ? 0L : skip;
-        final long fFrist = first == null ? Long.MAX_VALUE : first;
+        final long fFirst = first == null ? Long.MAX_VALUE : first;
         final Commons.SortedBy fSortedBy = sortedBy == null ? Commons.SortedBy.ActiveTimeDes : sortedBy;
 
         Predicate<CourseCode> courseFilter;
@@ -59,16 +59,21 @@ public class AppLearningResource {
             courseFilter = (courseCode -> courseCode.equals(initResult.retrieveResult().get()));
         }
 
-
         return initResult.mapR(nullableCourseCode -> selectLearnResources(fSortedBy, nullableCourseCode))
                 .mapR(resourceIdStream -> resourceIdStream
                         .map(resId -> Tuple.of(resId, LazyVal.of(() -> fetchLearningResourceInfoAndUnwrap(resId, warnNil))))
 //                        .filter(idLearnInfoTuple -> idLearnInfoTuple.right.get() != null)
                         .filter(idLearnInfOTuple -> courseFilter.test(CourseCode.of(idLearnInfOTuple.right.get().courseCode)))
-                        .map(tup -> consLearningResourceInfoRet(tup.left, tup.right))
-                        .skip(fSkip).limit(fFrist))
-                .reduce(Error::of, infoStream -> consMultiLearnResources(infoStream, fSkip, fFrist));
+                        .map(tup -> consLearningResourceInfoRet(tup.left, tup.right)))
+                .reduce(Error::of, infoStream -> consMultiLearnResources(infoStream, fSkip, fFirst));
 
+    }
+
+    public static LearningResource.LearningResourceInfoResult learningResourceInfo(String learningResourceId) {
+        LearningResourceId learnId = LearningResourceId.of(learningResourceId);
+
+        return fetchLearningResourceInfo(learnId)
+                .reduce(Error::of, info -> consLearningResourceInfoRet(learnId, LazyVal.with(info)));
     }
 
     public static LearningResource.CreateLearningResourceResult createLearningResource(LearningResource.LearningResourceInput learningResourceInput, String userToken) {
@@ -141,8 +146,17 @@ public class AppLearningResource {
                 .reduce(Error::of, __ -> Ok.build());
     }
 
+    public static void reset() {
+        componentFactory.learningResource.allPosts().forEach(resourceId -> {
+            fetchLearningResourceInfo(resourceId)
+                    .then(info -> deleteLearnResourceInfoRefs(info))
+                    .then(__ -> clearActiveAndHeat(resourceId))
+                    .then(__ -> deleteLearnResourceInfo(resourceId));
+        });
+    }
+
     private static Stream<LearningResourceId> selectLearnResources(Commons.SortedBy sortedBy, @Nullable CourseCode courseCode) {
-        Function<Boolean, Stream<LearningResourceId>> natrual = courseCode == null ?
+        Function<Boolean, Stream<LearningResourceId>> natural = courseCode == null ?
                 (isDes) -> componentFactory.learningResource.allPosts(isDes) :
                 (isDes) -> componentFactory.learningResource.allPostsOfCourse(courseCode.value, isDes);
 
@@ -152,20 +166,12 @@ public class AppLearningResource {
             case ActiveTimeDes: dataSource = componentFactory.active.getAllDes(postGroupId).map(LearningResourceId::of); break;
             case HeatAsc: dataSource = componentFactory.heat.getAllAsc(postGroupId).map(LearningResourceId::of); break;
             case HeatDes: dataSource = componentFactory.heat.getAllDes(postGroupId).map(LearningResourceId::of); break;
-            case NatureAsc: dataSource = natrual.apply(false); break;
-            case NatureDes: dataSource = natrual.apply(true); break;
+            case NatureAsc: dataSource = natural.apply(false); break;
+            case NatureDes: dataSource = natural.apply(true); break;
             default: dataSource = null; // impossible to reach
         }
 
         return dataSource;
-    }
-
-    private static Stream<LearningResourceInfo> filterMatchedCourses(Stream<LearningResourceInfo> infos, @Nullable CourseCode courseCode) {
-        Predicate<LearningResourceInfo> courseFilter = courseCode == null ?
-                (__) -> true :
-                (info) -> info.courseCode.equals(courseCode.value);
-
-        return infos.filter(courseFilter);
     }
 
     private static Procedure<ErrorCode, LearningResourceId> publishLearningResource(LearningResourceInfo learningResourceInfo) {
@@ -177,23 +183,26 @@ public class AppLearningResource {
         class Ctx {
             CourseCode courseCode;         Void put(CourseCode courseCode)  { this.courseCode = courseCode; return null; }
             ContentId contentId;           Void put(ContentId   contentId)  { this.contentId = contentId;   return null; }
-            FileId attachedFileId;         Void put(FileId         fileId)  { this.attachedFileId = fileId; return null; }
+            FileId nullableFileId;         Void put(FileId         fileId)  { this.nullableFileId = fileId; return null; }
             CommentGroupId commentGroupId; Void put(CommentGroupId  cmgId)  { this.commentGroupId = cmgId;  return null; }
         }
         Ctx ctx = new Ctx();
 
         return parseCourse(input.course).mapR(ctx::put)
                 .then(__ -> AppContent.storeContentInput(input.content)).mapR(ctx::put)
-                .then(__ -> Commons.storeBase64File(componentFactory.learningResourceAttachFiles, input.base64AttachedFile)).mapR(ctx::put)
+                .then(__ -> input.base64AttachedFile == null ?
+                        Result.of(null) :
+                        Commons.storeBase64File(componentFactory.learningResourceAttachFiles, input.base64AttachedFile)).mapR(ctx::put)
                 .then(__ -> AppComment.createCommentGroup()).mapR(ctx::put)
-                .then(__ -> Result.of(LearningResourceInfo.of(userId.value, input.title, ctx.contentId.value, ctx.courseCode.value, ctx.attachedFileId.value, ctx.commentGroupId.value)));
+                .then(__ -> Result.of(LearningResourceInfo.of(userId.value, input.title, ctx.contentId.value,
+                        ctx.courseCode.value, nilOrTr(ctx.nullableFileId, x -> x.value), ctx.commentGroupId.value)));
     }
 
     private static Procedure<ErrorCode, Void> consActiveAndHeat(LearningResourceId learningResourceId, UserId userId) {
         String currentActiveTimeWin = Commons.currentActiveTimeWindow();
         String learnResourceGroupId = Commons.getGroupId(Commons.PostType.LearningResource);
 
-        Optional<ActiveInfo> activeInfo = componentFactory.active.touch(Commons.getGroupId(Commons.PostType.LearningResource), learningResourceId.value, userId.value);
+        Optional<ActiveInfo> activeInfo = componentFactory.active.touch(learnResourceGroupId, learningResourceId.value, userId.value);
         Optional<ActiveInfo> mostActiveInfo = componentFactory.active.touch(currentActiveTimeWin, learnResourceGroupId + learningResourceId.value, userId.value);
         Optional<Long> heat = componentFactory.heat.increase(learnResourceGroupId, learningResourceId.value, 1);
         Optional<Long> hottest = componentFactory.heat.increase(currentActiveTimeWin, learnResourceGroupId + learningResourceId.value, 1);
@@ -235,7 +244,9 @@ public class AppLearningResource {
     }
 
     private static Procedure<ErrorCode, Void> deleteLearnResourceInfoRefs(LearningResourceInfo info) {
-        componentFactory.learningResourceAttachFiles.Remove(FileId.of(info.attachedFileId));
+        if (info.attachedFileId != null) {
+            componentFactory.learningResourceAttachFiles.Remove(FileId.of(info.attachedFileId));
+        }
         boolean rmContent = componentFactory.content.remove(ContentId.of(info.contentId));
         boolean rmComment = componentFactory.commentGroup.removeComments(CommentGroupId.of(info.commentGroupId));
 
@@ -280,8 +291,8 @@ public class AppLearningResource {
     private static LearningResource.LearningResourceInfo consLearningResourceInfoRet(LearningResourceId resourceId, LazyVal<LearningResourceInfo> info) {
         return new LearningResource.LearningResourceInfo() {
             LazyVal<ActiveInfo> latestActiveInfo = LazyVal.of(() ->
-                    componentFactory.active.getLatestActiveInfo(info.get().commentGroupId, resourceId.value)
-                            .orElse(warnNil(ErrorCode.LatestActiveNotFound)));
+                    componentFactory.active.getLatestActiveInfo(postGroupId, resourceId.value)
+                            .orElseGet(() -> warnNil(ErrorCode.LatestActiveNotFound)));
 
             public String getId() { return resourceId.value; }
             public PersonalInformation.PersonalInfo getAuthor() {
@@ -296,11 +307,12 @@ public class AppLearningResource {
                 return componentFactory.course.getCourseFromCode(CourseCode.of(info.get().courseCode)).map(Enum::toString).orElse(null);
             }
             public String getAttachedFileURL() {
+                if (info.get().attachedFileId == null) return null;
                 return Commons.fetchFileUrlAndUnwrap(componentFactory.learningResourceAttachFiles, StaticResourceConfig.FileType.AttachFiles, FileId.of(info.get().attachedFileId), warnNil);
             }
             public PersonalInformation.PersonalInfo getLatestCommenter() {
                 return nilOrTr(latestActiveInfo.get(), activeInfo ->
-                    Commons.fetchPersonalInfoAndUnwrap(UserId.of(activeInfo.toucherId), warnNil)
+                    Commons.fetchPersonalInfoAndUnwrap(UserId.of(activeInfo.toucherId), (e) -> {})
                 );
             }
             public Long getLatestActiveTime() {
@@ -327,6 +339,7 @@ public class AppLearningResource {
                 return Commons.fetchPersonalInfo(userId).reduce(AppLearningResource::warnNil, i -> i);
             }
             public String getAttachedFileURL() {
+                if (commonInfo.attachedFileId == null) return null;
                 return Commons.fetchFileUrl(componentFactory.learningResourceAttachFiles, StaticResourceConfig.FileType.AttachFiles, FileId.of(commonInfo.attachedFileId))
                         .reduce(AppLearningResource::warnNil, url -> url);
             }

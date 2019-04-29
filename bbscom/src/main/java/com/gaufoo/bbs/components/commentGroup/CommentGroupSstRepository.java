@@ -31,7 +31,7 @@ public class CommentGroupSstRepository implements CommentGroupRepository {
         if (!SstUtils.contains(idToCnt, commentGroupId.value)) return false;
 
         List<CompletionStage<Boolean>> tasks = new ArrayList<>();
-        tasks.add(SstUtils.setEntryAsync(idToCnt, commentId.value, String.valueOf(getCommentsCount(commentGroupId) + 1)));
+        tasks.add(SstUtils.setEntryAsync(idToCnt, commentGroupId.value, String.valueOf(getCommentsCount(commentGroupId) + 1)));
         tasks.add(SstUtils.setEntryAsync(cluster, concat(commentGroupId, commentId), commentId.value));
 
         return SstUtils.waitAllFutureParT(tasks, true, (a, b) -> a && b);
@@ -59,7 +59,12 @@ public class CommentGroupSstRepository implements CommentGroupRepository {
     @Override
     public boolean deleteComment(CommentGroupId commentGroupId, CommentId commentId) {
         if (!SstUtils.contains(idToCnt, commentGroupId.value)) return false;
-        return SstUtils.removeEntryByKey(cluster, concat(commentGroupId, commentId)) != null;
+
+        List<CompletionStage<Boolean>> tasks = new ArrayList<>();
+        tasks.add(SstUtils.setEntryAsync(idToCnt, commentGroupId.value, String.valueOf(getCommentsCount(commentGroupId) - 1)));
+        tasks.add(SstUtils.removeEntryAsync(cluster, concat(commentGroupId, commentId)));
+
+        return SstUtils.<Boolean>waitAllFutureParT(tasks, true, (a, b) -> a && b);
     }
 
     @Override
