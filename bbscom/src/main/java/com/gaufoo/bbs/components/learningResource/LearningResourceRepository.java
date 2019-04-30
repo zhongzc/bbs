@@ -21,6 +21,7 @@ public interface LearningResourceRepository {
     boolean deletePostInfo(LearningResourceId postId);
 
     Long count();
+    Long countOfCourse(String courseCode);
 
     default void shutdown() {}
 }

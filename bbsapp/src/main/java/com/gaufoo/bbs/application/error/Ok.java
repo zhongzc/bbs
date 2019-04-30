@@ -14,7 +14,8 @@ public class Ok implements
         Lecture.DeleteLectureResult,
         SchoolHeat.DeleteSchoolHeatResult,
         LearningResource.DeleteLearningResourceResult,
-        LearningResource.DeleteLearningResourceCommentResult
+        LearningResource.DeleteLearningResourceCommentResult,
+        LearningResource.DeleteLearningResourceCommentReplyResult
 {
     private Boolean ok;
 

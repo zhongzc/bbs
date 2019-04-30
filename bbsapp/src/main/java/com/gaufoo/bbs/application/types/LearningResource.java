@@ -73,6 +73,7 @@ public interface LearningResource {
     }
 
     class LearningResourceReplyInput {
+        public String postIdReplying;
         public String commentIdReplying;
         public Content.ContentInput content;
         public String replyTo;
@@ -80,8 +81,9 @@ public interface LearningResource {
         @Override
         public String toString() {
             return "LearningResourceReplyInput{" +
-                    "commentIdReplying='" + commentIdReplying + '\'' +
-                    ", contentId=" + content +
+                    "postIdReplying='" + postIdReplying + '\'' +
+                    ", commentIdReplying='" + commentIdReplying + '\'' +
+                    ", content=" + content +
                     ", replyTo='" + replyTo + '\'' +
                     '}';
         }

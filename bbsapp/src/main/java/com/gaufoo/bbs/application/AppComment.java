@@ -2,7 +2,6 @@ package com.gaufoo.bbs.application;
 
 import static com.gaufoo.bbs.application.types.Comment.*;
 
-import com.gaufoo.bbs.application.error.Error;
 import com.gaufoo.bbs.application.error.ErrorCode;
 import com.gaufoo.bbs.application.types.Comment;
 import com.gaufoo.bbs.application.types.Content;
@@ -11,6 +10,7 @@ import com.gaufoo.bbs.components.commentGroup.CommentGroup;
 import com.gaufoo.bbs.components.commentGroup.comment.common.CommentId;
 import com.gaufoo.bbs.components.commentGroup.comment.common.CommentInfo;
 import com.gaufoo.bbs.components.commentGroup.comment.reply.common.ReplyId;
+import com.gaufoo.bbs.components.commentGroup.comment.reply.common.ReplyInfo;
 import com.gaufoo.bbs.components.commentGroup.common.CommentGroupId;
 import com.gaufoo.bbs.components.content.common.ContentId;
 import com.gaufoo.bbs.components.user.common.UserId;
@@ -37,18 +37,32 @@ public class AppComment {
                 .then(commentGroupId -> TaskChain.Result.of(commentGroupId, () -> componentFactory.commentGroup.removeComments(commentGroupId)));
     }
 
-    public static TaskChain.Procedure<ErrorCode, Tuple<CommentId, CommentInfo>> postComment(CommentGroupId groupId, Content.ContentInput contentInput, UserId commenterId) {
-        return AppContent.storeContentInput(contentInput)
-                .then(contentId -> TaskChain.Result.of(CommentInfo.of(contentId.value, commenterId.value)))
+    public static TaskChain.Procedure<ErrorCode, Tuple<CommentId, CommentInfo>> postComment(CommentGroupId groupId, ContentId contentId,
+                                                                                            UserId commenterId) {
+        return TaskChain.Result.<ErrorCode, CommentInfo>of(CommentInfo.of(contentId.value, commenterId.value))
                 .then(commentInfo -> TaskChain.Procedure.fromOptional(
-                        componentFactory.commentGroup.addComment(groupId, commentInfo).map(id -> Tuple.of(id, commentInfo)),
-                        ErrorCode.AddCommentFailed
-                ));
+                        componentFactory.commentGroup.addComment(groupId, commentInfo).map(commentId -> Tuple.of(commentId, commentInfo)),
+                        ErrorCode.AddCommentFailed)
+                );
+    }
+
+    public static TaskChain.Procedure<ErrorCode, Tuple<ReplyId, ReplyInfo>> postReply(CommentGroupId groupId, CommentId commentId, ContentId contentId,
+                                                                                      UserId replier, UserId replyTo) {
+        return TaskChain.Result.<ErrorCode, ReplyInfo>of(ReplyInfo.of(replier.value, contentId.value, replyTo.value))
+                .then(replyInfo -> TaskChain.Procedure.fromOptional(
+                        componentFactory.commentGroup.addReply(groupId, commentId, replyInfo).map(replyId -> Tuple.of(replyId, replyInfo)),
+                        ErrorCode.AddReplyFailed)
+                );
     }
 
     public static TaskChain.Procedure<ErrorCode, CommentInfo> fetchCommentInfo(CommentId commentId) {
         return TaskChain.Procedure.fromOptional(componentFactory.commentGroup.commentInfo(commentId),
                 ErrorCode.CommentInfoNotFound);
+    }
+
+    public static TaskChain.Procedure<ErrorCode, ReplyInfo> fetchReplyInfo(ReplyId replyId) {
+        return TaskChain.Procedure.fromOptional(componentFactory.commentGroup.replyInfo(replyId),
+                ErrorCode.ReplyInfoNotFound);
     }
 
     public static TaskChain.Procedure<ErrorCode, Void> deleteAllComments(CommentGroupId groupId) {
@@ -59,7 +73,6 @@ public class AppComment {
                 TaskChain.Result.of(null) :
                 TaskChain.Fail.of(ErrorCode.DeleteCommentFailed)
         );
-
     }
 
     public static TaskChain.Procedure<ErrorCode, Void> deleteComment(CommentGroupId commentGroupId, CommentId commentId) {
@@ -77,6 +90,16 @@ public class AppComment {
                 .filter(ok -> ok)
                 .map(__ -> (TaskChain.Procedure<ErrorCode, Void>)TaskChain.Result.<ErrorCode, Void>of(clearUp.get()))
                 .orElse(TaskChain.Fail.of(ErrorCode.DeleteCommentFailed));
+    }
+
+    public static TaskChain.Procedure<ErrorCode, Void> deleteReply(CommentId commentId, ReplyId replyId) {
+        return componentFactory.commentGroup.replyInfo(replyId)
+                .map(replyInfo -> componentFactory.content.remove(ContentId.of(replyInfo.contentId)))
+                .filter(ok -> ok)
+                .map(__ -> componentFactory.commentGroup.removeReply(commentId, replyId))
+                .filter(ok -> ok)
+                .map(__ -> (TaskChain.Procedure<ErrorCode, Void>)TaskChain.Result.<ErrorCode, Void>of(null))
+                .orElse(TaskChain.Fail.of(ErrorCode.DeleteReplyFailed));
     }
 
     public static AllComments consAllComments(CommentGroupId commentGroupId, Long skip, Long first) {
@@ -107,7 +130,7 @@ public class AppComment {
         final CommentGroup cg = componentFactory.commentGroup;
         return new Comment.AllReplies() {
             public Long getTotalCount() { return cg.getRepliesCount(cid); }
-            public List<ReplyInfo> getReplies() {
+            public List<Comment.ReplyInfo> getReplies() {
                 return cg.allReplies(cid).map(AppComment::consReplyInfo)
                         .filter(Objects::nonNull).skip(skip == null ? 0L : skip)
                         .limit(first == null ? Long.MAX_VALUE : first)

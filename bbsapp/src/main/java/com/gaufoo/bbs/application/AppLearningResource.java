@@ -15,6 +15,8 @@ import com.gaufoo.bbs.components.authenticator.common.Permission;
 import com.gaufoo.bbs.components.authenticator.common.UserToken;
 import com.gaufoo.bbs.components.commentGroup.comment.common.CommentId;
 import com.gaufoo.bbs.components.commentGroup.comment.common.CommentInfo;
+import com.gaufoo.bbs.components.commentGroup.comment.reply.common.ReplyId;
+import com.gaufoo.bbs.components.commentGroup.comment.reply.common.ReplyInfo;
 import com.gaufoo.bbs.components.commentGroup.common.CommentGroupId;
 import com.gaufoo.bbs.components.content.common.ContentId;
 import com.gaufoo.bbs.components.file.common.FileId;
@@ -29,10 +31,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.Instant;
-import java.util.*;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -51,21 +57,27 @@ public class AppLearningResource {
 
         Predicate<CourseCode> courseFilter;
         Procedure<ErrorCode, CourseCode> initResult;
+        Supplier<Long> resourcesCount;
+
         if (courseStr == null) {
             courseFilter = __ -> true;
             initResult = Result.of(null);
+            resourcesCount = () -> componentFactory.learningResource.allPostsCount();
         } else {
             initResult = parseCourse(courseStr);
-            courseFilter = (courseCode -> courseCode.equals(initResult.retrieveResult().get()));
+            CourseCode cc = initResult.retrieveResult().get();
+            courseFilter = (courseCode -> courseCode.equals(cc));
+            resourcesCount = () -> componentFactory.learningResource.allPostsCountOfCourse(cc.value);
         }
 
-        return initResult.mapR(nullableCourseCode -> selectLearnResources(fSortedBy, nullableCourseCode))
+        return initResult
+                .mapR(nullableCourseCode -> selectLearnResources(fSortedBy, nullableCourseCode))
                 .mapR(resourceIdStream -> resourceIdStream
                         .map(resId -> Tuple.of(resId, LazyVal.of(() -> fetchLearningResourceInfoAndUnwrap(resId, warnNil))))
 //                        .filter(idLearnInfoTuple -> idLearnInfoTuple.right.get() != null)
                         .filter(idLearnInfOTuple -> courseFilter.test(CourseCode.of(idLearnInfOTuple.right.get().courseCode)))
                         .map(tup -> consLearningResourceInfoRet(tup.left, tup.right)))
-                .reduce(Error::of, infoStream -> consMultiLearnResources(infoStream, fSkip, fFirst));
+                .reduce(Error::of, infoStream -> consMultiLearnResources(resourcesCount, infoStream, fSkip, fFirst));
 
     }
 
@@ -99,7 +111,7 @@ public class AppLearningResource {
         Ctx ctx = new Ctx();
 
         return Commons.fetchPermission(UserToken.of(userToken))
-                .then(permission -> ensurePermission(learnId, permission))
+                .then(permission -> checkPermission(learnId, permission))
                 .then(__ -> fetchLearningResourceInfo(learnId)).mapR(ctx::put)
                 .then(__ -> deleteLearnResourceInfoRefs(ctx.learnInfo))
                 .then(__ -> clearActiveAndHeat(learnId))
@@ -121,7 +133,9 @@ public class AppLearningResource {
         return Commons.fetchUserId(UserToken.of(userToken)).mapR(ctx::put)
                 .then(__ -> fetchLearningResourceInfo(learnId)).mapR(ctx::put)
                 .then(__ -> AppContent.storeContentInput(input.content)).mapR(ctx::put)
-                .then(__ -> AppComment.postComment(CommentGroupId.of(ctx.learnInfo.commentGroupId), input.content, ctx.userId)).mapR(ctx::put)
+                .then(__ -> AppComment.postComment(CommentGroupId.of(ctx.learnInfo.commentGroupId), ctx.contentId, ctx.userId)).mapR(ctx::put)
+                .then(__ -> alterHeat(learnId, ctx.commentInfo.creationTime, 1L))
+                .then(__ -> touchActive(learnId, UserId.of(ctx.commentInfo.commenter)))
                 .reduce(Error::of, __ -> consCommentInfoRet(ctx.commentId, ctx.contentId, ctx.userId, ctx.commentInfo));
     }
 
@@ -137,7 +151,7 @@ public class AppLearningResource {
         Ctx ctx = new Ctx();
 
         return Commons.fetchPermission(UserToken.of(userToken))
-                .then(permission -> ensurePermission(commentId, permission))
+                .then(permission -> checkPermission(commentId, permission))
                 .then(__ -> fetchLearningResourceInfo(learnId)).mapR(ctx::put)
                 .then(__ -> Result.of(CommentGroupId.of(ctx.learningResourceInfo.commentGroupId))).mapR(ctx::put)
                 .then(__ -> AppComment.fetchCommentInfo(commentId)).mapR(ctx::put)
@@ -146,10 +160,53 @@ public class AppLearningResource {
                 .reduce(Error::of, __ -> Ok.build());
     }
 
+    public static LearningResource.CreateLearningResourceCommentReplyResult createLearningResourceCommentReply(LearningResource.LearningResourceReplyInput input, String userToken) {
+        class Ctx {
+            UserId replierId;                  Void put(UserId id)                 { this.replierId = id;      return null; }
+            ContentId contentId;               Void put(ContentId id)              { this.contentId = id;      return null; }
+            LearningResourceInfo resourceInfo; Void put(LearningResourceInfo info) { this.resourceInfo = info; return null; }
+            ReplyId replyId;
+            ReplyInfo replyInfo; Void put(Tuple<ReplyId, ReplyInfo> tup) { replyId = tup.left; replyInfo = tup.right; return null; }
+        }
+        Ctx ctx = new Ctx();
+
+        LearningResourceId learnId = LearningResourceId.of(input.postIdReplying);
+        CommentId postIdReplying = CommentId.of(input.commentIdReplying);
+        UserId replyTo = nilOrTr(input.replyTo, UserId::of);
+
+        return Commons.fetchUserId(UserToken.of(userToken)).mapR(ctx::put)
+                .then(__ -> fetchLearningResourceInfo(learnId)).mapR(ctx::put)
+                .then(__ -> AppContent.storeContentInput(input.content)).mapR(ctx::put)
+                .then(__ -> AppComment.postReply(
+                        CommentGroupId.of(ctx.resourceInfo.commentGroupId), postIdReplying, ctx.contentId, ctx.replierId, replyTo)).mapR(ctx::put)
+                .then(__ -> touchActive(learnId, ctx.replierId))
+                .then(__ -> alterHeat(learnId, ctx.replyInfo.creationTime, 1L))
+                .reduce(Error::of, __ -> consReplyInfoRet(ctx.replyId, ctx.replyInfo, ctx.contentId, ctx.replierId));
+    }
+
+    public static LearningResource.DeleteLearningResourceCommentReplyResult deleteLearningResourceCommentReply(String learnResourceId, String commentIdStr,
+                                                                                                               String replyIdStr, String userToken) {
+        LearningResourceId learnId = LearningResourceId.of(learnResourceId);
+        CommentId commentId = CommentId.of(commentIdStr);
+        ReplyId replyId = ReplyId.of(replyIdStr);
+
+        class Ctx {
+            ReplyInfo replyInfo; Void put(ReplyInfo info) { this.replyInfo = info; return null; }
+        }
+        Ctx ctx = new Ctx();
+
+        return Commons.fetchPermission(UserToken.of(userToken))
+                .then(permission -> checkPermision(replyId, permission))
+                .then(__ -> AppComment.fetchReplyInfo(replyId)).mapR(ctx::put)
+                .then(__ -> AppComment.deleteReply(commentId, replyId))
+                .then(__ -> alterHeat(learnId, ctx.replyInfo.creationTime, -1L))
+                .reduce(Error::of, __ -> Ok.build());
+    }
+
     public static void reset() {
         componentFactory.learningResource.allPosts().forEach(resourceId -> {
             fetchLearningResourceInfo(resourceId)
-                    .then(info -> deleteLearnResourceInfoRefs(info))
+                    .then(AppLearningResource::deleteLearnResourceInfoRefs)
                     .then(__ -> clearActiveAndHeat(resourceId))
                     .then(__ -> deleteLearnResourceInfo(resourceId));
         });
@@ -243,6 +300,17 @@ public class AppLearningResource {
                 );
     }
 
+    private static Procedure<ErrorCode, Void> touchActive(LearningResourceId learningResourceId, UserId toucherId) {
+        String learnId = learningResourceId.value;
+        String toucher = toucherId.value;
+
+        String curActiveTimeWin = Commons.currentActiveTimeWindow();
+
+        return Procedure.fromOptional(componentFactory.active.touch(postGroupId, learnId, toucher), ErrorCode.UnableToTouch)
+                .mapR(__ -> componentFactory.active.touch(curActiveTimeWin, postGroupId + learnId, toucher))
+                .then(__ -> Result.of(null));
+    }
+
     private static Procedure<ErrorCode, Void> deleteLearnResourceInfoRefs(LearningResourceInfo info) {
         if (info.attachedFileId != null) {
             componentFactory.learningResourceAttachFiles.Remove(FileId.of(info.attachedFileId));
@@ -279,9 +347,28 @@ public class AppLearningResource {
         };
     }
 
-    private static LearningResource.MultiLearningResources consMultiLearnResources(Stream<LearningResource.LearningResourceInfo> infos, long skip, long first) {
+    private static Comment.ReplyInfo consReplyInfoRet(ReplyId replyId, ReplyInfo replyInfo, ContentId contentId, UserId authorId) {
+        return new Comment.ReplyInfo() {
+            public String getId()         { return replyId.value; }
+            public Long getCreationTime() { return replyInfo.creationTime.toEpochMilli(); }
+            public PersonalInformation.PersonalInfo getAuthor() {
+                return Commons.fetchPersonalInfoAndUnwrap(authorId, warnNil);
+            }
+            public Content getContent() {
+                return AppContent.fromContentId(contentId).reduce(AppLearningResource::warnNil, i -> i);
+            }
+            public PersonalInformation.PersonalInfo getReplyTo() {
+                if (replyInfo.replyTo == null) return null;
+                return Commons.fetchPersonalInfoAndUnwrap(UserId.of(replyInfo.replyTo), warnNil);
+            }
+        };
+    }
+
+    private static LearningResource.MultiLearningResources consMultiLearnResources(Supplier<Long> resourcesCount,
+                                                                                   Stream<LearningResource.LearningResourceInfo> infos,
+                                                                                   long skip, long first) {
         return new LearningResource.MultiLearningResources() {
-            public Long getTotalCount() { return componentFactory.learningResource.allPostsCount(); }
+            public Long getTotalCount() { return resourcesCount.get(); }
             public List<LearningResource.LearningResourceInfo> getLearningResources() {
                 return infos.skip(skip).limit(first).collect(Collectors.toList());
             }
@@ -308,7 +395,8 @@ public class AppLearningResource {
             }
             public String getAttachedFileURL() {
                 if (info.get().attachedFileId == null) return null;
-                return Commons.fetchFileUrlAndUnwrap(componentFactory.learningResourceAttachFiles, StaticResourceConfig.FileType.AttachFiles, FileId.of(info.get().attachedFileId), warnNil);
+                return Commons.fetchFileUrlAndUnwrap(componentFactory.learningResourceAttachFiles,
+                        StaticResourceConfig.FileType.AttachFiles, FileId.of(info.get().attachedFileId), warnNil);
             }
             public PersonalInformation.PersonalInfo getLatestCommenter() {
                 return nilOrTr(latestActiveInfo.get(), activeInfo ->
@@ -326,7 +414,9 @@ public class AppLearningResource {
         };
     }
 
-    private static LearningResource.LearningResourceInfo consLearningResourceInfoAfterCreate(UserId userId, LearningResourceId resourceId, LearningResource.LearningResourceInput input, LearningResourceInfo commonInfo) {
+    private static LearningResource.LearningResourceInfo consLearningResourceInfoAfterCreate(UserId userId, LearningResourceId resourceId,
+                                                                                             LearningResource.LearningResourceInput input,
+                                                                                             LearningResourceInfo commonInfo) {
         return new LearningResource.LearningResourceInfo() {
             public String getId()               { return resourceId.value; }
             public String getTitle()            { return input.title; }
@@ -352,26 +442,32 @@ public class AppLearningResource {
         };
     }
 
-    private static Procedure<ErrorCode, Void> ensurePermission(LearningResourceId learningResourceId, Permission permission) {
+    private static Procedure<ErrorCode, Void> checkPermission(LearningResourceId learningResourceId, Permission permission) {
         return fetchLearningResourceInfo(learningResourceId)
-                .then(learningResourceInfo -> Result.of(learningResourceInfo.authorId.equals(permission.userId) || permission.role.equals(Authenticator.Role.ADMIN)))
-                .then(success -> success ? Result.of(null) : Fail.of(ErrorCode.PermissionDenied));
-    }
-
-    private static Procedure<ErrorCode, Void> ensurePermission(CommentId commentId, Permission permission) {
-        return AppComment.fetchCommentInfo(commentId)
-                .then(commentInfo -> Result.of(commentInfo.commenter.equals(permission.userId) || permission.role.equals(Authenticator.Role.ADMIN)))
+                .mapR(learningResourceInfo -> learningResourceInfo.authorId.equals(permission.userId) || permission.role.equals(Authenticator.Role.ADMIN))
                 .then(ok -> ok ? Result.of(null) : Fail.of(ErrorCode.PermissionDenied));
     }
 
-    protected static LearningResourceInfo fetchLearningResourceInfoAndUnwrap(LearningResourceId id, Consumer<ErrorCode> nilCallback) {
+    private static Procedure<ErrorCode, Void> checkPermission(CommentId commentId, Permission permission) {
+        return AppComment.fetchCommentInfo(commentId)
+                .mapR(commentInfo -> commentInfo.commenter.equals(permission.userId) || permission.role.equals(Authenticator.Role.ADMIN))
+                .then(ok -> ok ? Result.of(null) : Fail.of(ErrorCode.PermissionDenied));
+    }
+
+    private static Procedure<ErrorCode,Void> checkPermision(ReplyId replyId, Permission permission) {
+        return AppComment.fetchReplyInfo(replyId)
+                .mapR(replyInfo -> replyInfo.replier.equals(permission.userId) || permission.role.equals(Authenticator.Role.ADMIN))
+                .then(ok -> ok ? Result.of(null) : Fail.of(ErrorCode.PermissionDenied));
+    }
+
+    private static LearningResourceInfo fetchLearningResourceInfoAndUnwrap(LearningResourceId id, Consumer<ErrorCode> nilCallback) {
         return fetchLearningResourceInfo(id).reduce(e -> {
             nilCallback.accept(e);
             return null;
         }, i -> i);
     }
 
-    protected static Procedure<ErrorCode, LearningResourceInfo> fetchLearningResourceInfo(LearningResourceId id) {
+    private static Procedure<ErrorCode, LearningResourceInfo> fetchLearningResourceInfo(LearningResourceId id) {
         return Procedure.fromOptional(componentFactory.learningResource.postInfo(id), ErrorCode.LearningResourceNonExist);
     }
 

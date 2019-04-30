@@ -61,6 +61,10 @@ public enum ErrorCode {
     DeleteCommentFailed(53),
     AlterHeatFailed(54),
     LatestActiveNotFound(55),
+    UnableToTouch(56),
+    AddReplyFailed(57),
+    ReplyInfoNotFound(58),
+    DeleteReplyFailed(59),
 
     PostNonExist(96),
     ContentNonExist(97),
@@ -127,6 +131,10 @@ public enum ErrorCode {
         put(ErrorCode.DeleteCommentFailed, "删除评论失败");
         put(ErrorCode.AlterHeatFailed, "修改热度失败");
         put(ErrorCode.LatestActiveNotFound, "找不到最近活跃信息");
+        put(ErrorCode.UnableToTouch, "无法更新最近活跃");
+        put(ErrorCode.AddReplyFailed, "添加回复失败");
+        put(ErrorCode.ReplyInfoNotFound, "找不到回复信息");
+        put(ErrorCode.DeleteReplyFailed, "删除回复失败");
 
         put(ErrorCode.SaveFileFailed, "创建文件失败");
         // add more error code mapping here

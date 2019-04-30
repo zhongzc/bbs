@@ -62,8 +62,8 @@ type Mutation {
     deleteLearningResource(id: ID!): DeleteLearningResourceResult!
     createLearningResourceComment(learningResourceCommentInput: LearningResourceCommentInput!): CreateLearningResourceCommentResult!
     deleteLearningResourceComment(lrId: ID!, cmmtId: ID!): DeleteLearningResourceCommentResult!
-#    createLearningResourceCommentReply(learningResourceReplyInput: LearningResourceReplyInput): CreateLearningResourceCommentReplyResult!
-#    deleteLearningResourceCommentReply(lrId: ID!, cmmtId: ID!, rpyId: ID!): DeleteLearningResourceCommentReplyResult!
+    createLearningResourceCommentReply(learningResourceReplyInput: LearningResourceReplyInput): CreateLearningResourceCommentReplyResult!
+    deleteLearningResourceCommentReply(lrId: ID!, cmmtId: ID!, rpyId: ID!): DeleteLearningResourceCommentReplyResult!
 }
 
 schema {

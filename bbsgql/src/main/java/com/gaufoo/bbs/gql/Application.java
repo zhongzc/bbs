@@ -66,6 +66,7 @@ public class Application implements WebMvcConfigurer {
                 Content.Picture.class,
                 Content.Paragraph.class,
                 Comment.CommentInfo.class,
+                Comment.ReplyInfo.class,
                 Lecture.MultiLectures.class,
                 Lecture.LectureInfo.class,
                 LearningResource.LearningResourceInfo.class,

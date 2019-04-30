@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletionStage;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class CommentSstRepository implements CommentRepository {
@@ -43,12 +44,11 @@ public class CommentSstRepository implements CommentRepository {
 
     @Override
     public boolean addReply(CommentId commentId, ReplyId replyId) {
-        return Optional.ofNullable(getRepliesCount(commentId)).map(c -> {
-            List<CompletionStage<Boolean>> tasks = new ArrayList<>();
-            tasks.add(SstUtils.setEntryAsync(idToRpyCnt, commentId.value, String.valueOf(c + 1)));
-            tasks.add(SstUtils.setEntryAsync(cluster, concat(commentId, replyId), "GAUFOO"));
-            return SstUtils.waitAllFutureParT(tasks, true, (a, b) -> a && b);
-        }).orElse(false);
+        Long count = getRepliesCount(commentId);
+        List<CompletionStage<Boolean>> tasks = new ArrayList<>();
+        tasks.add(SstUtils.setEntryAsync(idToRpyCnt, commentId.value, String.valueOf(count + 1)));
+        tasks.add(SstUtils.setEntryAsync(cluster, concat(commentId, replyId), "GAUFOO"));
+        return SstUtils.waitAllFutureParT(tasks, true, (a, b) -> a && b);
     }
 
     @Override
@@ -74,9 +74,8 @@ public class CommentSstRepository implements CommentRepository {
     @Override
     public boolean deleteReply(CommentId commentId, ReplyId replyId) {
         if (SstUtils.removeEntryByKey(cluster, concat(commentId, replyId)) != null) {
-            return Optional.ofNullable(getRepliesCount(commentId))
-                    .map(l -> SstUtils.setEntry(idToRpyCnt, commentId.value, String.valueOf(l - 1)))
-                    .orElse(false);
+            Long count = getRepliesCount(commentId);
+            return SstUtils.setEntry(idToRpyCnt, commentId.value, String.valueOf(count - 1));
         } else return false;
     }
 
