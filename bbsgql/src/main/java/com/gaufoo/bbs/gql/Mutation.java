@@ -180,5 +180,11 @@ public class Mutation implements GraphQLMutationResolver {
         ).orElse(authError);
     }
 
+    public Entertainment.DeleteEntertainmentResult deleteEntertainment(String entertainmentId, DataFetchingEnvironment env) {
+        return Utils.getAuthToken(env).map(
+                tkn -> AppEntertainment.deleteEntertainment(entertainmentId, tkn)
+        ).orElse(authError);
+    }
+
     private static Error authError = Error.of(ErrorCode.NotLoggedIn);
 }

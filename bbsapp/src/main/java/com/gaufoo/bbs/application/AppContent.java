@@ -26,6 +26,11 @@ public class AppContent {
                 .then(contentId -> TaskChain.Result.of(contentId, () -> componentFactory.content.remove(contentId)));
     }
 
+    public static TaskChain.Procedure<ErrorCode, Void> deleteContent(ContentId contentId) {
+        boolean ok = componentFactory.content.remove(contentId);
+        return ok ? TaskChain.Result.of(null) : TaskChain.Fail.of(ErrorCode.DeleteContentFailed);
+    }
+
     public static TaskChain.Procedure<ErrorCode, ContentInfo> consContent(Content.ContentInput contentInput) {
         Stream<TaskChain.Procedure<ErrorCode, ContentElem>> items = contentInput.elems.stream().map(i -> {
             if (i.type == Content.ElemType.Picture) {

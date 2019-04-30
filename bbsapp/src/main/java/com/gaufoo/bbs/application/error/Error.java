@@ -37,7 +37,8 @@ public class Error implements
         LearningResource.AllLearningResourceResult,
         LearningResource.CreateLearningResourceCommentReplyResult,
         LearningResource.DeleteLearningResourceCommentReplyResult,
-        Entertainment.CreateEntertainmentResult
+        Entertainment.CreateEntertainmentResult,
+        Entertainment.DeleteEntertainmentResult
 {
     private Integer errCode;
     private String msg;

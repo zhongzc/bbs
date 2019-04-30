@@ -121,9 +121,8 @@ public class AppLearningResource {
         return Commons.fetchPermission(UserToken.of(userToken))
                 .then(permission -> checkPermission(learnId, permission))
                 .then(__ -> fetchLearningResourceInfo(learnId)).mapR(ctx::put)
-                .then(__ -> deleteLearnResourceInfoRefs(ctx.learnInfo))
+                .then(__ -> deleteLearnResourceInfo(learnId, ctx.learnInfo))
                 .then(__ -> AppHeatActive.clearActiveAndHeat(learnId))
-                .then(__ -> deleteLearnResourceInfo(learnId))
                 .reduce(Error::of, __ -> Ok.build());
     }
 
@@ -214,9 +213,8 @@ public class AppLearningResource {
     public static void reset() {
         componentFactory.learningResource.allPosts().forEach(resourceId -> {
             fetchLearningResourceInfo(resourceId)
-                    .then(AppLearningResource::deleteLearnResourceInfoRefs)
-                    .then(__ -> AppHeatActive.clearActiveAndHeat(resourceId))
-                    .then(__ -> deleteLearnResourceInfo(resourceId));
+                    .then(resourceInfo -> deleteLearnResourceInfo(resourceId, resourceInfo))
+                    .then(__ -> AppHeatActive.clearActiveAndHeat(resourceId));
         });
     }
 
@@ -263,19 +261,14 @@ public class AppLearningResource {
                         ctx.courseCode.value, nilOrTr(ctx.nullableFileId, x -> x.value), ctx.commentGroupId.value)));
     }
 
-    private static Procedure<ErrorCode, Void> deleteLearnResourceInfoRefs(LearningResourceInfo info) {
+    private static Procedure<ErrorCode, Void> deleteLearnResourceInfo(LearningResourceId id, LearningResourceInfo info) {
         if (info.attachedFileId != null) {
             componentFactory.learningResourceAttachFiles.Remove(FileId.of(info.attachedFileId));
         }
-        boolean rmContent = componentFactory.content.remove(ContentId.of(info.contentId));
-        boolean rmComment = componentFactory.commentGroup.removeComments(CommentGroupId.of(info.commentGroupId));
-
-        boolean success = rmContent && rmComment;
-        return success ? Result.of(null) : Fail.of(ErrorCode.DeleteLearningResourceFailed);
-    }
-
-    private static Procedure<ErrorCode, Void> deleteLearnResourceInfo(LearningResourceId id) {
-        return componentFactory.learningResource.removePost(id) ? Result.of(null) : Fail.of(ErrorCode.DeleteLearningResourceFailed);
+        return AppComment.deleteAllComments(CommentGroupId.of(info.commentGroupId))
+                .then(__ -> AppContent.deleteContent(ContentId.of(info.contentId)))
+                .mapR(__ -> componentFactory.learningResource.removePost(id))
+                .then(ok -> ok ? Result.of(null) : Fail.of(ErrorCode.DeleteLearningResourceFailed));
     }
 
     private static Comment.CommentInfo consCommentInfoRet(CommentId commentId, ContentId contentId, UserId authorId, CommentInfo commentInfo) {

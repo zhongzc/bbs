@@ -76,19 +76,17 @@ public class AppComment {
     }
 
     public static TaskChain.Procedure<ErrorCode, Void> deleteComment(CommentGroupId commentGroupId, CommentId commentId) {
-        Supplier<Void> clearUp = () -> componentFactory.commentGroup.allReplies(commentId)
-                .map(replyId -> componentFactory.commentGroup.replyInfo(replyId).orElse(null))
-                .filter(Objects::nonNull)
-                .map(replyInfo -> componentFactory.content.remove(ContentId.of(replyInfo.contentId)))
-                .map(__ -> (Void)null)
-                .reduce(null, (a, b) -> null);
+        Supplier<TaskChain.Procedure<ErrorCode, Void>> clearUp = () -> TaskChain.Procedure.sequence(
+                componentFactory.commentGroup.allReplies(commentId)
+                        .map(replyId -> deleteReply(commentId, replyId)).collect(Collectors.toList())
+        ).mapR(__ -> null);
 
         return componentFactory.commentGroup.commentInfo(commentId)
                 .map(commentInfo -> componentFactory.content.remove(ContentId.of(commentInfo.contentId)))
                 .filter(ok -> ok)
                 .map(__ -> componentFactory.commentGroup.removeComment(commentGroupId, commentId))
                 .filter(ok -> ok)
-                .map(__ -> (TaskChain.Procedure<ErrorCode, Void>)TaskChain.Result.<ErrorCode, Void>of(clearUp.get()))
+                .map(__ -> clearUp.get())
                 .orElse(TaskChain.Fail.of(ErrorCode.DeleteCommentFailed));
     }
 

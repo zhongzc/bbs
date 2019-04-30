@@ -71,7 +71,7 @@ type Mutation {
     deleteLearningResourceCommentReply(lrId: ID!, cmmtId: ID!, rpyId: ID!): DeleteLearningResourceCommentReplyResult!
 
     createEntertainment(entertainmentInput: EntertainmentInput!): CreateEntertainmentResult!
-#    deleteEntertainment(id: ID!): DeleteEntertainmentResult!
+    deleteEntertainment(id: ID!): DeleteEntertainmentResult!
 #    createEntertainmentComment(entertainmentCommentInput: EntertainmentCommentInput!): CreateEntertainmentCommentResult!
 #    deleteEntertainmentComment(etmtId: ID!, cmmtId: ID!): DeleteEntertainmentCommentResult!
 #    createEntertainmentCommentReply(entertainmentReplyInput: EntertainmentReplyInput): CreateEntertainmentCommentReplyResult!
