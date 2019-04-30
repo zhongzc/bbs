@@ -81,6 +81,16 @@ public class AppLearningResource {
 
     }
 
+    public static LearningResource.LearningResourcesOfAuthorResult learningResourcesOfAuthor(String authorId, Long nullableSkip, Long nullableFirst) {
+        final long skip = nullableSkip == null ? 0L : nullableSkip;
+        final long first = nullableFirst == null ? Long.MAX_VALUE : nullableFirst;
+
+        Stream<LearningResource.LearningResourceInfo> retInfos = componentFactory.learningResource.allPostsByAuhtor(authorId)
+                .map(learningResourceId -> consLearningResourceInfoRet(learningResourceId,
+                        LazyVal.of(() -> fetchLearningResourceInfoAndUnwrap(learningResourceId, warnNil))));
+        return consMultiLearnResources(() -> componentFactory.learningResource.allPostsCountOfAuthor(authorId), retInfos, skip, first);
+    }
+
     public static LearningResource.LearningResourceInfoResult learningResourceInfo(String learningResourceId) {
         LearningResourceId learnId = LearningResourceId.of(learningResourceId);
 

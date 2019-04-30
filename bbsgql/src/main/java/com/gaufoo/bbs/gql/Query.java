@@ -90,5 +90,9 @@ public class Query implements GraphQLQueryResolver {
         return AppLearningResource.learningResourceInfo(learningResourceId);
     }
 
+    public LearningResource.LearningResourcesOfAuthorResult learningResourcesOfAuthor(String authorId, Long skip, Long first) {
+        return AppLearningResource.learningResourcesOfAuthor(authorId, skip, first);
+    }
+
     private static Error authError = Error.of(ErrorCode.NotLoggedIn);
 }

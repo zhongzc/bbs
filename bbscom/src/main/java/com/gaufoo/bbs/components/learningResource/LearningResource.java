@@ -36,6 +36,8 @@ public interface LearningResource {
 
     Long allPostsCountOfCourse(String courseCode);
 
+    Long allPostsCountOfAuthor(String authorId);
+
     static LearningResource defau1t(LearningResourceRepository repository, IdGenerator idGenerator) {
         return new LearningResourceImpl(repository, idGenerator);
     }

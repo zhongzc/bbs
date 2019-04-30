@@ -22,12 +22,12 @@ type Query {
 
     allLectures(skip: Long, first: Long): AllLecturesResult!
     lectureInfo(id: ID!): LectureInfoResult!
-#   searchLectures(title: String!, skip: Long, first: Long): SearchLecturesResult!
+#    searchLectures(title: String!, skip: Long, first: Long): SearchLecturesResult!
 
     allLearningResources(skip: Long, first: Long, course: String, sortedBy: SortedBy): AllLearningResourceResult!
     allCourses: [String!]!
     learningResourceInfo(id: ID!): LearningResourceInfoResult!
-#    learningResourcesOfAuthor(authorId: ID!, skip: Long, first: Long): LearningResourcesOfAuthorResult!
+    learningResourcesOfAuthor(authorId: ID!, skip: Long, first: Long): LearningResourcesOfAuthorResult!
 #    searchLearningResources(title: String!): SearchLearningResourcesResult!
 }
 

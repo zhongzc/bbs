@@ -20,6 +20,7 @@ public class LearningResourceSstRepository implements LearningResourceRepository
     private final SST authorIndex;
     private final SST courseIndex;
     private final SST courseCodeToCnt;
+    private final SST authorToCnt;
     private final AtomicLong count;
 
     private LearningResourceSstRepository(Path storingPath) {
@@ -27,6 +28,7 @@ public class LearningResourceSstRepository implements LearningResourceRepository
         this.authorIndex = SST.of("author-index", storingPath);
         this.courseIndex = SST.of("course-index", storingPath);
         this.courseCodeToCnt = SST.of("courseId-count", storingPath);
+        this.authorToCnt = SST.of("author-count", storingPath);
         this.count = new AtomicLong(getAllPostsAsc().count());
     }
 
@@ -77,6 +79,7 @@ public class LearningResourceSstRepository implements LearningResourceRepository
         tasks.add(SstUtils.setEntryAsync(authorIndex, fill8(postInfo.authorId) + postId.value, "GAUFOO"));
         tasks.add(SstUtils.setEntryAsync(courseIndex, fill8(postInfo.courseCode) + postId.value, "GAUFOO"));
         tasks.add(SstUtils.setEntryAsync(courseCodeToCnt, postInfo.courseCode, String.valueOf(countOfCourse(postInfo.courseCode) + 1L)));
+        tasks.add(SstUtils.setEntryAsync(authorToCnt, postInfo.authorId, String.valueOf(countOfAuthor(postInfo.authorId) + 1L)));
         if (SstUtils.waitAllFutureParT(tasks, true, (a, b) -> a && b)) {
             this.count.incrementAndGet();
             return true;
@@ -92,6 +95,7 @@ public class LearningResourceSstRepository implements LearningResourceRepository
             tasks.add(SstUtils.removeEntryAsync(authorIndex, fill8(info.authorId) + postId.value));
             tasks.add(SstUtils.removeEntryAsync(courseIndex, fill8(info.courseCode) + postId.value));
             tasks.add(SstUtils.setEntryAsync(courseCodeToCnt, info.courseCode, String.valueOf(countOfCourse(info.courseCode) - 1L)));
+            tasks.add(SstUtils.setEntryAsync(authorToCnt, info.authorId, String.valueOf(countOfAuthor(info.authorId) - 1L)));
             return SstUtils.waitAllFutureParT(tasks, true, (a, b) -> a && b);
         }).orElse(false);
     }
@@ -105,6 +109,13 @@ public class LearningResourceSstRepository implements LearningResourceRepository
     public Long countOfCourse(String courseCode) {
         return Optional.ofNullable(
                 SstUtils.getEntry(courseCodeToCnt, courseCode, Long::parseLong)
+        ).orElse(0L);
+    }
+
+    @Override
+    public Long countOfAuthor(String authorId) {
+        return Optional.ofNullable(
+                SstUtils.getEntry(authorToCnt, authorId, Long::parseLong)
         ).orElse(0L);
     }
 

@@ -22,6 +22,7 @@ public interface LearningResourceRepository {
 
     Long count();
     Long countOfCourse(String courseCode);
+    Long countOfAuthor(String authorId);
 
     default void shutdown() {}
 }

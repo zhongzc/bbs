@@ -64,4 +64,9 @@ public class LearningResourceImpl implements LearningResource {
     public Long allPostsCountOfCourse(String courseCode) {
         return repository.countOfCourse(courseCode);
     }
+
+    @Override
+    public Long allPostsCountOfAuthor(String authorId) {
+        return repository.countOfAuthor(authorId);
+    }
 }
