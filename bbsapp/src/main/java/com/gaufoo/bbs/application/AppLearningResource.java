@@ -34,7 +34,6 @@ import java.time.Instant;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -50,12 +49,12 @@ public class AppLearningResource {
     private static Consumer<ErrorCode> warnNil = errorCode -> log.warn("null warning: {}", errorCode);
     private static final String postGroupId = Commons.getGroupId(Commons.PostType.LearningResource);
 
-    public static LearningResource.AllLearningResourceResult allLearningResources(Long skip, Long first, String courseStr, Commons.SortedBy sortedBy) {
-        final long fSkip = skip == null ? 0L : skip;
-        final long fFirst = first == null ? Long.MAX_VALUE : first;
-        final Commons.SortedBy fSortedBy = sortedBy == null ? Commons.SortedBy.ActiveTimeDes : sortedBy;
+    public static LearningResource.AllLearningResourceResult allLearningResources(Long nullableSkip, Long nullableFirst, String courseStr, Commons.SortedBy nullableSortedBy) {
+        final long skip = nullableSkip == null ? 0L : nullableSkip;
+        final long first = nullableFirst == null ? Long.MAX_VALUE : nullableFirst;
+        final Commons.SortedBy sortedBy = nullableSortedBy == null ? Commons.SortedBy.ActiveTimeDes : nullableSortedBy;
 
-        Predicate<CourseCode> courseFilter;
+        Predicate<Supplier<CourseCode>> courseFilter;
         Procedure<ErrorCode, CourseCode> initResult;
         Supplier<Long> resourcesCount;
 
@@ -65,19 +64,18 @@ public class AppLearningResource {
             resourcesCount = () -> componentFactory.learningResource.allPostsCount();
         } else {
             initResult = parseCourse(courseStr);
-            CourseCode cc = initResult.retrieveResult().get();
-            courseFilter = (courseCode -> courseCode.equals(cc));
+            CourseCode cc = initResult.retrieveResult().orElse(null);
+            courseFilter = (courseCode -> courseCode.get().equals(cc));
             resourcesCount = () -> componentFactory.learningResource.allPostsCountOfCourse(cc.value);
         }
 
         return initResult
-                .mapR(nullableCourseCode -> selectLearnResources(fSortedBy, nullableCourseCode))
+                .mapR(nullableCourseCode -> selectLearnResources(sortedBy, nullableCourseCode))
                 .mapR(resourceIdStream -> resourceIdStream
                         .map(resId -> Tuple.of(resId, LazyVal.of(() -> fetchLearningResourceInfoAndUnwrap(resId, warnNil))))
-//                        .filter(idLearnInfoTuple -> idLearnInfoTuple.right.get() != null)
-                        .filter(idLearnInfOTuple -> courseFilter.test(CourseCode.of(idLearnInfOTuple.right.get().courseCode)))
+                        .filter(idLearnInfOTuple -> courseFilter.test(() -> CourseCode.of(idLearnInfOTuple.right.get().courseCode)))
                         .map(tup -> consLearningResourceInfoRet(tup.left, tup.right)))
-                .reduce(Error::of, infoStream -> consMultiLearnResources(resourcesCount, infoStream, fSkip, fFirst));
+                .reduce(Error::of, infoStream -> consMultiLearnResources(resourcesCount, infoStream, skip, first));
 
     }
 
@@ -109,7 +107,7 @@ public class AppLearningResource {
         return Commons.fetchUserId(UserToken.of(userToken)).mapR(ctx::put)
                 .then(__ -> consLearningResourceInfo(ctx.userId, learningResourceInput)).mapR(ctx::put)
                 .then(__ -> publishLearningResource(ctx.contructedLearnInfo)).mapR(ctx::put)
-                .then(__ -> consActiveAndHeat(ctx.learningResourceId, ctx.userId))
+                .then(__ -> AppHeatActive.createActiveAndHeat(ctx.learningResourceId, ctx.userId))
                 .reduce(Error::of, __ -> consLearningResourceInfoAfterCreate(ctx.userId, ctx.learningResourceId, learningResourceInput, ctx.contructedLearnInfo));
     }
 
@@ -124,7 +122,7 @@ public class AppLearningResource {
                 .then(permission -> checkPermission(learnId, permission))
                 .then(__ -> fetchLearningResourceInfo(learnId)).mapR(ctx::put)
                 .then(__ -> deleteLearnResourceInfoRefs(ctx.learnInfo))
-                .then(__ -> clearActiveAndHeat(learnId))
+                .then(__ -> AppHeatActive.clearActiveAndHeat(learnId))
                 .then(__ -> deleteLearnResourceInfo(learnId))
                 .reduce(Error::of, __ -> Ok.build());
     }
@@ -144,8 +142,8 @@ public class AppLearningResource {
                 .then(__ -> fetchLearningResourceInfo(learnId)).mapR(ctx::put)
                 .then(__ -> AppContent.storeContentInput(input.content)).mapR(ctx::put)
                 .then(__ -> AppComment.postComment(CommentGroupId.of(ctx.learnInfo.commentGroupId), ctx.contentId, ctx.userId)).mapR(ctx::put)
-                .then(__ -> alterHeat(learnId, ctx.commentInfo.creationTime, 1L))
-                .then(__ -> touchActive(learnId, UserId.of(ctx.commentInfo.commenter)))
+                .then(__ -> AppHeatActive.alterHeat(learnId, ctx.commentInfo.creationTime, 1L))
+                .then(__ -> AppHeatActive.touchActive(learnId, UserId.of(ctx.commentInfo.commenter)))
                 .reduce(Error::of, __ -> consCommentInfoRet(ctx.commentId, ctx.contentId, ctx.userId, ctx.commentInfo));
     }
 
@@ -165,7 +163,7 @@ public class AppLearningResource {
                 .then(__ -> fetchLearningResourceInfo(learnId)).mapR(ctx::put)
                 .then(__ -> Result.of(CommentGroupId.of(ctx.learningResourceInfo.commentGroupId))).mapR(ctx::put)
                 .then(__ -> AppComment.fetchCommentInfo(commentId)).mapR(ctx::put)
-                .then(__ -> alterHeat(learnId, ctx.commentInfo.creationTime, -1))
+                .then(__ -> AppHeatActive.alterHeat(learnId, ctx.commentInfo.creationTime, -1))
                 .then(__ -> AppComment.deleteComment(ctx.commentGroupId, commentId))
                 .reduce(Error::of, __ -> Ok.build());
     }
@@ -189,8 +187,8 @@ public class AppLearningResource {
                 .then(__ -> AppContent.storeContentInput(input.content)).mapR(ctx::put)
                 .then(__ -> AppComment.postReply(
                         CommentGroupId.of(ctx.resourceInfo.commentGroupId), postIdReplying, ctx.contentId, ctx.replierId, replyTo)).mapR(ctx::put)
-                .then(__ -> touchActive(learnId, ctx.replierId))
-                .then(__ -> alterHeat(learnId, ctx.replyInfo.creationTime, 1L))
+                .then(__ -> AppHeatActive.touchActive(learnId, ctx.replierId))
+                .then(__ -> AppHeatActive.alterHeat(learnId, ctx.replyInfo.creationTime, 1L))
                 .reduce(Error::of, __ -> consReplyInfoRet(ctx.replyId, ctx.replyInfo, ctx.contentId, ctx.replierId));
     }
 
@@ -206,10 +204,10 @@ public class AppLearningResource {
         Ctx ctx = new Ctx();
 
         return Commons.fetchPermission(UserToken.of(userToken))
-                .then(permission -> checkPermision(replyId, permission))
+                .then(permission -> checkPermission(replyId, permission))
                 .then(__ -> AppComment.fetchReplyInfo(replyId)).mapR(ctx::put)
                 .then(__ -> AppComment.deleteReply(commentId, replyId))
-                .then(__ -> alterHeat(learnId, ctx.replyInfo.creationTime, -1L))
+                .then(__ -> AppHeatActive.alterHeat(learnId, ctx.replyInfo.creationTime, -1L))
                 .reduce(Error::of, __ -> Ok.build());
     }
 
@@ -217,7 +215,7 @@ public class AppLearningResource {
         componentFactory.learningResource.allPosts().forEach(resourceId -> {
             fetchLearningResourceInfo(resourceId)
                     .then(AppLearningResource::deleteLearnResourceInfoRefs)
-                    .then(__ -> clearActiveAndHeat(resourceId))
+                    .then(__ -> AppHeatActive.clearActiveAndHeat(resourceId))
                     .then(__ -> deleteLearnResourceInfo(resourceId));
         });
     }
@@ -265,62 +263,6 @@ public class AppLearningResource {
                         ctx.courseCode.value, nilOrTr(ctx.nullableFileId, x -> x.value), ctx.commentGroupId.value)));
     }
 
-    private static Procedure<ErrorCode, Void> consActiveAndHeat(LearningResourceId learningResourceId, UserId userId) {
-        String currentActiveTimeWin = Commons.currentActiveTimeWindow();
-        String learnResourceGroupId = Commons.getGroupId(Commons.PostType.LearningResource);
-
-        Optional<ActiveInfo> activeInfo = componentFactory.active.touch(learnResourceGroupId, learningResourceId.value, userId.value);
-        Optional<ActiveInfo> mostActiveInfo = componentFactory.active.touch(currentActiveTimeWin, learnResourceGroupId + learningResourceId.value, userId.value);
-        Optional<Long> heat = componentFactory.heat.increase(learnResourceGroupId, learningResourceId.value, 1);
-        Optional<Long> hottest = componentFactory.heat.increase(currentActiveTimeWin, learnResourceGroupId + learningResourceId.value, 1);
-
-        boolean success = activeInfo.isPresent() && mostActiveInfo.isPresent() && heat.isPresent() && hottest.isPresent();
-        return success ? Result.of(null, () -> clearActiveAndHeat(learningResourceId)) : Fail.of(ErrorCode.CreateActiveAndHeatFailed);
-    }
-
-    private static Procedure<ErrorCode, Void> clearActiveAndHeat(LearningResourceId learningResourceId) {
-        String currentActiveTimeWin = Commons.currentActiveTimeWindow();
-        String lastActiveTimeWin = Commons.lastActiveTimeWindow();
-
-        boolean rmActive = componentFactory.active.remove(postGroupId, learningResourceId.value);
-        componentFactory.active.remove(currentActiveTimeWin, postGroupId + learningResourceId.value);
-        componentFactory.active.remove(lastActiveTimeWin, postGroupId + learningResourceId.value);
-        boolean rmHeat = componentFactory.heat.remove(postGroupId, learningResourceId.value);
-        componentFactory.heat.remove(currentActiveTimeWin, postGroupId + learningResourceId.value);
-        componentFactory.heat.remove(lastActiveTimeWin, postGroupId + learningResourceId.value);
-
-        boolean success = rmActive && rmHeat;
-        return success ? Result.of(null) : Fail.of(ErrorCode.ClearActiveAndHeatFailed);
-    }
-
-    private static Procedure<ErrorCode, Void> alterHeat(LearningResourceId learningResourceId, Instant creationTime, long delta) {
-        String learnId = learningResourceId.value;
-
-        String creatTimeWin = Commons.heatTimeWindow(creationTime);
-        String curHeatTimeWin = Commons.currentHeatTimeWindow();
-        String lastHeatTimeWin = Commons.lastHeatTimeWindow();
-
-        return Procedure.fromOptional(componentFactory.heat.increase(postGroupId, learnId, delta),
-                    ErrorCode.AlterHeatFailed, () -> componentFactory.heat.increase(postGroupId, learnId, -delta))
-                .then(__ -> Result.of(creatTimeWin.equals(curHeatTimeWin) || creatTimeWin.equals(lastHeatTimeWin)))
-                .then(needAlterHottest -> !needAlterHottest ? Result.of(null) :
-                    Procedure.fromOptional(componentFactory.heat.increase(creatTimeWin, postGroupId + learnId, delta),
-                            ErrorCode.AlterHeatFailed, () -> componentFactory.heat.increase(creatTimeWin, postGroupId + learnId, -delta))
-                        .then(__ -> Result.of(null))
-                );
-    }
-
-    private static Procedure<ErrorCode, Void> touchActive(LearningResourceId learningResourceId, UserId toucherId) {
-        String learnId = learningResourceId.value;
-        String toucher = toucherId.value;
-
-        String curActiveTimeWin = Commons.currentActiveTimeWindow();
-
-        return Procedure.fromOptional(componentFactory.active.touch(postGroupId, learnId, toucher), ErrorCode.UnableToTouch)
-                .mapR(__ -> componentFactory.active.touch(curActiveTimeWin, postGroupId + learnId, toucher))
-                .then(__ -> Result.of(null));
-    }
-
     private static Procedure<ErrorCode, Void> deleteLearnResourceInfoRefs(LearningResourceInfo info) {
         if (info.attachedFileId != null) {
             componentFactory.learningResourceAttachFiles.Remove(FileId.of(info.attachedFileId));
@@ -338,10 +280,9 @@ public class AppLearningResource {
 
     private static Comment.CommentInfo consCommentInfoRet(CommentId commentId, ContentId contentId, UserId authorId, CommentInfo commentInfo) {
         return new Comment.CommentInfo() {
-            public String getId() { return commentId.value; }
-            public Content getContent() {
-                return AppContent.fromContentId(contentId).reduce(AppLearningResource::warnNil, i -> i);
-            }
+            public String getId()         { return commentId.value; }
+            public Content getContent()   { return fromIdToContent(contentId); }
+            public Long getCreationTime() { return commentInfo.creationTime.toEpochMilli(); }
             public PersonalInformation.PersonalInfo getAuthor() {
                 return Commons.fetchPersonalInfo(authorId).reduce(AppLearningResource::warnNil, i -> i);
             }
@@ -351,9 +292,6 @@ public class AppLearningResource {
                     public List<Comment.ReplyInfo> getReplies() { return new LinkedList<>(); }
                 };
             }
-            public Long getCreationTime() {
-                return commentInfo.creationTime.toEpochMilli();
-            }
         };
     }
 
@@ -361,11 +299,9 @@ public class AppLearningResource {
         return new Comment.ReplyInfo() {
             public String getId()         { return replyId.value; }
             public Long getCreationTime() { return replyInfo.creationTime.toEpochMilli(); }
+            public Content getContent()   { return fromIdToContent(contentId); }
             public PersonalInformation.PersonalInfo getAuthor() {
                 return Commons.fetchPersonalInfoAndUnwrap(authorId, warnNil);
-            }
-            public Content getContent() {
-                return AppContent.fromContentId(contentId).reduce(AppLearningResource::warnNil, i -> i);
             }
             public PersonalInformation.PersonalInfo getReplyTo() {
                 if (replyInfo.replyTo == null) return null;
@@ -398,7 +334,7 @@ public class AppLearningResource {
             public String getTitle()    { return info.get().title; }
             public Long getCreateTime() { return info.get().createTime.toEpochMilli(); }
             public Content getContent() {
-                return AppContent.fromContentId(ContentId.of(info.get().contentId)).reduce(AppLearningResource::warnNil, i -> i);
+                return fromIdToContent(ContentId.of(info.get().contentId));
             }
             public String getCourse() {
                 return componentFactory.course.getCourseFromCode(CourseCode.of(info.get().courseCode)).map(Enum::toString).orElse(null);
@@ -436,12 +372,12 @@ public class AppLearningResource {
             public Long getCreateTime()         { return Instant.now().toEpochMilli(); }
             public PersonalInformation.PersonalInfo getLatestCommenter() { return null; }
             public PersonalInformation.PersonalInfo getAuthor() {
-                return Commons.fetchPersonalInfo(userId).reduce(AppLearningResource::warnNil, i -> i);
+                return Commons.fetchPersonalInfoAndUnwrap(userId, warnNil);
             }
             public String getAttachedFileURL() {
                 if (commonInfo.attachedFileId == null) return null;
-                return Commons.fetchFileUrl(componentFactory.learningResourceAttachFiles, StaticResourceConfig.FileType.AttachFiles, FileId.of(commonInfo.attachedFileId))
-                        .reduce(AppLearningResource::warnNil, url -> url);
+                return Commons.fetchFileUrlAndUnwrap(componentFactory.learningResourceAttachFiles, StaticResourceConfig.FileType.AttachFiles,
+                        FileId.of(commonInfo.attachedFileId), warnNil);
             }
             public Comment.AllComments getAllComments(Long skip, Long first) {
                 return new Comment.AllComments() {
@@ -464,7 +400,7 @@ public class AppLearningResource {
                 .then(ok -> ok ? Result.of(null) : Fail.of(ErrorCode.PermissionDenied));
     }
 
-    private static Procedure<ErrorCode,Void> checkPermision(ReplyId replyId, Permission permission) {
+    private static Procedure<ErrorCode,Void> checkPermission(ReplyId replyId, Permission permission) {
         return AppComment.fetchReplyInfo(replyId)
                 .mapR(replyInfo -> replyInfo.replier.equals(permission.userId) || permission.role.equals(Authenticator.Role.ADMIN))
                 .then(ok -> ok ? Result.of(null) : Fail.of(ErrorCode.PermissionDenied));

@@ -2,12 +2,12 @@ package com.gaufoo.bbs.gql;
 
 import com.coxautodev.graphql.tools.GraphQLMutationResolver;
 import com.gaufoo.bbs.application.*;
+import com.gaufoo.bbs.application.AccountAndPassword;
+import com.gaufoo.bbs.application.Authentication;
+import com.gaufoo.bbs.application.PersonalInformation;
 import com.gaufoo.bbs.application.error.Error;
 import com.gaufoo.bbs.application.error.ErrorCode;
-import com.gaufoo.bbs.application.types.LearningResource;
-import com.gaufoo.bbs.application.types.Lecture;
-import com.gaufoo.bbs.application.types.Lost;
-import com.gaufoo.bbs.application.types.SchoolHeat;
+import com.gaufoo.bbs.application.types.*;
 import com.gaufoo.bbs.gql.util.Utils;
 import graphql.schema.DataFetchingEnvironment;
 
@@ -168,10 +168,15 @@ public class Mutation implements GraphQLMutationResolver {
         ).orElse(authError);
     }
 
-    public LearningResource.DeleteLearningResourceCommentReplyResult deleteLearningResourceCommentReply(String learnResourceId, String commentIdStr,
-                                                                                                        String replyIdStr,  DataFetchingEnvironment env) {
+    public LearningResource.DeleteLearningResourceCommentReplyResult deleteLearningResourceCommentReply(String learnResourceId, String commentIdStr, String replyIdStr,  DataFetchingEnvironment env) {
         return Utils.getAuthToken(env).map(
                 tkn -> AppLearningResource.deleteLearningResourceCommentReply(learnResourceId, commentIdStr, replyIdStr, tkn)
+        ).orElse(authError);
+    }
+
+    public Entertainment.CreateEntertainmentResult createEntertainment(Entertainment.EntertainmentInput input, DataFetchingEnvironment env) {
+        return Utils.getAuthToken(env).map(
+                tkn -> AppEntertainment.createEntertainment(input, tkn)
         ).orElse(authError);
     }
 

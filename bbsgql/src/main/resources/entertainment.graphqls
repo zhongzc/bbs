@@ -1,0 +1,35 @@
+type EntertainmentInfo {
+    id: ID!
+    title: String!
+    content: Content!
+    author: PersonalInfo!
+    latestCommenter: PersonalInfo
+    latestActiveTime: Long!
+    createTime: Long!
+    heat: Int!
+    allComments(skip: Long, first: Long): AllComments!
+}
+type MultiEntertainments {
+    totalCount: Long!
+    Entertainments: [EntertainmentInfo!]!
+}
+union EntertainmentInfoResult = Error | EntertainmentInfo
+union CreateEntertainmentResult = Error | EntertainmentInfo
+union DeleteEntertainmentResult = Error | Ok
+union AllEntertainmentsResult = Error | MultiEntertainments
+union SearchEntertainmentsResult = Error | MultiEntertainments
+union EntertainmentsOfAuthorResult = Error | MultiEntertainments
+
+input EntertainmentInput {
+    title: String!
+    content: ContentInput!
+}
+input EntertainmentCommentInput {
+    postIdCommenting: ID!
+    content: ContentInput!
+}
+input EntertainmentReplyInput {
+    commentIdReplying: ID!
+    content: ContentInput!
+    replyTo: ID
+}

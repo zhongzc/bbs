@@ -71,6 +71,7 @@ public class Application implements WebMvcConfigurer {
                 Lecture.LectureInfo.class,
                 LearningResource.LearningResourceInfo.class,
                 LearningResource.MultiLearningResources.class,
+                Entertainment.EntertainmentInfo.class,
         };
         SchemaParserDictionary schemaParserDictionary = new SchemaParserDictionary();
         for(Class<?> clazz: subUnionTypes) {

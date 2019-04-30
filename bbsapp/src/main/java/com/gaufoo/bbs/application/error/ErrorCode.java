@@ -65,6 +65,7 @@ public enum ErrorCode {
     AddReplyFailed(57),
     ReplyInfoNotFound(58),
     DeleteReplyFailed(59),
+    PublishEntertainmentFailed(60),
 
     PostNonExist(96),
     ContentNonExist(97),
@@ -135,6 +136,7 @@ public enum ErrorCode {
         put(ErrorCode.AddReplyFailed, "添加回复失败");
         put(ErrorCode.ReplyInfoNotFound, "找不到回复信息");
         put(ErrorCode.DeleteReplyFailed, "删除回复失败");
+        put(ErrorCode.PublishEntertainmentFailed, "发布休闲娱乐帖子失败");
 
         put(ErrorCode.SaveFileFailed, "创建文件失败");
         // add more error code mapping here

@@ -29,6 +29,11 @@ type Query {
     learningResourceInfo(id: ID!): LearningResourceInfoResult!
     learningResourcesOfAuthor(authorId: ID!, skip: Long, first: Long): LearningResourcesOfAuthorResult!
 #    searchLearningResources(title: String!): SearchLearningResourcesResult!
+
+#    allEntertainments(skip: Long, first: Long, sortedBy: SortedBy): AllEntertainmentsResult!
+#    entertainmentInfo(id: ID!): EntertainmentInfoResult!
+#    entertainmentsOfAuthor(authorId: ID!, skip: Long, first: Long): EntertainmentsOfAuthorResult!
+#    searchEntertainments(title: String!): SearchEntertainmentsResult!
 }
 
 type Mutation {
@@ -64,6 +69,13 @@ type Mutation {
     deleteLearningResourceComment(lrId: ID!, cmmtId: ID!): DeleteLearningResourceCommentResult!
     createLearningResourceCommentReply(learningResourceReplyInput: LearningResourceReplyInput): CreateLearningResourceCommentReplyResult!
     deleteLearningResourceCommentReply(lrId: ID!, cmmtId: ID!, rpyId: ID!): DeleteLearningResourceCommentReplyResult!
+
+    createEntertainment(entertainmentInput: EntertainmentInput!): CreateEntertainmentResult!
+#    deleteEntertainment(id: ID!): DeleteEntertainmentResult!
+#    createEntertainmentComment(entertainmentCommentInput: EntertainmentCommentInput!): CreateEntertainmentCommentResult!
+#    deleteEntertainmentComment(etmtId: ID!, cmmtId: ID!): DeleteEntertainmentCommentResult!
+#    createEntertainmentCommentReply(entertainmentReplyInput: EntertainmentReplyInput): CreateEntertainmentCommentReplyResult!
+#    deleteEntertainmentCommentReply(etmtId: ID!, cmmtId: ID!, rpyId: ID!): DeleteEntertainmentCommentReplyResult!
 }
 
 schema {
