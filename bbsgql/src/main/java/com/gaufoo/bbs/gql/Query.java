@@ -2,12 +2,11 @@ package com.gaufoo.bbs.gql;
 
 import com.coxautodev.graphql.tools.GraphQLQueryResolver;
 import com.gaufoo.bbs.application.*;
+import com.gaufoo.bbs.application.Authentication;
+import com.gaufoo.bbs.application.PersonalInformation;
 import com.gaufoo.bbs.application.error.Error;
 import com.gaufoo.bbs.application.error.ErrorCode;
-import com.gaufoo.bbs.application.types.LearningResource;
-import com.gaufoo.bbs.application.types.Lecture;
-import com.gaufoo.bbs.application.types.Lost;
-import com.gaufoo.bbs.application.types.SchoolHeat;
+import com.gaufoo.bbs.application.types.*;
 import com.gaufoo.bbs.gql.util.Utils;
 import graphql.schema.DataFetchingEnvironment;
 
@@ -92,6 +91,14 @@ public class Query implements GraphQLQueryResolver {
 
     public LearningResource.LearningResourcesOfAuthorResult learningResourcesOfAuthor(String authorId, Long skip, Long first) {
         return AppLearningResource.learningResourcesOfAuthor(authorId, skip, first);
+    }
+
+    public Entertainment.AllEntertainmentsResult allEntertainments(Long skip, Long first, Commons.SortedBy sortedBy) {
+        return AppEntertainment.allEntertainments(skip, first, sortedBy);
+    }
+
+    public static Entertainment.EntertainmentInfoResult entertainmentInfo(String entertainmentId) {
+        return AppEntertainment.entertainmentInfo(entertainmentId);
     }
 
     private static Error authError = Error.of(ErrorCode.NotLoggedIn);

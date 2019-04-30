@@ -14,6 +14,37 @@ import java.util.Optional;
 import static com.gaufoo.bbs.application.ComponentFactory.componentFactory;
 
 public class AppHeatActive {
+
+    public static Long getHeat(LearningResourceId learningResourceId) {
+        return componentFactory.heat.getHeat(Commons.getGroupId(Commons.PostType.LearningResource), learningResourceId.value).orElse(0L);
+    }
+    public static Long getHeat(SchoolHeatId schoolHeatId) {
+        return componentFactory.heat.getHeat(Commons.getGroupId(Commons.PostType.SchoolHeat), schoolHeatId.value).orElse(0L);
+    }
+    public static Long getHeat(EntertainmentId entertainmentId) {
+        return componentFactory.heat.getHeat(Commons.getGroupId(Commons.PostType.Entertainment), entertainmentId.value).orElse(0L);
+    }
+
+    public static ActiveInfo fetchActiveInfoAndUnwrap(LearningResourceId learningResourceId) {
+        return fetchActiveInfo(Commons.getGroupId(Commons.PostType.LearningResource), learningResourceId.value)
+                .reduce(e -> null, i -> i);
+    }
+    public static ActiveInfo fetchActiveInfoAndUnwrap(SchoolHeatId schoolHeatId) {
+        return fetchActiveInfo(Commons.getGroupId(Commons.PostType.SchoolHeat), schoolHeatId.value)
+                .reduce(e -> null, i -> i);
+    }
+    public static ActiveInfo fetchActiveInfoAndUnwrap(EntertainmentId entertainmentId) {
+        return fetchActiveInfo(Commons.getGroupId(Commons.PostType.Entertainment), entertainmentId.value)
+                .reduce(e -> null, i -> i);
+    }
+
+    private static TaskChain.Procedure<ErrorCode, ActiveInfo> fetchActiveInfo(String postGroupId, String id) {
+        return TaskChain.Procedure.fromOptional(
+                componentFactory.active.getLatestActiveInfo(postGroupId, id),
+                ErrorCode.LatestActiveNotFound
+        );
+    }
+
     public static TaskChain.Procedure<ErrorCode, Void> createActiveAndHeat(LearningResourceId learningResourceId, UserId userId) {
         return createActiveAndHeat(Commons.getGroupId(Commons.PostType.LearningResource), learningResourceId.value, userId);
     }

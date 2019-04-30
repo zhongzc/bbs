@@ -29,7 +29,7 @@ public interface Entertainment {
         PersonalInformation.PersonalInfo getLatestCommenter();
         Long getLatestActiveTime();
         Long getCreateTime();
-        Integer getHeat();
+        Long getHeat();
         Comment.AllComments getAllComments(Long skip, Long first);
     }
 

@@ -6,7 +6,7 @@ type SchoolHeatInfo {
     latestCommenter: PersonalInfo
     latestActiveTime: Long!
     createTime: Long!
-    heat: Int!
+    heat: Long!
     allComments(skip: Long, first: Long): AllComments!
 }
 type MultiSchoolHeats {

@@ -45,14 +45,14 @@ import static com.gaufoo.bbs.application.ComponentFactory.componentFactory;
 import static com.gaufoo.bbs.util.TaskChain.*;
 
 public class AppLearningResource {
-    private static Logger log = LoggerFactory.getLogger(AppLearningResource.class);
-    private static Consumer<ErrorCode> warnNil = errorCode -> log.warn("null warning: {}", errorCode);
+    private static final Logger log = LoggerFactory.getLogger(AppLearningResource.class);
+    private static final Consumer<ErrorCode> warnNil = errorCode -> log.warn("null warning: {}", errorCode);
     private static final String postGroupId = Commons.getGroupId(Commons.PostType.LearningResource);
 
     public static LearningResource.AllLearningResourceResult allLearningResources(Long nullableSkip, Long nullableFirst, String courseStr, Commons.SortedBy nullableSortedBy) {
-        final long skip = nullableSkip == null ? 0L : nullableSkip;
-        final long first = nullableFirst == null ? Long.MAX_VALUE : nullableFirst;
-        final Commons.SortedBy sortedBy = nullableSortedBy == null ? Commons.SortedBy.ActiveTimeDes : nullableSortedBy;
+        long skip = nullableSkip == null ? 0L : nullableSkip;
+        long first = nullableFirst == null ? Long.MAX_VALUE : nullableFirst;
+        Commons.SortedBy sortedBy = nullableSortedBy == null ? Commons.SortedBy.ActiveTimeDes : nullableSortedBy;
 
         Predicate<Supplier<CourseCode>> courseFilter;
         Procedure<ErrorCode, CourseCode> initResult;
@@ -80,8 +80,8 @@ public class AppLearningResource {
     }
 
     public static LearningResource.LearningResourcesOfAuthorResult learningResourcesOfAuthor(String authorId, Long nullableSkip, Long nullableFirst) {
-        final long skip = nullableSkip == null ? 0L : nullableSkip;
-        final long first = nullableFirst == null ? Long.MAX_VALUE : nullableFirst;
+        long skip = nullableSkip == null ? 0L : nullableSkip;
+        long first = nullableFirst == null ? Long.MAX_VALUE : nullableFirst;
 
         Stream<LearningResource.LearningResourceInfo> retInfos = componentFactory.learningResource.allPostsByAuhtor(authorId)
                 .map(learningResourceId -> consLearningResourceInfoRet(learningResourceId,

@@ -25,6 +25,7 @@ public class Mutation implements GraphQLMutationResolver {
         AppSchoolHeat.reset();
         AppLecture.reset();
         AppLearningResource.reset();
+        AppEntertainment.reset();
         return true;
     }
 

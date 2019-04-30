@@ -30,8 +30,8 @@ type Query {
     learningResourcesOfAuthor(authorId: ID!, skip: Long, first: Long): LearningResourcesOfAuthorResult!
 #    searchLearningResources(title: String!): SearchLearningResourcesResult!
 
-#    allEntertainments(skip: Long, first: Long, sortedBy: SortedBy): AllEntertainmentsResult!
-#    entertainmentInfo(id: ID!): EntertainmentInfoResult!
+    allEntertainments(skip: Long, first: Long, sortedBy: SortedBy): AllEntertainmentsResult!
+    entertainmentInfo(id: ID!): EntertainmentInfoResult!
 #    entertainmentsOfAuthor(authorId: ID!, skip: Long, first: Long): EntertainmentsOfAuthorResult!
 #    searchEntertainments(title: String!): SearchEntertainmentsResult!
 }

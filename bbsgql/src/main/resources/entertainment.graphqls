@@ -6,12 +6,12 @@ type EntertainmentInfo {
     latestCommenter: PersonalInfo
     latestActiveTime: Long!
     createTime: Long!
-    heat: Int!
+    heat: Long!
     allComments(skip: Long, first: Long): AllComments!
 }
 type MultiEntertainments {
     totalCount: Long!
-    Entertainments: [EntertainmentInfo!]!
+    entertainments: [EntertainmentInfo!]!
 }
 union EntertainmentInfoResult = Error | EntertainmentInfo
 union CreateEntertainmentResult = Error | EntertainmentInfo
