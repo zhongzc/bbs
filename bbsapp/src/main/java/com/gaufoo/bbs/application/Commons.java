@@ -67,6 +67,11 @@ public class Commons {
         );
     }
 
+    public static TaskChain.Procedure<ErrorCode, Void> ensureUserExist(UserId userId) {
+        return TaskChain.Procedure.fromOptional(componentFactory.user.userInfo(userId), ErrorCode.UserNonExist)
+                .then(__ -> TaskChain.Result.of(null));
+    }
+
     public static String fetchFileUrlAndUnwrap(FileFactory fileFactory, StaticResourceConfig.FileType fileType, FileId fileId, Consumer<ErrorCode> nilCallBack) {
         return fetchFileUrl(fileFactory, fileType, fileId).reduce(e -> {
             nilCallBack.accept(e);

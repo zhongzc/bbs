@@ -29,7 +29,13 @@ input EntertainmentCommentInput {
     content: ContentInput!
 }
 input EntertainmentReplyInput {
+    postIdReplying: ID!
     commentIdReplying: ID!
     content: ContentInput!
     replyTo: ID
 }
+
+union CreateEntertainmentCommentResult = Error | CommentInfo
+union DeleteEntertainmentCommentResult = Error | Ok
+union CreateEntertainmentCommentReplyResult = Error | ReplyInfo
+union DeleteEntertainmentCommentReplyResult = Error | Ok

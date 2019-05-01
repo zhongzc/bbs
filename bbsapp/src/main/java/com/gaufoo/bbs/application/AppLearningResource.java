@@ -83,10 +83,14 @@ public class AppLearningResource {
         long skip = nullableSkip == null ? 0L : nullableSkip;
         long first = nullableFirst == null ? Long.MAX_VALUE : nullableFirst;
 
+        Supplier<Long> totalCount = () -> componentFactory.learningResource.allPostsCountOfAuthor(authorId);
+
         Stream<LearningResource.LearningResourceInfo> retInfos = componentFactory.learningResource.allPostsByAuhtor(authorId)
                 .map(learningResourceId -> consLearningResourceInfoRet(learningResourceId,
                         LazyVal.of(() -> fetchLearningResourceInfoAndUnwrap(learningResourceId, warnNil))));
-        return consMultiLearnResources(() -> componentFactory.learningResource.allPostsCountOfAuthor(authorId), retInfos, skip, first);
+
+        return Procedure.fromOptional(componentFactory.user.userInfo(UserId.of(authorId)), ErrorCode.UserNonExist)
+                .reduce(Error::of, __ -> consMultiLearnResources(totalCount, retInfos, skip, first));
     }
 
     public static LearningResource.LearningResourceInfoResult learningResourceInfo(String learningResourceId) {
@@ -143,7 +147,7 @@ public class AppLearningResource {
                 .then(__ -> AppComment.postComment(CommentGroupId.of(ctx.learnInfo.commentGroupId), ctx.contentId, ctx.userId)).mapR(ctx::put)
                 .then(__ -> AppHeatActive.alterHeat(learnId, ctx.commentInfo.creationTime, 1L))
                 .then(__ -> AppHeatActive.touchActive(learnId, UserId.of(ctx.commentInfo.commenter)))
-                .reduce(Error::of, __ -> consCommentInfoRet(ctx.commentId, ctx.contentId, ctx.userId, ctx.commentInfo));
+                .reduce(Error::of, __ -> AppComment.consCommentInfoInstant(ctx.commentId, ctx.contentId, ctx.userId, ctx.commentInfo));
     }
 
     public static LearningResource.DeleteLearningResourceCommentResult deleteLearningResourceComment(String learningResourceId, String commentIdStr, String userToken) {
@@ -152,18 +156,14 @@ public class AppLearningResource {
 
         class Ctx {
             LearningResourceInfo learningResourceInfo; Void put(LearningResourceInfo info) { this.learningResourceInfo = info; return null; }
-            CommentGroupId commentGroupId;             Void put(CommentGroupId id)         { this.commentGroupId = id;         return null; }
-            CommentInfo commentInfo;                   Void put(CommentInfo info)          { this.commentInfo = info;          return null; }
         }
         Ctx ctx = new Ctx();
 
         return Commons.fetchPermission(UserToken.of(userToken))
                 .then(permission -> checkPermission(commentId, permission))
                 .then(__ -> fetchLearningResourceInfo(learnId)).mapR(ctx::put)
-                .then(__ -> Result.of(CommentGroupId.of(ctx.learningResourceInfo.commentGroupId))).mapR(ctx::put)
-                .then(__ -> AppComment.fetchCommentInfo(commentId)).mapR(ctx::put)
-                .then(__ -> AppHeatActive.alterHeat(learnId, ctx.commentInfo.creationTime, -1))
-                .then(__ -> AppComment.deleteComment(ctx.commentGroupId, commentId))
+                .then(__ -> AppHeatActive.alterHeat(learnId, ctx.learningResourceInfo.createTime, -1))
+                .then(__ -> AppComment.deleteComment(CommentGroupId.of(ctx.learningResourceInfo.commentGroupId), commentId))
                 .reduce(Error::of, __ -> Ok.build());
     }
 
@@ -179,34 +179,29 @@ public class AppLearningResource {
 
         LearningResourceId learnId = LearningResourceId.of(input.postIdReplying);
         CommentId postIdReplying = CommentId.of(input.commentIdReplying);
-        UserId replyTo = nilOrTr(input.replyTo, UserId::of);
+        UserId nullableReplyTo = nilOrTr(input.replyTo, UserId::of);
 
         return Commons.fetchUserId(UserToken.of(userToken)).mapR(ctx::put)
                 .then(__ -> fetchLearningResourceInfo(learnId)).mapR(ctx::put)
+                .then(__ -> nullableReplyTo == null ? Result.of(null) : Commons.ensureUserExist(nullableReplyTo))
                 .then(__ -> AppContent.storeContentInput(input.content)).mapR(ctx::put)
                 .then(__ -> AppComment.postReply(
-                        CommentGroupId.of(ctx.resourceInfo.commentGroupId), postIdReplying, ctx.contentId, ctx.replierId, replyTo)).mapR(ctx::put)
-                .then(__ -> AppHeatActive.touchActive(learnId, ctx.replierId))
+                        CommentGroupId.of(ctx.resourceInfo.commentGroupId), postIdReplying, ctx.contentId, ctx.replierId, nullableReplyTo)).mapR(ctx::put)
                 .then(__ -> AppHeatActive.alterHeat(learnId, ctx.replyInfo.creationTime, 1L))
-                .reduce(Error::of, __ -> consReplyInfoRet(ctx.replyId, ctx.replyInfo, ctx.contentId, ctx.replierId));
+                .then(__ -> AppHeatActive.touchActive(learnId, ctx.replierId))
+                .reduce(Error::of, __ -> AppComment.consReplyInfoInstant(ctx.replyId, ctx.replyInfo, ctx.contentId, ctx.replierId));
     }
 
-    public static LearningResource.DeleteLearningResourceCommentReplyResult deleteLearningResourceCommentReply(String learnResourceId, String commentIdStr,
-                                                                                                               String replyIdStr, String userToken) {
+    public static LearningResource.DeleteLearningResourceCommentReplyResult deleteLearningResourceCommentReply(String learnResourceId, String commentIdStr, String replyIdStr, String userToken) {
         LearningResourceId learnId = LearningResourceId.of(learnResourceId);
         CommentId commentId = CommentId.of(commentIdStr);
         ReplyId replyId = ReplyId.of(replyIdStr);
 
-        class Ctx {
-            ReplyInfo replyInfo; Void put(ReplyInfo info) { this.replyInfo = info; return null; }
-        }
-        Ctx ctx = new Ctx();
-
         return Commons.fetchPermission(UserToken.of(userToken))
                 .then(permission -> checkPermission(replyId, permission))
-                .then(__ -> AppComment.fetchReplyInfo(replyId)).mapR(ctx::put)
+                .then(__ -> fetchLearningResourceInfo(learnId))
+                .then(leInfo -> AppHeatActive.alterHeat(learnId, leInfo.createTime, -1L))
                 .then(__ -> AppComment.deleteReply(commentId, replyId))
-                .then(__ -> AppHeatActive.alterHeat(learnId, ctx.replyInfo.creationTime, -1L))
                 .reduce(Error::of, __ -> Ok.build());
     }
 
@@ -269,38 +264,6 @@ public class AppLearningResource {
                 .then(__ -> AppContent.deleteContent(ContentId.of(info.contentId)))
                 .mapR(__ -> componentFactory.learningResource.removePost(id))
                 .then(ok -> ok ? Result.of(null) : Fail.of(ErrorCode.DeleteLearningResourceFailed));
-    }
-
-    private static Comment.CommentInfo consCommentInfoRet(CommentId commentId, ContentId contentId, UserId authorId, CommentInfo commentInfo) {
-        return new Comment.CommentInfo() {
-            public String getId()         { return commentId.value; }
-            public Content getContent()   { return fromIdToContent(contentId); }
-            public Long getCreationTime() { return commentInfo.creationTime.toEpochMilli(); }
-            public PersonalInformation.PersonalInfo getAuthor() {
-                return Commons.fetchPersonalInfo(authorId).reduce(AppLearningResource::warnNil, i -> i);
-            }
-            public Comment.AllReplies getAllReplies(Long skip, Long first) {
-                return new Comment.AllReplies() {
-                    public Long getTotalCount()                 { return 0L;                 }
-                    public List<Comment.ReplyInfo> getReplies() { return new LinkedList<>(); }
-                };
-            }
-        };
-    }
-
-    private static Comment.ReplyInfo consReplyInfoRet(ReplyId replyId, ReplyInfo replyInfo, ContentId contentId, UserId authorId) {
-        return new Comment.ReplyInfo() {
-            public String getId()         { return replyId.value; }
-            public Long getCreationTime() { return replyInfo.creationTime.toEpochMilli(); }
-            public Content getContent()   { return fromIdToContent(contentId); }
-            public PersonalInformation.PersonalInfo getAuthor() {
-                return Commons.fetchPersonalInfoAndUnwrap(authorId, warnNil);
-            }
-            public PersonalInformation.PersonalInfo getReplyTo() {
-                if (replyInfo.replyTo == null) return null;
-                return Commons.fetchPersonalInfoAndUnwrap(UserId.of(replyInfo.replyTo), warnNil);
-            }
-        };
     }
 
     private static LearningResource.MultiLearningResources consMultiLearnResources(Supplier<Long> resourcesCount,

@@ -6,6 +6,8 @@ import com.gaufoo.bbs.application.error.ErrorCode;
 import com.gaufoo.bbs.application.types.Comment;
 import com.gaufoo.bbs.application.types.Content;
 import static com.gaufoo.bbs.application.types.PersonalInformation.*;
+
+import com.gaufoo.bbs.application.types.PersonalInformation;
 import com.gaufoo.bbs.components.commentGroup.CommentGroup;
 import com.gaufoo.bbs.components.commentGroup.comment.common.CommentId;
 import com.gaufoo.bbs.components.commentGroup.comment.common.CommentInfo;
@@ -16,12 +18,16 @@ import com.gaufoo.bbs.components.content.common.ContentId;
 import com.gaufoo.bbs.components.user.common.UserId;
 import com.gaufoo.bbs.util.TaskChain;
 import com.gaufoo.bbs.util.Tuple;
+import com.sun.istack.internal.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -30,7 +36,9 @@ import static com.gaufoo.bbs.application.AppContent.*;
 import static com.gaufoo.bbs.application.Commons.*;
 
 public class AppComment {
-    public static Logger log = LoggerFactory.getLogger(AppComment.class);
+    private static Logger log = LoggerFactory.getLogger(AppComment.class);
+    private static final Consumer<ErrorCode> warnNil = errorCode -> log.warn("null warning: {}", errorCode);
+
 
     public static TaskChain.Procedure<ErrorCode, CommentGroupId> createCommentGroup() {
         return TaskChain.Procedure.fromOptional(componentFactory.commentGroup.cons(), ErrorCode.CreateCommentGroupFailed)
@@ -47,8 +55,8 @@ public class AppComment {
     }
 
     public static TaskChain.Procedure<ErrorCode, Tuple<ReplyId, ReplyInfo>> postReply(CommentGroupId groupId, CommentId commentId, ContentId contentId,
-                                                                                      UserId replier, UserId replyTo) {
-        return TaskChain.Result.<ErrorCode, ReplyInfo>of(ReplyInfo.of(replier.value, contentId.value, replyTo.value))
+                                                                                      UserId replier, @Nullable UserId replyTo) {
+        return TaskChain.Result.<ErrorCode, ReplyInfo>of(ReplyInfo.of(replier.value, contentId.value, nilOrTr(replyTo, x -> x.value)))
                 .then(replyInfo -> TaskChain.Procedure.fromOptional(
                         componentFactory.commentGroup.addReply(groupId, commentId, replyInfo).map(replyId -> Tuple.of(replyId, replyInfo)),
                         ErrorCode.AddReplyFailed)
@@ -124,6 +132,38 @@ public class AppComment {
         }).orElse(null);
     }
 
+    public static Comment.CommentInfo consCommentInfoInstant(CommentId commentId, ContentId contentId, UserId authorId, CommentInfo commentInfo) {
+        return new Comment.CommentInfo() {
+            public String getId()         { return commentId.value; }
+            public Content getContent()   { return fromContentId(contentId).reduce(AppComment::warnNil, i -> i); }
+            public Long getCreationTime() { return commentInfo.creationTime.toEpochMilli(); }
+            public PersonalInformation.PersonalInfo getAuthor() {
+                return Commons.fetchPersonalInfo(authorId).reduce(AppComment::warnNil, i -> i);
+            }
+            public Comment.AllReplies getAllReplies(Long skip, Long first) {
+                return new Comment.AllReplies() {
+                    public Long getTotalCount()                 { return 0L;                 }
+                    public List<Comment.ReplyInfo> getReplies() { return new LinkedList<>(); }
+                };
+            }
+        };
+    }
+
+    public static Comment.ReplyInfo consReplyInfoInstant(ReplyId replyId, ReplyInfo replyInfo, ContentId contentId, UserId authorId) {
+        return new Comment.ReplyInfo() {
+            public String getId()         { return replyId.value; }
+            public Long getCreationTime() { return replyInfo.creationTime.toEpochMilli(); }
+            public Content getContent()   { return fromContentId(contentId).reduce(AppComment::warnNil, i -> i); }
+            public PersonalInformation.PersonalInfo getAuthor() {
+                return Commons.fetchPersonalInfoAndUnwrap(authorId, warnNil);
+            }
+            public PersonalInformation.PersonalInfo getReplyTo() {
+                if (replyInfo.replyTo == null) return null;
+                return Commons.fetchPersonalInfoAndUnwrap(UserId.of(replyInfo.replyTo), warnNil);
+            }
+        };
+    }
+
     public static Comment.AllReplies consAllReplies(CommentId cid, Long skip, Long first) {
         final CommentGroup cg = componentFactory.commentGroup;
         return new Comment.AllReplies() {
@@ -152,5 +192,10 @@ public class AppComment {
     private static <T, E> T warnNil(E error) {
         log.warn("null warning: {}", error);
         return null;
+    }
+
+    private static <T, R> R nilOrTr(T obj, Function<T, R> transformer) {
+        if (obj == null) return null;
+        else return transformer.apply(obj);
     }
 }

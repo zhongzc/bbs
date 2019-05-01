@@ -20,6 +20,8 @@ public interface EntertainmentRepository {
 
     Long count();
 
+    Long countOfAuthor(String authorId);
+
     default void shutdown() {}
 
 }

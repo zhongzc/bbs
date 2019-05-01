@@ -69,6 +69,7 @@ public interface Entertainment {
     }
 
     class EntertainmentReplyInput {
+        public String postIdReplying;
         public String commentIdReplying;
         public Content.ContentInput content;
         public String replyTo;
@@ -76,8 +77,9 @@ public interface Entertainment {
         @Override
         public String toString() {
             return "EntertainmentReplyInput{" +
-                    "commentIdReplying='" + commentIdReplying + '\'' +
-                    ", contentId=" + content +
+                    "postIdReplying='" + postIdReplying + '\'' +
+                    ", commentIdReplying='" + commentIdReplying + '\'' +
+                    ", content=" + content +
                     ", replyTo='" + replyTo + '\'' +
                     '}';
         }

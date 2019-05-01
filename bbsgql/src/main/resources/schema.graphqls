@@ -32,7 +32,7 @@ type Query {
 
     allEntertainments(skip: Long, first: Long, sortedBy: SortedBy): AllEntertainmentsResult!
     entertainmentInfo(id: ID!): EntertainmentInfoResult!
-#    entertainmentsOfAuthor(authorId: ID!, skip: Long, first: Long): EntertainmentsOfAuthorResult!
+    entertainmentsOfAuthor(authorId: ID!, skip: Long, first: Long): EntertainmentsOfAuthorResult!
 #    searchEntertainments(title: String!): SearchEntertainmentsResult!
 }
 
@@ -72,10 +72,10 @@ type Mutation {
 
     createEntertainment(entertainmentInput: EntertainmentInput!): CreateEntertainmentResult!
     deleteEntertainment(id: ID!): DeleteEntertainmentResult!
-#    createEntertainmentComment(entertainmentCommentInput: EntertainmentCommentInput!): CreateEntertainmentCommentResult!
-#    deleteEntertainmentComment(etmtId: ID!, cmmtId: ID!): DeleteEntertainmentCommentResult!
-#    createEntertainmentCommentReply(entertainmentReplyInput: EntertainmentReplyInput): CreateEntertainmentCommentReplyResult!
-#    deleteEntertainmentCommentReply(etmtId: ID!, cmmtId: ID!, rpyId: ID!): DeleteEntertainmentCommentReplyResult!
+    createEntertainmentComment(entertainmentCommentInput: EntertainmentCommentInput!): CreateEntertainmentCommentResult!
+    deleteEntertainmentComment(etmtId: ID!, cmmtId: ID!): DeleteEntertainmentCommentResult!
+    createEntertainmentCommentReply(entertainmentReplyInput: EntertainmentReplyInput): CreateEntertainmentCommentReplyResult!
+    deleteEntertainmentCommentReply(etmtId: ID!, cmmtId: ID!, rpyId: ID!): DeleteEntertainmentCommentReplyResult!
 }
 
 schema {

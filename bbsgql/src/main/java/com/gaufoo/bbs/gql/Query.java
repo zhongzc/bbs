@@ -97,6 +97,10 @@ public class Query implements GraphQLQueryResolver {
         return AppEntertainment.allEntertainments(skip, first, sortedBy);
     }
 
+    public static Entertainment.EntertainmentsOfAuthorResult entertainmentsOfAuthor(String authorId, Long skip, Long first) {
+        return AppEntertainment.entertainmentsOfAuthor(authorId, skip, first);
+    }
+
     public static Entertainment.EntertainmentInfoResult entertainmentInfo(String entertainmentId) {
         return AppEntertainment.entertainmentInfo(entertainmentId);
     }

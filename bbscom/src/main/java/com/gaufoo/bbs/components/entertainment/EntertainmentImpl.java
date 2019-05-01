@@ -3,6 +3,7 @@ package com.gaufoo.bbs.components.entertainment;
 import com.gaufoo.bbs.components.entertainment.common.EntertainmentId;
 import com.gaufoo.bbs.components.entertainment.common.EntertainmentInfo;
 import com.gaufoo.bbs.components.idGenerator.IdGenerator;
+import com.gaufoo.bbs.components.user.common.UserId;
 
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicLong;
@@ -52,6 +53,11 @@ public class EntertainmentImpl implements Entertainment {
     @Override
     public Long allPostsCount() {
         return repository.count();
+    }
+
+    @Override
+    public Long allPostsCountByAuthor(UserId authorId) {
+        return repository.countOfAuthor(authorId.value);
     }
 
 }

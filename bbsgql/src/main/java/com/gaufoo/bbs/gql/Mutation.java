@@ -187,5 +187,29 @@ public class Mutation implements GraphQLMutationResolver {
         ).orElse(authError);
     }
 
+    public Entertainment.CreateEntertainmentCommentResult createEntertainmentComment(Entertainment.EntertainmentCommentInput input, DataFetchingEnvironment env) {
+        return Utils.getAuthToken(env).map(
+                tkn -> AppEntertainment.createEntertainmentComment(input, tkn)
+        ).orElse(authError);
+    }
+
+    public Entertainment.DeleteEntertainmentCommentResult deleteEntertainmentComment(String learningResourceId, String commentId, DataFetchingEnvironment env) {
+        return Utils.getAuthToken(env).map(
+                tkn -> AppEntertainment.deleteEntertainmentComment(learningResourceId, commentId, tkn)
+        ).orElse(authError);
+    }
+
+    public Entertainment.CreateEntertainmentCommentReplyResult createEntertainmentCommentReply(Entertainment.EntertainmentReplyInput input, DataFetchingEnvironment env) {
+        return Utils.getAuthToken(env).map(
+                tkn -> AppEntertainment.createEntertainmentCommentReply(input, tkn)
+        ).orElse(authError);
+    }
+
+    public Entertainment.DeleteEntertainmentCommentReplyResult deleteEntertainmentCommentReply(String entertainmentId, String commentId, String replyId, DataFetchingEnvironment env) {
+        return Utils.getAuthToken(env).map(
+                tkn -> AppEntertainment.deleteEntertainmentCommentReply(entertainmentId, commentId, replyId, tkn)
+        ).orElse(authError);
+    }
+
     private static Error authError = Error.of(ErrorCode.NotLoggedIn);
 }

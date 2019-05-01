@@ -18,11 +18,13 @@ public class EntertainmentSstRepository implements EntertainmentRepository {
     private static final Gson gson = new Gson();
     private final SST idToInfo;
     private final SST authorIndex;
+    private final SST authorIdToCnt;
     private final AtomicLong count;
 
     private EntertainmentSstRepository(Path storingPath) {
         this.idToInfo = SST.of("id-to-info", storingPath);
         this.authorIndex = SST.of("author-index", storingPath);
+        this.authorIdToCnt = SST.of("authorId-count", storingPath);
         this.count = new AtomicLong(getAllPostsAsc().count());
     }
 
@@ -59,6 +61,7 @@ public class EntertainmentSstRepository implements EntertainmentRepository {
         List<CompletionStage<Boolean>> tasks = new ArrayList<>();
         tasks.add(SstUtils.setEntryAsync(idToInfo, postId.value, gson.toJson(postInfo)));
         tasks.add(SstUtils.setEntryAsync(authorIndex, concat(postId, postInfo.authorId), "GAUFOO"));
+        tasks.add(SstUtils.setEntryAsync(authorIdToCnt, postInfo.authorId, String.valueOf(countOfAuthor(postInfo.authorId) + 1)));
         if (SstUtils.waitAllFutureParT(tasks, true, (a, b) -> a && b)) {
             this.count.incrementAndGet();
             return true;
@@ -69,6 +72,7 @@ public class EntertainmentSstRepository implements EntertainmentRepository {
     public boolean deletePost(EntertainmentId postId) {
         return Optional.ofNullable(SstUtils.removeEntryByKey(idToInfo, postId.value, info -> gson.fromJson(info, EntertainmentInfo.class))).map(info -> {
             this.count.decrementAndGet();
+            SstUtils.setEntryAsync(authorIdToCnt, info.authorId, String.valueOf(countOfAuthor(info.authorId) - 1));
             return SstUtils.removeEntryByKey(authorIndex, concat(postId, info.authorId)) != null;
         }).orElse(false);
     }
@@ -76,6 +80,13 @@ public class EntertainmentSstRepository implements EntertainmentRepository {
     @Override
     public Long count() {
         return this.count.get();
+    }
+
+    @Override
+    public Long countOfAuthor(String authorId) {
+        return Optional.ofNullable(
+                SstUtils.getEntry(authorIdToCnt, authorId, Long::parseLong)
+        ).orElse(0L);
     }
 
     @Override

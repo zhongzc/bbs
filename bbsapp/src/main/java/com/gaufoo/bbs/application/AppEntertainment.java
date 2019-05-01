@@ -3,9 +3,7 @@ package com.gaufoo.bbs.application;
 import com.gaufoo.bbs.application.error.Error;
 import com.gaufoo.bbs.application.error.ErrorCode;
 import com.gaufoo.bbs.application.error.Ok;
-import com.gaufoo.bbs.application.types.Comment;
-import com.gaufoo.bbs.application.types.Content;
-import com.gaufoo.bbs.application.types.Entertainment;
+import com.gaufoo.bbs.application.types.*;
 import com.gaufoo.bbs.application.types.PersonalInformation;
 import com.gaufoo.bbs.application.util.LazyVal;
 import com.gaufoo.bbs.components.active.common.ActiveInfo;
@@ -13,12 +11,14 @@ import com.gaufoo.bbs.components.authenticator.Authenticator;
 import com.gaufoo.bbs.components.authenticator.common.Permission;
 import com.gaufoo.bbs.components.authenticator.common.UserToken;
 import com.gaufoo.bbs.components.commentGroup.comment.common.CommentId;
+import com.gaufoo.bbs.components.commentGroup.comment.common.CommentInfo;
+import com.gaufoo.bbs.components.commentGroup.comment.reply.common.ReplyId;
+import com.gaufoo.bbs.components.commentGroup.comment.reply.common.ReplyInfo;
 import com.gaufoo.bbs.components.commentGroup.common.CommentGroupId;
 import com.gaufoo.bbs.components.content.common.ContentId;
 import com.gaufoo.bbs.components.entertainment.common.EntertainmentId;
 import com.gaufoo.bbs.components.entertainment.common.EntertainmentInfo;
 import com.gaufoo.bbs.components.user.common.UserId;
-import com.gaufoo.bbs.util.TaskChain;
 import com.gaufoo.bbs.util.Tuple;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,6 +51,23 @@ public class AppEntertainment {
                 .map(idInfoTup -> consEntertainmentInfoRet(idInfoTup.left, idInfoTup.right));
 
         return consMultiEntertainments(totalCount, infoStream, skip, first);
+    }
+
+    public static Entertainment.EntertainmentsOfAuthorResult entertainmentsOfAuthor(String authorIdStr, Long nullableSkip, Long nullableFirst) {
+        long skip = nullableSkip == null ? 0L : nullableSkip;
+        long first = nullableFirst == null ? Long.MAX_VALUE : nullableFirst;
+
+        UserId authorId = UserId.of(authorIdStr);
+
+        Supplier<Long> totalCount = () -> componentFactory.entertainment.allPostsCountByAuthor(authorId);
+
+        Stream<Entertainment.EntertainmentInfo> infos = componentFactory.entertainment.allPostsByAuthor(authorIdStr)
+                .map(entertainmentId -> Tuple.of(entertainmentId, LazyVal.of(() -> fetchEntertainmentInfoAndUnwrap(entertainmentId, warnNil))))
+                .map(idInfoTup -> consEntertainmentInfoRet(idInfoTup.left, idInfoTup.right));
+
+
+        return Procedure.fromOptional(componentFactory.user.userInfo(UserId.of(authorIdStr)), ErrorCode.UserNonExist)
+                .reduce(Error::of, __ -> consMultiEntertainments(totalCount, infos, skip, first));
     }
 
     public static Entertainment.EntertainmentInfoResult entertainmentInfo(String entertainmentId) {
@@ -87,6 +104,79 @@ public class AppEntertainment {
         return Commons.fetchPermission(UserToken.of(userToken))
                 .then(permission -> checkPermission(entertainId, permission)).mapR(ctx::put)
                 .then(__ -> deleteEntertainmentInfo(entertainId, ctx.entertainmentInfo))
+                .reduce(Error::of, __ -> Ok.build());
+    }
+
+    public static Entertainment.CreateEntertainmentCommentResult createEntertainmentComment(Entertainment.EntertainmentCommentInput input, String userToken) {
+        EntertainmentId entertainId = EntertainmentId.of(input.postIdCommenting);
+
+        class Ctx {
+            UserId userId;                       Void put(UserId id)           { userId = id;           return null; }
+            ContentId contentId;                 Void put(ContentId id)        { contentId = id;        return null; }
+            EntertainmentInfo entertainmentInfo; Void put(EntertainmentInfo i) { entertainmentInfo = i; return null; }
+            CommentId commentId;
+            CommentInfo commentInfo; Void put(Tuple<CommentId, CommentInfo> tup) { commentId = tup.left; commentInfo = tup.right; return null; }
+        } Ctx ctx = new Ctx();
+
+        return Commons.fetchUserId(UserToken.of(userToken)).mapR(ctx::put)
+                .then(__ -> fetchEntertainmentInfo(entertainId)).mapR(ctx::put)
+                .then(__ -> AppContent.storeContentInput(input.content)).mapR(ctx::put)
+                .mapR(__ -> CommentInfo.of(ctx.contentId.value, ctx.userId.value))
+                .then(__ -> AppComment.postComment(CommentGroupId.of(ctx.entertainmentInfo.commentGroupId), ctx.contentId, ctx.userId)).mapR(ctx::put)
+                .then(__ -> AppHeatActive.alterHeat(entertainId, ctx.entertainmentInfo.createTime, 1))
+                .then(__ -> AppHeatActive.touchActive(entertainId, ctx.userId))
+                .reduce(Error::of, __ -> AppComment.consCommentInfoInstant(ctx.commentId, ctx.contentId, ctx.userId, ctx.commentInfo));
+    }
+
+    public static Entertainment.DeleteEntertainmentCommentResult deleteEntertainmentComment(String entertainmentIdStr, String commentIdStr, String userToken) {
+        EntertainmentId entertainId = EntertainmentId.of(entertainmentIdStr);
+        CommentId commentId = CommentId.of(commentIdStr);
+
+        class Ctx {
+            EntertainmentInfo entertainInfo; Void put(EntertainmentInfo i) { entertainInfo = i; return null; }
+        } Ctx ctx = new Ctx();
+
+        return Commons.fetchPermission(UserToken.of(userToken))
+                .then(permission -> checkPermission(commentId, permission))
+                .then(__ -> fetchEntertainmentInfo(entertainId)).mapR(ctx::put)
+                .then(__ -> AppHeatActive.alterHeat(entertainId, ctx.entertainInfo.createTime, -1))
+                .then(__ -> AppComment.deleteComment(CommentGroupId.of(ctx.entertainInfo.commentGroupId), commentId))
+                .reduce(Error::of, __ -> Ok.build());
+    }
+
+    public static Entertainment.CreateEntertainmentCommentReplyResult createEntertainmentCommentReply(Entertainment.EntertainmentReplyInput input, String userToken) {
+        EntertainmentId entertainId = EntertainmentId.of(input.postIdReplying);
+        UserId nullableReplyTo = nilOrTr(input.replyTo, UserId::of);
+
+        class Ctx {
+            UserId userId; Void put(UserId id) { userId = id; return null; }
+            ContentId contentId; Void put(ContentId id) {contentId = id; return null;}
+            EntertainmentInfo entertainInfo; Void put(EntertainmentInfo i) { entertainInfo = i; return null; }
+            ReplyId replyId;
+            ReplyInfo replyInfo; Void put(Tuple<ReplyId, ReplyInfo> tup) { replyId = tup.left; replyInfo = tup.right; return null; }
+        } Ctx ctx = new Ctx();
+
+        return Commons.fetchUserId(UserToken.of(userToken)).mapR(ctx::put)
+                .then(__ -> fetchEntertainmentInfo(entertainId)).mapR(ctx::put)
+                .then(__ -> nullableReplyTo == null ? Result.of(null) : Commons.ensureUserExist(nullableReplyTo))
+                .then(__ -> AppContent.storeContentInput(input.content)).mapR(ctx::put)
+                .then(__ -> AppComment.postReply(
+                        CommentGroupId.of(ctx.entertainInfo.commentGroupId), CommentId.of(input.commentIdReplying), ctx.contentId, ctx.userId, nullableReplyTo)).mapR(ctx::put)
+                .then(__ -> AppHeatActive.alterHeat(entertainId, ctx.entertainInfo.createTime, 1))
+                .then(__ -> AppHeatActive.touchActive(entertainId, ctx.userId))
+                .reduce(Error::of, __ -> AppComment.consReplyInfoInstant(ctx.replyId, ctx.replyInfo, ctx.contentId, ctx.userId));
+    }
+
+    public static Entertainment.DeleteEntertainmentCommentReplyResult deleteEntertainmentCommentReply(String entertainmentIdStr, String commentIdStr, String replyIdStr, String userToken) {
+        EntertainmentId entertainId = EntertainmentId.of(entertainmentIdStr);
+        CommentId commentId = CommentId.of(commentIdStr);
+        ReplyId replyId = ReplyId.of(replyIdStr);
+
+        return Commons.fetchPermission(UserToken.of(userToken))
+                .then(permission -> checkPermission(replyId, permission))
+                .then(__ -> fetchEntertainmentInfo(entertainId))
+                .then(enInfo -> AppHeatActive.alterHeat(entertainId, enInfo.createTime, -1))
+                .then(__ -> AppComment.deleteReply(commentId, replyId))
                 .reduce(Error::of, __ -> Ok.build());
     }
 
@@ -132,7 +222,7 @@ public class AppEntertainment {
         };
     }
 
-    static Entertainment.EntertainmentInfo consEntertainmentInfoRet(EntertainmentId entertainmentId, LazyVal<EntertainmentInfo> info) {
+    private static Entertainment.EntertainmentInfo consEntertainmentInfoRet(EntertainmentId entertainmentId, LazyVal<EntertainmentInfo> info) {
         return new Entertainment.EntertainmentInfo() {
             LazyVal<ActiveInfo> latestActiveInfo = LazyVal.of(() ->
                     AppHeatActive.fetchActiveInfoAndUnwrap(entertainmentId));
@@ -197,6 +287,22 @@ public class AppEntertainment {
         return Procedure.fromOptional(componentFactory.entertainment.postInfo(id), ErrorCode.EntertainmentNotFound).mapR(ctx::put)
                 .mapR(__ -> ctx.entertainInfo.authorId.equals(permission.userId) || permission.role.equals(Authenticator.Role.ADMIN))
                 .then(ok -> ok ? Result.of(ctx.entertainInfo) : Fail.of(ErrorCode.PermissionDenied));
+    }
+
+    private static Procedure<ErrorCode, Void> checkPermission(CommentId commentId, Permission permission) {
+        return componentFactory.commentGroup.commentInfo(commentId)
+                .map(commentInfo -> commentInfo.commenter.equals(permission.userId) || permission.role.equals(Authenticator.Role.ADMIN))
+                .filter(ok -> ok)
+                .map(__ -> (Procedure<ErrorCode, Void>)Result.<ErrorCode, Void>of(null))
+                .orElse(Fail.of(ErrorCode.PermissionDenied));
+    }
+
+    private static Procedure<ErrorCode, Void> checkPermission(ReplyId replyId, Permission permission) {
+        return componentFactory.commentGroup.replyInfo(replyId)
+                .map(replyInfo -> replyInfo.replier.equals(permission.userId) || permission.role.equals(Authenticator.Role.ADMIN))
+                .filter(ok -> ok)
+                .map(__ -> (Procedure<ErrorCode, Void>)Result.<ErrorCode, Void>of(null))
+                .orElse(Fail.of(ErrorCode.PermissionDenied));
     }
 
     private static Procedure<ErrorCode, Void> deleteEntertainmentInfo(EntertainmentId entertainmentId, EntertainmentInfo info) {
