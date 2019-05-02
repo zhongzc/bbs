@@ -66,7 +66,7 @@ public class AppEntertainment {
                 .map(idInfoTup -> consEntertainmentInfoRet(idInfoTup.left, idInfoTup.right));
 
 
-        return Procedure.fromOptional(componentFactory.user.userInfo(UserId.of(authorIdStr)), ErrorCode.UserNonExist)
+        return Commons.ensureUserExist(authorId)
                 .reduce(Error::of, __ -> consMultiEntertainments(totalCount, infos, skip, first));
     }
 

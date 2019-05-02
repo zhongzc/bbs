@@ -68,6 +68,7 @@ public enum ErrorCode {
     PublishEntertainmentFailed(60),
     EntertainmentNotFound(61),
     DeleteEntertainmentFailed(62),
+    SchoolHeatNonExist(63),
 
     PostNonExist(96),
     ContentNonExist(97),
@@ -141,6 +142,7 @@ public enum ErrorCode {
         put(ErrorCode.PublishEntertainmentFailed, "发布休闲娱乐帖子失败");
         put(ErrorCode.EntertainmentNotFound, "找不到休闲娱乐帖子");
         put(ErrorCode.DeleteEntertainmentFailed, "删除休闲娱乐帖子失败");
+        put(ErrorCode.SchoolHeatNonExist, "校园热点不存在");
 
         put(ErrorCode.SaveFileFailed, "创建文件失败");
         // add more error code mapping here

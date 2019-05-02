@@ -89,7 +89,7 @@ public class AppLearningResource {
                 .map(learningResourceId -> consLearningResourceInfoRet(learningResourceId,
                         LazyVal.of(() -> fetchLearningResourceInfoAndUnwrap(learningResourceId, warnNil))));
 
-        return Procedure.fromOptional(componentFactory.user.userInfo(UserId.of(authorId)), ErrorCode.UserNonExist)
+        return Commons.ensureUserExist(UserId.of(authorId))
                 .reduce(Error::of, __ -> consMultiLearnResources(totalCount, retInfos, skip, first));
     }
 

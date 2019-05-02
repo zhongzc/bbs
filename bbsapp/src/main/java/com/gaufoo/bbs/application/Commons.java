@@ -124,6 +124,10 @@ public class Commons {
         return PostType.values()[Integer.parseInt(string.substring(0, 2))];
     }
 
+    public static String parseItemId(String string) {
+        return string.substring(2);
+    }
+
     public enum PostType {
         SchoolHeat,
         Entertainment,

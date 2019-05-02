@@ -34,6 +34,8 @@ type Query {
     entertainmentInfo(id: ID!): EntertainmentInfoResult!
     entertainmentsOfAuthor(authorId: ID!, skip: Long, first: Long): EntertainmentsOfAuthorResult!
 #    searchEntertainments(title: String!): SearchEntertainmentsResult!
+
+    latests: LatestsResult!
 }
 
 type Mutation {

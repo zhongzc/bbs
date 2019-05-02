@@ -1,0 +1,11 @@
+union LatestsResult = Error | Latests
+type Latests {
+    latests: [LatestItem!]!
+}
+union LatestItem = SchoolHeatInfo | EntertainmentInfo | LearningResourceInfo
+
+union HotsResult = Error | Hots
+type Hots {
+    hots: [HotItem!]!
+}
+union HotItem = SchoolHeatInfo | EntertainmentInfo | LearningResourceInfo

@@ -105,5 +105,13 @@ public class Query implements GraphQLQueryResolver {
         return AppEntertainment.entertainmentInfo(entertainmentId);
     }
 
+    public static Latest.LatestsResult latests() {
+        return AppLatestAndHots.latests();
+    }
+
+    public static Hot.Hots hots() {
+        return AppLatestAndHots.hots();
+    }
+
     private static Error authError = Error.of(ErrorCode.NotLoggedIn);
 }

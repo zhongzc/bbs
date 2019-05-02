@@ -33,6 +33,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -204,6 +205,17 @@ public class AppSchoolHeat {
 
         return rmActive && rmHeat && rmComments;
 
+    }
+
+    public static SchoolHeatInfo fetchSchoolHeatInfoAndUnwrap(SchoolHeatId id, Consumer<ErrorCode> nilCallBack) {
+        return fetchSchoolHeatInfo(id).reduce(e -> {
+            nilCallBack.accept(e);
+            return null;
+        }, i -> i);
+    }
+
+    public static Procedure<ErrorCode, SchoolHeatInfo> fetchSchoolHeatInfo(SchoolHeatId id) {
+        return Procedure.fromOptional(componentFactory.schoolHeat.postInfo(id), ErrorCode.SchoolHeatNonExist);
     }
 
     private static <T, R> R nilOrTr(T obj, Function<T, R> transformer) {

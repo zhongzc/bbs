@@ -45,7 +45,8 @@ public class Error implements
         Entertainment.CreateEntertainmentCommentResult,
         Entertainment.DeleteEntertainmentCommentResult,
         Entertainment.CreateEntertainmentCommentReplyResult,
-        Entertainment.DeleteEntertainmentCommentReplyResult
+        Entertainment.DeleteEntertainmentCommentReplyResult,
+        Latest.LatestsResult
 {
     private Integer errCode;
     private String msg;
