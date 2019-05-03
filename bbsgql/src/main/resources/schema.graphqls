@@ -36,6 +36,7 @@ type Query {
 #    searchEntertainments(title: String!): SearchEntertainmentsResult!
 
     latests: LatestsResult!
+    hots: HotsResult!
 }
 
 type Mutation {

@@ -74,6 +74,7 @@ public class Application implements WebMvcConfigurer {
                 Entertainment.EntertainmentInfo.class,
                 Entertainment.MultiEntertainments.class,
                 Latest.Latests.class,
+                Hot.Hots.class,
         };
         SchemaParserDictionary schemaParserDictionary = new SchemaParserDictionary();
         for(Class<?> clazz: subUnionTypes) {

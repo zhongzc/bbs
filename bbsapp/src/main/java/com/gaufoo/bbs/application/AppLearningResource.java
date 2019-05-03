@@ -26,7 +26,6 @@ import com.gaufoo.bbs.components.scutCourse.common.Course;
 import com.gaufoo.bbs.components.scutCourse.common.CourseCode;
 import com.gaufoo.bbs.components.user.common.UserId;
 import com.gaufoo.bbs.util.Tuple;
-import com.sun.istack.internal.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -213,10 +212,10 @@ public class AppLearningResource {
         });
     }
 
-    private static Stream<LearningResourceId> selectLearnResources(Commons.SortedBy sortedBy, @Nullable CourseCode courseCode) {
-        Function<Boolean, Stream<LearningResourceId>> natural = courseCode == null ?
+    private static Stream<LearningResourceId> selectLearnResources(Commons.SortedBy sortedBy, CourseCode nullableCourseCode) {
+        Function<Boolean, Stream<LearningResourceId>> natural = nullableCourseCode == null ?
                 (isDes) -> componentFactory.learningResource.allPosts(isDes) :
-                (isDes) -> componentFactory.learningResource.allPostsOfCourse(courseCode.value, isDes);
+                (isDes) -> componentFactory.learningResource.allPostsOfCourse(nullableCourseCode.value, isDes);
 
         Stream<LearningResourceId> dataSource;
         switch (sortedBy) {

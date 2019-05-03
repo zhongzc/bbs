@@ -15,7 +15,6 @@ import com.gaufoo.bbs.components.user.common.UserInfo;
 import com.gaufoo.bbs.util.TaskChain.Fail;
 import com.gaufoo.bbs.util.TaskChain.Procedure;
 import com.gaufoo.bbs.util.TaskChain.Result;
-import com.sun.istack.internal.Nullable;
 
 import java.util.*;
 import java.util.function.Function;
@@ -156,7 +155,7 @@ public class PersonalInformation {
         });
     }
 
-    private static PersonalInfo modOldPersonInfo(UserId userId, UserInfo oldUserInfo, PersonInfoInput in, @Nullable FileId updatedId) {
+    private static PersonalInfo modOldPersonInfo(UserId userId, UserInfo oldUserInfo, PersonInfoInput in, FileId nullableUpdatedId) {
         return new PersonalInfo() {
             public String getIntroduction() { return preferNew(in.introduction, oldUserInfo.introduction); }
             public String getMajor()        { return preferNew(in.major, oldUserInfo.majorCode, oc -> factorOutMajor(MajorCode.of(oc))); }
@@ -166,7 +165,7 @@ public class PersonalInformation {
             public String getUsername()     { return preferNew(in.username, oldUserInfo.nickname); }
             public String getPictureURL() {
                 return Optional.ofNullable(in.pictureBase64)
-                        .map(pictureIsModified -> factorOutPictureUrl(updatedId))
+                        .map(pictureIsModified -> factorOutPictureUrl(nullableUpdatedId))
                         .orElseGet(() -> Optional.ofNullable(oldUserInfo.profilePicIdentifier)
                                 .map(oldPicture -> factorOutPictureUrl(FileId.of(oldPicture)))
                                 .orElse(null));

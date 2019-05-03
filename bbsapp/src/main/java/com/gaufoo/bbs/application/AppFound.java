@@ -12,7 +12,6 @@ import com.gaufoo.bbs.components.file.common.FileId;
 import com.gaufoo.bbs.components.found.common.FoundId;
 import com.gaufoo.bbs.components.found.common.FoundInfo;
 import com.gaufoo.bbs.components.user.common.UserId;
-import com.sun.istack.internal.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -93,9 +92,9 @@ public class AppFound {
         );
     }
 
-    private static Procedure<ErrorCode, FoundId> publishFoundPost(Found.FoundInput input, UserId publisher, @Nullable FileId pictureId) {
+    private static Procedure<ErrorCode, FoundId> publishFoundPost(Found.FoundInput input, UserId publisher, FileId nullablePictureId) {
         return Procedure.fromOptional(componentFactory.found.publishPost(
-                FoundInfo.of(input.itemName, publisher.value, input.description, input.position, nilOrTr(pictureId, x -> x.value),
+                FoundInfo.of(input.itemName, publisher.value, input.description, input.position, nilOrTr(nullablePictureId, x -> x.value),
                         input.contact, nilOrTr(input.foundTime, Instant::ofEpochMilli))
         ), ErrorCode.PublishFoundFailed);
     }
@@ -120,7 +119,7 @@ public class AppFound {
         };
     }
 
-    private static Found.FoundInfo consFoundInfo(Found.FoundInput input, FoundId id, UserId publisherId, @Nullable FileId fileId) {
+    private static Found.FoundInfo consFoundInfo(Found.FoundInput input, FoundId id, UserId publisherId, FileId nullableFileId) {
         return new Found.FoundInfo() {
             public String getId() { return id.value; }
             public PersonalInformation.PersonalInfo getPublisher() {
@@ -130,8 +129,8 @@ public class AppFound {
             public String getDescription() { return input.description; }
             public String getPosition() { return input.position; }
             public String getPictureURL() {
-                if (fileId == null) return null;
-                return factorOutPictureUrl(fileId);
+                if (nullableFileId == null) return null;
+                return factorOutPictureUrl(nullableFileId);
             }
             public String getContact() { return input.contact; }
             public Long getCreateTime() { return Instant.now().toEpochMilli(); }
@@ -147,9 +146,9 @@ public class AppFound {
         };
     }
 
-    private static Procedure<ErrorCode, Optional<FileId>> addPictureIfNecessary(@Nullable String pictureBase64) {
-        if (pictureBase64 == null) return Result.of(Optional.empty());
-        byte[] image = Base64.getDecoder().decode(pictureBase64);
+    private static Procedure<ErrorCode, Optional<FileId>> addPictureIfNecessary(String nullablePictureBase64) {
+        if (nullablePictureBase64 == null) return Result.of(Optional.empty());
+        byte[] image = Base64.getDecoder().decode(nullablePictureBase64);
         Optional<FileId> newPicId = componentFactory.lostFoundImages.createFile(image);
         return Procedure.fromOptional(newPicId, ErrorCode.CreateFoundImageFailed)
                 .then(fileId -> Result.of(Optional.of(fileId), () -> componentFactory.lostFoundImages.Remove(fileId)));

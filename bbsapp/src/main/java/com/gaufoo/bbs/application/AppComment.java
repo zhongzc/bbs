@@ -18,7 +18,6 @@ import com.gaufoo.bbs.components.content.common.ContentId;
 import com.gaufoo.bbs.components.user.common.UserId;
 import com.gaufoo.bbs.util.TaskChain;
 import com.gaufoo.bbs.util.Tuple;
-import com.sun.istack.internal.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,8 +54,8 @@ public class AppComment {
     }
 
     public static TaskChain.Procedure<ErrorCode, Tuple<ReplyId, ReplyInfo>> postReply(CommentGroupId groupId, CommentId commentId, ContentId contentId,
-                                                                                      UserId replier, @Nullable UserId replyTo) {
-        return TaskChain.Result.<ErrorCode, ReplyInfo>of(ReplyInfo.of(replier.value, contentId.value, nilOrTr(replyTo, x -> x.value)))
+                                                                                      UserId replier, UserId nullableReplyTo) {
+        return TaskChain.Result.<ErrorCode, ReplyInfo>of(ReplyInfo.of(replier.value, contentId.value, nilOrTr(nullableReplyTo, x -> x.value)))
                 .then(replyInfo -> TaskChain.Procedure.fromOptional(
                         componentFactory.commentGroup.addReply(groupId, commentId, replyInfo).map(replyId -> Tuple.of(replyId, replyInfo)),
                         ErrorCode.AddReplyFailed)
