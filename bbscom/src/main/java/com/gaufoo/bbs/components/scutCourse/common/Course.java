@@ -6,7 +6,7 @@ public enum Course {
     线性代数与解析几何,
     中国近现代史纲要,
     大学英语,
-    Cplusplus,
+    CPlusPlus,
     思想道德修养与法律基础,
     大学物理,
     工程制图,

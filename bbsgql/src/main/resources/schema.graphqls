@@ -19,6 +19,7 @@ type Query {
     schoolHeatInfo(id: ID!): SchoolHeatInfoResult!
     allSchoolHeats(skip: Long, first: Long, sortedBy: SortedBy): AllSchoolHeatsResult!
     schoolHeatsOfAuthor(authorId: ID!, skip: Long, first: Long): SchoolHeatsOfAuthorResult!
+#    searchSchoolHeats(title: String!): SearchSchoolHeatsResult!
 
     allLectures(skip: Long, first: Long): AllLecturesResult!
     lectureInfo(id: ID!): LectureInfoResult!
@@ -61,6 +62,10 @@ type Mutation {
 
     createSchoolHeat(schoolHeatInput: SchoolHeatInput!): CreateSchoolHeatResult!
     deleteSchoolHeat(id: ID!): DeleteSchoolHeatResult!
+    createSchoolHeatComment(schoolHeatCommentInput: SchoolHeatCommentInput!): CreateSchoolHeatCommentResult!
+    deleteSchoolHeatComment(shId: ID!, cmmtId: ID!): DeleteSchoolHeatCommentResult!
+    createSchoolHeatCommentReply(schoolHeatReplyInput: SchoolHeatReplyInput): CreateSchoolHeatCommentReplyResult!
+    deleteSchoolHeatCommentReply(shId: ID!, cmmtId: ID!, rpyId: ID!): DeleteSchoolHeatCommentReplyResult!
 
     createLecture(lectureInput: LectureInput!): CreateLectureResult!
     editLecture(id: ID!, lectureInput: LectureOptionalInput!): EditLectureResult!

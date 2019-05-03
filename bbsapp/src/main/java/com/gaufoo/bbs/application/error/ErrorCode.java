@@ -70,6 +70,7 @@ public enum ErrorCode {
     DeleteEntertainmentFailed(62),
     SchoolHeatNonExist(63),
 
+    DeletePostFailed(95),
     PostNonExist(96),
     ContentNonExist(97),
     CreatePostFailed(98),
@@ -144,6 +145,11 @@ public enum ErrorCode {
         put(ErrorCode.DeleteEntertainmentFailed, "删除休闲娱乐帖子失败");
         put(ErrorCode.SchoolHeatNonExist, "校园热点不存在");
 
+        put(ErrorCode.DeletePostFailed, "删帖失败");
+        put(ErrorCode.PostNonExist, "帖子不存在");
+        put(ErrorCode.ContentNonExist, "内容不存在");
+        put(ErrorCode.CreatePostFailed, "创建帖子失败");
+        put(ErrorCode.UnsupportedOperation, "不支持操作");
         put(ErrorCode.SaveFileFailed, "创建文件失败");
         // add more error code mapping here
     }};

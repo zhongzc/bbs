@@ -13,6 +13,8 @@ public class Ok implements
         Lost.CancelClaimLostResult,
         Lecture.DeleteLectureResult,
         SchoolHeat.DeleteSchoolHeatResult,
+        SchoolHeat.DeleteSchoolHeatCommentResult,
+        SchoolHeat.DeleteSchoolHeatCommentReplyResult,
         LearningResource.DeleteLearningResourceResult,
         LearningResource.DeleteLearningResourceCommentResult,
         LearningResource.DeleteLearningResourceCommentReplyResult,

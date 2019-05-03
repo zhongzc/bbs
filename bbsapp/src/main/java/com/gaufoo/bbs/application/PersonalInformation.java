@@ -69,8 +69,7 @@ public class PersonalInformation {
     }
 
     public static List<String> allCourses() {
-        CourseFactory courseFactory = componentFactory.course;
-        return courseFactory.allCourses().map(c -> courseFactory.generateCourseCode(c).value).collect(Collectors.toList());
+        return componentFactory.course.allCourses().map(Enum::toString).collect(Collectors.toList());
     }
 
     public static List<String> majorsIn(String school) {

@@ -122,8 +122,7 @@ public class AppLearningResource {
         Ctx ctx = new Ctx();
 
         return Commons.fetchPermission(UserToken.of(userToken))
-                .then(permission -> checkPermission(learnId, permission))
-                .then(__ -> fetchLearningResourceInfo(learnId)).mapR(ctx::put)
+                .then(permission -> checkPermission(learnId, permission)).mapR(ctx::put)
                 .then(__ -> deleteLearnResourceInfo(learnId, ctx.learnInfo))
                 .then(__ -> AppHeatActive.clearActiveAndHeat(learnId))
                 .reduce(Error::of, __ -> Ok.build());
@@ -343,10 +342,14 @@ public class AppLearningResource {
         };
     }
 
-    private static Procedure<ErrorCode, Void> checkPermission(LearningResourceId learningResourceId, Permission permission) {
-        return fetchLearningResourceInfo(learningResourceId)
-                .mapR(learningResourceInfo -> learningResourceInfo.authorId.equals(permission.userId) || permission.role.equals(Authenticator.Role.ADMIN))
-                .then(ok -> ok ? Result.of(null) : Fail.of(ErrorCode.PermissionDenied));
+    private static Procedure<ErrorCode, LearningResourceInfo> checkPermission(LearningResourceId learningResourceId, Permission permission) {
+        class Ctx {
+            LearningResourceInfo lrInfo; Void put(LearningResourceInfo info) { this.lrInfo = info; return null; }
+        } Ctx ctx = new Ctx();
+
+        return fetchLearningResourceInfo(learningResourceId).mapR(ctx::put)
+                .mapR(__ -> ctx.lrInfo.authorId.equals(permission.userId) || permission.role.equals(Authenticator.Role.ADMIN))
+                .then(ok -> ok ? Result.of(ctx.lrInfo) : Fail.of(ErrorCode.PermissionDenied));
     }
 
     private static Procedure<ErrorCode, Void> checkPermission(CommentId commentId, Permission permission) {

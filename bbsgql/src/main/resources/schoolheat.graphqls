@@ -13,14 +13,29 @@ type MultiSchoolHeats {
     totalCount: Long!
     schoolHeats: [SchoolHeatInfo!]!
 }
-
 union SchoolHeatInfoResult = Error | SchoolHeatInfo
 union CreateSchoolHeatResult = Error | SchoolHeatInfo
-union AllSchoolHeatsResult = Error | MultiSchoolHeats
-union SchoolHeatsOfAuthorResult = Error | MultiSchoolHeats
 union DeleteSchoolHeatResult = Error | Ok
+union AllSchoolHeatsResult = Error | MultiSchoolHeats
+union SearchSchoolHeatsResult = Error | MultiSchoolHeats
+union SchoolHeatsOfAuthorResult = Error | MultiSchoolHeats
 
 input SchoolHeatInput {
     title: String!
     content: ContentInput!
 }
+input SchoolHeatCommentInput {
+    postIdCommenting: ID!
+    content: ContentInput!
+}
+input SchoolHeatReplyInput {
+    postIdReplying: ID!
+    commentIdReplying: ID!
+    content: ContentInput!
+    replyTo: ID
+}
+
+union CreateSchoolHeatCommentResult = Error | CommentInfo
+union DeleteSchoolHeatCommentResult = Error | Ok
+union CreateSchoolHeatCommentReplyResult = Error | ReplyInfo
+union DeleteSchoolHeatCommentReplyResult = Error | Ok

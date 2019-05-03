@@ -104,6 +104,7 @@ public class AppEntertainment {
         return Commons.fetchPermission(UserToken.of(userToken))
                 .then(permission -> checkPermission(entertainId, permission)).mapR(ctx::put)
                 .then(__ -> deleteEntertainmentInfo(entertainId, ctx.entertainmentInfo))
+                .then(__ -> AppHeatActive.clearActiveAndHeat(entertainId))
                 .reduce(Error::of, __ -> Ok.build());
     }
 
@@ -244,8 +245,6 @@ public class AppEntertainment {
                         activeInfo.time.toEpochMilli());
             }
             public Comment.AllComments getAllComments(Long skip, Long first) {
-                skip = skip == null ? 0L : skip;
-                first = first == null ? Long.MAX_VALUE : first;
                 return AppComment.consAllComments(CommentGroupId.of(info.get().commentGroupId), skip, first);
             }
         };

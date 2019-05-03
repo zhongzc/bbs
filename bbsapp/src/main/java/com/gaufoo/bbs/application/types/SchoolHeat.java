@@ -60,6 +60,7 @@ public interface SchoolHeat {
     }
 
     class SchoolHeatReplyInput {
+        public String postIdReplying;
         public String commentIdReplying;
         public Content.ContentInput content;
         public String replyTo;

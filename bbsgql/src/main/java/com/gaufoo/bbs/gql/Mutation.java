@@ -9,6 +9,7 @@ import com.gaufoo.bbs.application.error.Error;
 import com.gaufoo.bbs.application.error.ErrorCode;
 import com.gaufoo.bbs.application.types.*;
 import com.gaufoo.bbs.gql.util.Utils;
+import com.gaufoo.bbs.util.Util;
 import graphql.schema.DataFetchingEnvironment;
 
 import static com.gaufoo.bbs.application.types.AccountAndPassword.ChangePasswordResult;
@@ -121,6 +122,30 @@ public class Mutation implements GraphQLMutationResolver {
         ).orElse(authError);
     }
 
+    public SchoolHeat.CreateSchoolHeatCommentResult createSchoolHeatComment(SchoolHeat.SchoolHeatCommentInput input, DataFetchingEnvironment env) {
+        return Utils.getAuthToken(env).map(
+                tkn -> AppSchoolHeat.createSchoolHeatComment(input, tkn)
+        ).orElse(authError);
+    }
+
+    public SchoolHeat.DeleteSchoolHeatCommentResult deleteSchoolHeatComment(String schoolHeatId, String commengId, DataFetchingEnvironment env) {
+        return Utils.getAuthToken(env).map(
+                tkn -> AppSchoolHeat.deleteSchoolHeatComment(schoolHeatId, commengId, tkn)
+        ).orElse(authError);
+    }
+
+    public SchoolHeat.CreateSchoolHeatCommentReplyResult createSchoolHeatCommentReply(SchoolHeat.SchoolHeatReplyInput input, DataFetchingEnvironment env) {
+        return Utils.getAuthToken(env).map(
+                tkn -> AppSchoolHeat.createSchoolHeatCommentReply(input, tkn)
+        ).orElse(authError);
+    }
+
+    public SchoolHeat.DeleteSchoolHeatCommentReplyResult deleteSchoolHeatCommentReply(String schoolHeatId, String commentId, String replyId, DataFetchingEnvironment env) {
+        return Utils.getAuthToken(env).map(
+                tkn -> AppSchoolHeat.deleteSchoolHeatCommentReply(schoolHeatId, commentId, replyId, tkn)
+        ).orElse(authError);
+    }
+
     public Lecture.CreateLectureResult createLecture(Lecture.LectureInput input, DataFetchingEnvironment env) {
         return Utils.getAuthToken(env).map(
                 tkn -> AppLecture.createLecture(input, tkn)
@@ -193,9 +218,9 @@ public class Mutation implements GraphQLMutationResolver {
         ).orElse(authError);
     }
 
-    public Entertainment.DeleteEntertainmentCommentResult deleteEntertainmentComment(String learningResourceId, String commentId, DataFetchingEnvironment env) {
+    public Entertainment.DeleteEntertainmentCommentResult deleteEntertainmentComment(String entertainmentId, String commentId, DataFetchingEnvironment env) {
         return Utils.getAuthToken(env).map(
-                tkn -> AppEntertainment.deleteEntertainmentComment(learningResourceId, commentId, tkn)
+                tkn -> AppEntertainment.deleteEntertainmentComment(entertainmentId, commentId, tkn)
         ).orElse(authError);
     }
 
