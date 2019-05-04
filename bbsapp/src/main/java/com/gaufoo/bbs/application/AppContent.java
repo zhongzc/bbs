@@ -27,8 +27,19 @@ public class AppContent {
     }
 
     public static TaskChain.Procedure<ErrorCode, Void> deleteContent(ContentId contentId) {
-        boolean ok = componentFactory.content.remove(contentId);
-        return ok ? TaskChain.Result.of(null) : TaskChain.Fail.of(ErrorCode.DeleteContentFailed);
+        return TaskChain.Procedure.fromOptional(componentFactory.content.contentInfo(contentId), ErrorCode.ContentNonExist)
+                .then(info -> TaskChain.Result.of(info, () -> componentFactory.content.cons(info)))
+                .mapR(contentInfo -> contentInfo.elems.stream().map(AppContent::deleteFigs).count())
+                .mapR(__ -> componentFactory.content.remove(contentId))
+                .then(ok -> ok ? TaskChain.Result.of(null) : TaskChain.Fail.of(ErrorCode.DeleteContentFailed));
+    }
+
+    private static Void deleteFigs(ContentElem elem) {
+        if (elem instanceof ContentFig) {
+            ContentFig fig = (ContentFig) elem;
+            componentFactory.contentImages.Remove(FileId.of(fig.figureId));
+        }
+        return null;
     }
 
     public static TaskChain.Procedure<ErrorCode, ContentInfo> consContent(Content.ContentInput contentInput) {
