@@ -89,14 +89,17 @@ public class LearningResourceSstRepository implements LearningResourceRepository
     @Override
     public boolean deletePostInfo(LearningResourceId postId) {
         return Optional.ofNullable(SstUtils.removeEntryByKey(idToInfo, postId.value, info -> gson.fromJson(info, LearningResourceInfo.class))).map(info -> {
-            this.count.decrementAndGet();
-
             List<CompletionStage<Boolean>> tasks = new ArrayList<>();
             tasks.add(SstUtils.removeEntryAsync(authorIndex, fill8(info.authorId) + postId.value));
             tasks.add(SstUtils.removeEntryAsync(courseIndex, fill8(info.courseCode) + postId.value));
             tasks.add(SstUtils.setEntryAsync(courseCodeToCnt, info.courseCode, String.valueOf(countOfCourse(info.courseCode) - 1L)));
             tasks.add(SstUtils.setEntryAsync(authorToCnt, info.authorId, String.valueOf(countOfAuthor(info.authorId) - 1L)));
-            return SstUtils.waitAllFutureParT(tasks, true, (a, b) -> a && b);
+            if (SstUtils.waitAllFutureParT(tasks, true, (a, b) -> a && b)) {
+                this.count.decrementAndGet();
+                return true;
+            } else {
+                return false;
+            }
         }).orElse(false);
     }
 
