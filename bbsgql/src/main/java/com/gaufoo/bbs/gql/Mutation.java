@@ -27,6 +27,7 @@ public class Mutation implements GraphQLMutationResolver {
         AppLecture.reset();
         AppLearningResource.reset();
         AppEntertainment.reset();
+        AppNews.reset();
         return true;
     }
 
@@ -59,6 +60,24 @@ public class Mutation implements GraphQLMutationResolver {
     public ChangePasswordResult changePassword(String newPassword, String resetToken, DataFetchingEnvironment env) {
         return Utils.getAuthToken(env).map(
                 tkn -> AccountAndPassword.changePassword(newPassword, resetToken)
+        ).orElse(authError);
+    }
+
+    public News.CreateNewsResult createNews(News.NewsInput input, DataFetchingEnvironment env) {
+        return Utils.getAuthToken(env).map(
+                tkn -> AppNews.createNews(input, tkn)
+        ).orElse(authError);
+    }
+
+    public News.EditNewsResult editNews(String id, News.NewsInput input, DataFetchingEnvironment env) {
+        return Utils.getAuthToken(env).map(
+                tkn -> AppNews.editNews(id, input, tkn)
+        ).orElse(authError);
+    }
+
+    public News.DeleteNewsResult deleteNews(String id, DataFetchingEnvironment env) {
+        return Utils.getAuthToken(env).map(
+                tkn -> AppNews.deleteNews(id, tkn)
         ).orElse(authError);
     }
 

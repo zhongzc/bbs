@@ -5,7 +5,6 @@ import com.gaufoo.bbs.application.error.ErrorCode;
 import com.gaufoo.bbs.application.util.StaticResourceConfig;
 import com.gaufoo.bbs.components.authenticator.common.UserToken;
 import com.gaufoo.bbs.components.file.common.FileId;
-import com.gaufoo.bbs.components.scutCourse.CourseFactory;
 import com.gaufoo.bbs.components.scutMajor.common.Major;
 import com.gaufoo.bbs.components.scutMajor.common.MajorCode;
 import com.gaufoo.bbs.components.scutMajor.common.School;
@@ -149,7 +148,7 @@ public class PersonalInformation {
         Optional<FileId> res = componentFactory.userProfiles.createFile(image, UUID.randomUUID().toString())
                 .map(fileId -> componentFactory.user.changeProfilePicIdentifier(userId, fileId.toString()) ? fileId : null);
         return Procedure.fromOptional(res, ErrorCode.ChangeImageFailed).then(fileId -> {
-            componentFactory.userProfiles.Remove(FileId.of(oldPicId));
+            componentFactory.userProfiles.remove(FileId.of(oldPicId));
             return Result.of(fileId);
         });
     }

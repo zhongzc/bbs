@@ -17,8 +17,9 @@ public class IdConfig {
     public final String news;
     public final String commentGroup;
     public final String attachFiles;
+    public final String newsImages;
 
-    public IdConfig(String user, String userProfiles, String lost, String found, String schoolHeat, String entertainment, String lecture, String learningResource, String comment, String reply, String content, String lostFoundImages, String contentImages, String news, String commentGroup, String attachFiles) {
+    public IdConfig(String user, String userProfiles, String lost, String found, String schoolHeat, String entertainment, String lecture, String learningResource, String comment, String reply, String content, String lostFoundImages, String contentImages, String news, String commentGroup, String attachFiles, String newsImages) {
         this.user = user;
         this.userProfiles = userProfiles;
         this.lost = lost;
@@ -35,9 +36,10 @@ public class IdConfig {
         this.news = news;
         this.commentGroup = commentGroup;
         this.attachFiles = attachFiles;
+        this.newsImages = newsImages;
     }
 
     public static IdConfig defau1t() {
-        return new IdConfig("user-id", "user-profile-id", "lost-id", "found-id", "school-heat-id", "entertainment-id", "lecture", "learning-resource-id", "comment-id", "reply-id", "content-id", "lost-found-images", "content-images", "news", "comment-group", "attach-files");
+        return new IdConfig("user-id", "user-profile-id", "lost-id", "found-id", "school-heat-id", "entertainment-id", "lecture", "learning-resource-id", "comment-id", "reply-id", "content-id", "lost-found-images", "content-images", "news", "comment-group", "attach-files", "news-images");
     }
 }

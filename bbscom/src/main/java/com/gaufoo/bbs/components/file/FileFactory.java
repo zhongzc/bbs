@@ -14,7 +14,7 @@ public interface FileFactory {
 
     Optional<String> fileURI(FileId id);
 
-    void Remove(FileId id);
+    void remove(FileId id);
 
     static FileFactory defau1t(FileFactoryRepository repository, IdGenerator idGenerator) {
         return new FileFactoryImpl(repository, idGenerator);

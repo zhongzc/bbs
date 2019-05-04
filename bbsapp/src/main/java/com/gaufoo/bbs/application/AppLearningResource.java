@@ -256,7 +256,7 @@ public class AppLearningResource {
 
     private static Procedure<ErrorCode, Void> deleteLearnResourceInfo(LearningResourceId id, LearningResourceInfo info) {
         if (info.attachedFileId != null) {
-            componentFactory.learningResourceAttachFiles.Remove(FileId.of(info.attachedFileId));
+            componentFactory.learningResourceAttachFiles.remove(FileId.of(info.attachedFileId));
         }
         return AppComment.deleteAllComments(CommentGroupId.of(info.commentGroupId))
                 .then(__ -> AppContent.deleteContent(ContentId.of(info.contentId)))

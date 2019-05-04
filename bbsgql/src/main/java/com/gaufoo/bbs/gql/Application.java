@@ -39,6 +39,8 @@ public class Application implements WebMvcConfigurer {
     private String contentMapping;
     @Value("${attached-files-mapping}")
     private String attachFilesMapping;
+    @Value("${news-images-mapping}")
+    private String newsImagesMapping;
 
     public static void main(String[] args) {
         SpringApplication.run(Application.class, args);
@@ -75,6 +77,9 @@ public class Application implements WebMvcConfigurer {
                 Entertainment.MultiEntertainments.class,
                 Latest.Latests.class,
                 Hot.Hots.class,
+                News.NewsInfo.class,
+                News.MultiNewsInfos.class,
+                News.NewsInput.class
         };
         SchemaParserDictionary schemaParserDictionary = new SchemaParserDictionary();
         for(Class<?> clazz: subUnionTypes) {
@@ -93,7 +98,8 @@ public class Application implements WebMvcConfigurer {
                 .addMapping(StaticResourceConfig.FileType.UserProfileImage, profileImgMapping)
                 .addMapping(StaticResourceConfig.FileType.LostFoundImage, lostFoundMapping)
                 .addMapping(StaticResourceConfig.FileType.ContentImages, contentMapping)
-                .addMapping(StaticResourceConfig.FileType.AttachFiles, attachFilesMapping).build();
+                .addMapping(StaticResourceConfig.FileType.AttachFiles, attachFilesMapping)
+                .addMapping(StaticResourceConfig.FileType.NewsImages, newsImagesMapping).build();
 
         ComponentFactory.componentFactory = new ComponentFactory(config);
         addAdminUser();

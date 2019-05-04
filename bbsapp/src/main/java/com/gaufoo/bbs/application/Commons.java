@@ -10,7 +10,6 @@ import com.gaufoo.bbs.components.file.FileFactory;
 import com.gaufoo.bbs.components.file.common.FileId;
 import com.gaufoo.bbs.components.user.common.UserId;
 import com.gaufoo.bbs.util.TaskChain;
-import org.slf4j.Logger;
 
 import java.net.URI;
 import java.time.Instant;
@@ -19,7 +18,6 @@ import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.Base64;
 import java.util.function.Consumer;
-import java.util.function.Function;
 
 import static com.gaufoo.bbs.application.ComponentFactory.componentFactory;
 import static com.gaufoo.bbs.application.PersonalInformation.consPersonalInfo;
@@ -86,7 +84,7 @@ public class Commons {
     public static TaskChain.Procedure<ErrorCode, FileId> storeBase64File(FileFactory fileFactory, String base64File) {
         byte[] file = Base64.getDecoder().decode(base64File);
         return TaskChain.Procedure.fromOptional(fileFactory.createFile(file), ErrorCode.SaveFileFailed)
-                .then(fileId -> TaskChain.Result.of(fileId, () -> fileFactory.Remove(fileId)));
+                .then(fileId -> TaskChain.Result.of(fileId, () -> fileFactory.remove(fileId)));
     }
 
     public static String lastHeatTimeWindow() {
@@ -131,7 +129,8 @@ public class Commons {
     public enum PostType {
         SchoolHeat,
         Entertainment,
-        LearningResource
+        LearningResource,
+        News
     }
 
     public enum SortedBy {

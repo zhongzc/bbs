@@ -15,8 +15,7 @@ public interface News {
     interface NewsInfo extends
             NewsInfoResult,
             CreateNewsResult,
-            EditNewsResult,
-            DeleteNewsResult
+            EditNewsResult
     {
         String getId();
         String getTitle();

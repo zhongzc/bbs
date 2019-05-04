@@ -70,6 +70,7 @@ public enum ErrorCode {
     DeleteEntertainmentFailed(62),
     SchoolHeatNonExist(63),
 
+    ChangeNewsFailed(94),
     DeletePostFailed(95),
     PostNonExist(96),
     ContentNonExist(97),
@@ -145,6 +146,7 @@ public enum ErrorCode {
         put(ErrorCode.DeleteEntertainmentFailed, "删除休闲娱乐帖子失败");
         put(ErrorCode.SchoolHeatNonExist, "校园热点不存在");
 
+        put(ErrorCode.ChangeNewsFailed, "修改头条失败");
         put(ErrorCode.DeletePostFailed, "删帖失败");
         put(ErrorCode.PostNonExist, "帖子不存在");
         put(ErrorCode.ContentNonExist, "内容不存在");

@@ -20,7 +20,8 @@ public class Ok implements
         LearningResource.DeleteLearningResourceCommentReplyResult,
         Entertainment.DeleteEntertainmentResult,
         Entertainment.DeleteEntertainmentCommentResult,
-        Entertainment.DeleteEntertainmentCommentReplyResult
+        Entertainment.DeleteEntertainmentCommentReplyResult,
+        News.DeleteNewsResult
 {
     private Boolean ok;
 

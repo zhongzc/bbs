@@ -50,7 +50,11 @@ public class Error implements
         Entertainment.DeleteEntertainmentCommentResult,
         Entertainment.CreateEntertainmentCommentReplyResult,
         Entertainment.DeleteEntertainmentCommentReplyResult,
-        Latest.LatestsResult
+        Latest.LatestsResult,
+        News.NewsInfoResult,
+        News.CreateNewsResult,
+        News.DeleteNewsResult,
+        News.EditNewsResult
 {
     private Integer errCode;
     private String msg;

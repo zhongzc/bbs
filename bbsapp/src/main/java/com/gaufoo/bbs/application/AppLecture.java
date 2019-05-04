@@ -101,10 +101,8 @@ public class AppLecture {
     }
 
     private static Procedure<ErrorCode, LectureInfo> consLectureInfo(Lecture.LectureInput in) {
-        return AppContent.consContent(in.content)
-                .then(contentInfo -> Procedure.fromOptional(componentFactory.content.cons(contentInfo), ErrorCode.CreateContentFailed))
-                .then(contentId -> Result.of(contentId, () -> componentFactory.content.remove(contentId)))
-                .then(contentId -> Result.of(LectureInfo.of(in.title, contentId.value, in.position, Instant.ofEpochMilli(in.time), in.lecturer, in.note)));
+        return AppContent.storeContentInput(in.content)
+                .mapR(contentId -> LectureInfo.of(in.title, contentId.value, in.position, Instant.ofEpochMilli(in.time), in.lecturer, in.note));
     }
 
     private static Lecture.LectureInfo consLectureInfo(LectureId lectureId, Lecture.LectureInput in, ContentId contentId) {

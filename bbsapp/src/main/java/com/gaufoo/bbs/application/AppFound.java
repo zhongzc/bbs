@@ -151,7 +151,7 @@ public class AppFound {
         byte[] image = Base64.getDecoder().decode(nullablePictureBase64);
         Optional<FileId> newPicId = componentFactory.lostFoundImages.createFile(image);
         return Procedure.fromOptional(newPicId, ErrorCode.CreateFoundImageFailed)
-                .then(fileId -> Result.of(Optional.of(fileId), () -> componentFactory.lostFoundImages.Remove(fileId)));
+                .then(fileId -> Result.of(Optional.of(fileId), () -> componentFactory.lostFoundImages.remove(fileId)));
     }
 
     private static String factorOutPictureUrl(FileId fileId) {

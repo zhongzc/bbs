@@ -7,16 +7,22 @@ import java.util.stream.Collectors;
 import static com.gaufoo.bbs.application.ComponentFactory.componentFactory;
 
 public class AppLatestAndHots {
+    /**
+     * 10 条最新
+     */
     public static Latest.LatestsResult latests() {
         String lastTimeWin = Commons.lastActiveTimeWindow();
         return (Latest.Latests) () -> componentFactory.active.getAllDes(lastTimeWin)
-                .map(AppLatestAndHots::fetchLatest).collect(Collectors.toList());
+                .map(AppLatestAndHots::fetchLatest).limit(10L).collect(Collectors.toList());
     }
 
+    /**
+     * 10 条热门
+     */
     public static Hot.Hots hots() {
         String lastTimeWin = Commons.lastHeatTimeWindow();
         return () -> componentFactory.heat.getAllDes(lastTimeWin)
-                .map(AppLatestAndHots::fetchHots).collect(Collectors.toList());
+                .map(AppLatestAndHots::fetchHots).limit(10L).collect(Collectors.toList());
     }
 
     private static Latest.LatestItem fetchLatest(String groupPostIdPack) {

@@ -9,6 +9,9 @@ type Query {
 
     currentUser: CurrentUserResult!
 
+    news: MultiNewsInfos!
+    newsInfo(newsId: String!): NewsInfoResult!
+
     allFounds(skip: Long, first: Long): AllFoundsResult!
     foundInfo(id: ID!): FoundInfoResult!
 #   searchFounds(object: String!): SearchFoundsResult!
@@ -50,6 +53,10 @@ type Mutation {
 
     confirmPassword(comfirmInput: LoginInput!): ConfirmPasswordResult!
     changePassword(newPassword: String!, resetToken: String!): ChangePasswordResult!
+
+    createNews(newsInput: NewsInput!): CreateNewsResult!
+    deleteNews(newsId: String!): DeleteNewsResult!
+    editNews(newsId: String!, newsInput: NewsInput!): EditNewsResult!
 
     createFound(foundInput: FoundInput!): CreateFoundResult!
     deleteFound(foundId: ID!): DeleteFoundResult!

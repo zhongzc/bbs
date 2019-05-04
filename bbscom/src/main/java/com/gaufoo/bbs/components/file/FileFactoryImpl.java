@@ -43,7 +43,7 @@ public class FileFactoryImpl implements FileFactory {
     }
 
     @Override
-    public void Remove(FileId id) {
+    public void remove(FileId id) {
         repository.delete(id);
     }
 

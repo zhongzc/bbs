@@ -4,6 +4,7 @@ import com.gaufoo.bbs.application.error.Error;
 import com.gaufoo.bbs.application.error.ErrorCode;
 import com.gaufoo.bbs.application.error.Ok;
 import com.gaufoo.bbs.components.authenticator.common.ResetToken;
+import com.gaufoo.bbs.components.authenticator.common.UserToken;
 
 import static com.gaufoo.bbs.application.types.Authentication.LoginInput;
 import static com.gaufoo.bbs.application.types.AccountAndPassword.*;
@@ -15,8 +16,8 @@ public class AccountAndPassword {
             return Error.of(ErrorCode.AuthenticateFailed);
         }
 
-        return componentFactory.authenticator.reqResetPassword(input.username)
-                .mapF(ErrorCode::fromAuthError)
+        return Commons.fetchUserId(UserToken.of(userToken))
+                .then(__ -> componentFactory.authenticator.reqResetPassword(input.username).mapF(ErrorCode::fromAuthError))
                 .reduce(Error::of, r -> (ResetPassToken)() -> r.value);
     }
 

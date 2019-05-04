@@ -22,6 +22,7 @@ public class StaticResourceConfig {
         LostFoundImage,
         ContentImages,
         AttachFiles,
+        NewsImages
     }
 
     private final Path resourceFolder;
@@ -99,6 +100,7 @@ public class StaticResourceConfig {
             add(Tuple.of(LostFoundImage, "lostAndFound"));
             add(Tuple.of(ContentImages, "contentImg"));
             add(Tuple.of(AttachFiles, "attachFiles"));
+            add(Tuple.of(NewsImages, "newsImg"));
             // add more mappings here
         }};
 

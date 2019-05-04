@@ -1,0 +1,20 @@
+type MultiNewsInfos {
+    newss: [NewsInfo!]!
+}
+type NewsInfo {
+    id: ID!
+    title: String!
+    content: Content!
+    postTime: Long!
+    editTime: Long!
+    pictureURL: String!
+}
+input NewsInput {
+    title: String
+    content: ContentInput
+    pictureBase64: String
+}
+union NewsInfoResult   = Error | NewsInfo
+union CreateNewsResult = Error | NewsInfo
+union DeleteNewsResult = Error | Ok
+union EditNewsResult   = Error | NewsInfo

@@ -45,6 +45,14 @@ public class Query implements GraphQLQueryResolver {
         ).orElse(authError);
     }
 
+    public News.MultiNewsInfos news() {
+        return AppNews.news();
+    }
+
+    public News.NewsInfoResult newsInfo(String id) {
+        return AppNews.newsInfo(id);
+    }
+
     public AllFoundsResult allFounds(Long skip, Long first) {
         return AppFound.allFounds(skip, first);
     }

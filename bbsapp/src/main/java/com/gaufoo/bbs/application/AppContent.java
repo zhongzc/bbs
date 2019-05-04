@@ -37,7 +37,7 @@ public class AppContent {
     private static Void deleteFigs(ContentElem elem) {
         if (elem instanceof ContentFig) {
             ContentFig fig = (ContentFig) elem;
-            componentFactory.contentImages.Remove(FileId.of(fig.figureId));
+            componentFactory.contentImages.remove(FileId.of(fig.figureId));
         }
         return null;
     }
@@ -47,7 +47,7 @@ public class AppContent {
             if (i.type == Content.ElemType.Picture) {
                 Optional<FileId> fileId = componentFactory.contentImages.createFile(Base64.getDecoder().decode(i.str));
                 return TaskChain.Procedure.fromOptional(fileId, ErrorCode.SaveFileFailed)
-                        .then(fid -> TaskChain.Result.of(ContentFig.of(fid.value), () -> componentFactory.contentImages.Remove(fid)));
+                        .then(fid -> TaskChain.Result.of(ContentFig.of(fid.value), () -> componentFactory.contentImages.remove(fid)));
             } else if (i.type == Content.ElemType.Text) {
                 return TaskChain.Result.of(ContentParag.of(i.str));
             } else {
