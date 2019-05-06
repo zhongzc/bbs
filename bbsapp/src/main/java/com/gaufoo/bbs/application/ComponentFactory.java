@@ -45,6 +45,7 @@ import com.gaufoo.bbs.components.news.News;
 import com.gaufoo.bbs.components.news.NewsRepository;
 import com.gaufoo.bbs.components.news.NewsSstRepository;
 import com.gaufoo.bbs.components.schoolHeat.SchoolHeat;
+import com.gaufoo.bbs.components.schoolHeat.SchoolHeatIndexSstRepository;
 import com.gaufoo.bbs.components.schoolHeat.SchoolHeatRepository;
 import com.gaufoo.bbs.components.schoolHeat.SchoolHeatSstRepository;
 import com.gaufoo.bbs.components.scutCourse.CourseFactory;
@@ -144,7 +145,7 @@ public class ComponentFactory {
         this.found = Found.defau1t(foundRepository, IdGenerator.seqInteger(idConfig.found, idRepository));
 
         //
-        SchoolHeatRepository schoolHeatRepository = SchoolHeatSstRepository.get(sstPathConfig.schoolHeat());
+        SchoolHeatRepository schoolHeatRepository = SchoolHeatIndexSstRepository.get(sstPathConfig.schoolHeat());
         reps.add(schoolHeatRepository::shutdown);
         this.schoolHeat = SchoolHeat.defau1t(schoolHeatRepository, IdGenerator.seqInteger(idConfig.schoolHeat, idRepository));
 
