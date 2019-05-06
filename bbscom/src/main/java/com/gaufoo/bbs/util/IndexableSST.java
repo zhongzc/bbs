@@ -11,6 +11,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class IndexableSST<K, V> {
@@ -131,6 +132,18 @@ public class IndexableSST<K, V> {
     public Long countBy(ExtractorId extractorId, String fieldValue) {
         return retryIfEmpty(3, () -> SstUtils.getEntry(counters.get(extractorId).right, fieldValue, Long::parseLong))
                 .orElse(0L);
+    }
+
+    public void shutdown() {
+        Stream<CompletionStage<?>> shutdownList = Stream.concat(
+                Stream.of(keyValues.shutdown()),
+                Stream.concat(
+                        clusters.values().stream().map(t -> t.right.shutdown()),
+                        counters.values().stream().map(t -> t.right.shutdown())
+                )
+        );
+
+        SstUtils.waitAllFuturesPar(shutdownList);
     }
 
     public static class ExtractorId {

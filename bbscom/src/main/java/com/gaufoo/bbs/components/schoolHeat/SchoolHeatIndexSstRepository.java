@@ -68,6 +68,11 @@ public class SchoolHeatIndexSstRepository implements SchoolHeatRepository {
         return idToInfo.count();
     }
 
+    @Override
+    public void shutdown() {
+        idToInfo.shutdown();
+    }
+
     public static SchoolHeatRepository get(Path storingPath) {
         return new SchoolHeatIndexSstRepository(storingPath);
     }
