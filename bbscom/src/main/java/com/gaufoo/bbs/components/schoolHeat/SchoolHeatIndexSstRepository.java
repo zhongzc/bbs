@@ -69,6 +69,11 @@ public class SchoolHeatIndexSstRepository implements SchoolHeatRepository {
     }
 
     @Override
+    public Long countByAuthor(String authorId) {
+        return null;
+    }
+
+    @Override
     public void shutdown() {
         idToInfo.shutdown();
     }

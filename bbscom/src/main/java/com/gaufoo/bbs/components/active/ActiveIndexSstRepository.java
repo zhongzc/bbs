@@ -55,12 +55,12 @@ public class ActiveIndexSstRepository implements ActiveRepository {
     }
 
     @Override
-    public Stream<String> getAllAsc(String activeGroup) {
+    public Stream<String> getAllAsc(String activeGroup, int idLen) {
         return sst.getAllValuesAscBy(clusterExId, formatAG(activeGroup));
     }
 
     @Override
-    public Stream<String> getAllDes(String activeGroup) {
+    public Stream<String> getAllDes(String activeGroup, int idLen) {
         return sst.getAllValuesDesBy(clusterExId, formatAG(activeGroup));
     }
 

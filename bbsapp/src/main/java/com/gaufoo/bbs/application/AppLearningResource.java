@@ -218,8 +218,8 @@ public class AppLearningResource {
 
         Stream<LearningResourceId> dataSource;
         switch (sortedBy) {
-            case ActiveTimeAsc: dataSource = componentFactory.active.getAllAsc(postGroupId).map(LearningResourceId::of); break;
-            case ActiveTimeDes: dataSource = componentFactory.active.getAllDes(postGroupId).map(LearningResourceId::of); break;
+            case ActiveTimeAsc: dataSource = componentFactory.active.getAllAsc(postGroupId, 8).map(LearningResourceId::of); break;
+            case ActiveTimeDes: dataSource = componentFactory.active.getAllDes(postGroupId, 8).map(LearningResourceId::of); break;
             case HeatAsc: dataSource = componentFactory.heat.getAllAsc(postGroupId).map(LearningResourceId::of); break;
             case HeatDes: dataSource = componentFactory.heat.getAllDes(postGroupId).map(LearningResourceId::of); break;
             case NatureAsc: dataSource = natural.apply(false); break;

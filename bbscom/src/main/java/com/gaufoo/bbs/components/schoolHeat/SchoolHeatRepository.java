@@ -20,5 +20,7 @@ public interface SchoolHeatRepository {
 
     Long count();
 
+    Long countByAuthor(String authorId);
+
     default void shutdown() {}
 }

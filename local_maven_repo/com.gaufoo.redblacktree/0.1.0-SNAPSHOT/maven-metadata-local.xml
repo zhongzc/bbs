@@ -1,23 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <metadata modelVersion="1.1.0">
   <groupId>com.gaufoo</groupId>
-  <artifactId>com.gaufoo.sst</artifactId>
+  <artifactId>com.gaufoo.redblacktree</artifactId>
   <version>0.1.0-SNAPSHOT</version>
   <versioning>
     <snapshot>
       <localCopy>true</localCopy>
     </snapshot>
-    <lastUpdated>20190420032144</lastUpdated>
+    <lastUpdated>20190511152259</lastUpdated>
     <snapshotVersions>
       <snapshotVersion>
         <extension>jar</extension>
         <value>0.1.0-SNAPSHOT</value>
-        <updated>20190420032144</updated>
+        <updated>20190511152259</updated>
       </snapshotVersion>
       <snapshotVersion>
         <extension>pom</extension>
         <value>0.1.0-SNAPSHOT</value>
-        <updated>20190412083733</updated>
+        <updated>20190511152259</updated>
       </snapshotVersion>
     </snapshotVersions>
   </versioning>

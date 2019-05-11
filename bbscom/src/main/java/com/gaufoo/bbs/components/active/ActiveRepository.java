@@ -13,9 +13,9 @@ public interface ActiveRepository {
 
     boolean updateActive(String activeGroup, String id, ActiveInfo activeInfo);
 
-    Stream<String> getAllAsc(String activeGroup);
+    Stream<String> getAllAsc(String activeGroup, int idLen);
 
-    Stream<String> getAllDes(String activeGroup);
+    Stream<String> getAllDes(String activeGroup, int idLen);
 
     boolean delete(String activeGroup, String id);
 

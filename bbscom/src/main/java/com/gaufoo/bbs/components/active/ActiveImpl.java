@@ -46,13 +46,13 @@ public class ActiveImpl implements Active {
     }
 
     @Override
-    public Stream<String> getAllAsc(String activeGroup) {
-        return repository.getAllAsc(activeGroup);
+    public Stream<String> getAllAsc(String activeGroup, int idLen) {
+        return repository.getAllAsc(activeGroup, idLen);
     }
 
     @Override
-    public Stream<String> getAllDes(String activeGroup) {
-        return repository.getAllDes(activeGroup);
+    public Stream<String> getAllDes(String activeGroup, int idLen) {
+        return repository.getAllDes(activeGroup, idLen);
     }
 
     @Override

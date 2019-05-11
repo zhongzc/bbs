@@ -4,14 +4,17 @@ import com.gaufoo.bbs.application.util.*;
 import com.gaufoo.bbs.components.active.Active;
 import com.gaufoo.bbs.components.active.ActiveRepository;
 import com.gaufoo.bbs.components.active.ActiveSstRepository;
+import com.gaufoo.bbs.components.active.ActiveTGRepository;
 import com.gaufoo.bbs.components.authenticator.Authenticator;
 import com.gaufoo.bbs.components.authenticator.AuthenticatorRepository;
 import com.gaufoo.bbs.components.authenticator.AuthenticatorSstRepository;
 import com.gaufoo.bbs.components.commentGroup.CommentGroup;
 import com.gaufoo.bbs.components.commentGroup.CommentGroupRepository;
 import com.gaufoo.bbs.components.commentGroup.CommentGroupSstRepository;
+import com.gaufoo.bbs.components.commentGroup.CommentGroupTGRepository;
 import com.gaufoo.bbs.components.commentGroup.comment.CommentRepository;
 import com.gaufoo.bbs.components.commentGroup.comment.CommentSstRepository;
+import com.gaufoo.bbs.components.commentGroup.comment.CommentTGRepository;
 import com.gaufoo.bbs.components.commentGroup.comment.reply.ReplyRepository;
 import com.gaufoo.bbs.components.commentGroup.comment.reply.ReplySstRepository;
 import com.gaufoo.bbs.components.content.Content;
@@ -44,10 +47,7 @@ import com.gaufoo.bbs.components.lost.LostSstRepository;
 import com.gaufoo.bbs.components.news.News;
 import com.gaufoo.bbs.components.news.NewsRepository;
 import com.gaufoo.bbs.components.news.NewsSstRepository;
-import com.gaufoo.bbs.components.schoolHeat.SchoolHeat;
-import com.gaufoo.bbs.components.schoolHeat.SchoolHeatIndexSstRepository;
-import com.gaufoo.bbs.components.schoolHeat.SchoolHeatRepository;
-import com.gaufoo.bbs.components.schoolHeat.SchoolHeatSstRepository;
+import com.gaufoo.bbs.components.schoolHeat.*;
 import com.gaufoo.bbs.components.scutCourse.CourseFactory;
 import com.gaufoo.bbs.components.scutMajor.MajorFactory;
 import com.gaufoo.bbs.components.tokenGenerator.TokenGenerator;
@@ -145,7 +145,8 @@ public class ComponentFactory {
         this.found = Found.defau1t(foundRepository, IdGenerator.seqInteger(idConfig.found, idRepository));
 
         //
-        SchoolHeatRepository schoolHeatRepository = SchoolHeatIndexSstRepository.get(sstPathConfig.schoolHeat());
+//        SchoolHeatRepository schoolHeatRepository = SchoolHeatIndexSstRepository.get(sstPathConfig.schoolHeat());
+        SchoolHeatRepository schoolHeatRepository = SchoolHeatTGRepository.get(sstPathConfig.schoolHeat());
         reps.add(schoolHeatRepository::shutdown);
         this.schoolHeat = SchoolHeat.defau1t(schoolHeatRepository, IdGenerator.seqInteger(idConfig.schoolHeat, idRepository));
 
@@ -165,11 +166,13 @@ public class ComponentFactory {
         this.learningResource = LearningResource.defau1t(learningResourceRepository, IdGenerator.seqInteger(idConfig.learningResource, idRepository));
 
         //
-        CommentRepository commentRepository = CommentSstRepository.get(sstPathConfig.comment());
+//        CommentRepository commentRepository = CommentSstRepository.get(sstPathConfig.comment());
+        CommentRepository commentRepository = CommentTGRepository.get(sstPathConfig.comment());
         reps.add(commentRepository::shutdown);
         ReplyRepository replyRepository = ReplySstRepository.get(sstPathConfig.reply());
         reps.add(replyRepository::shutdown);
-        CommentGroupRepository commentGroupRepository = CommentGroupSstRepository.get(sstPathConfig.commentGroup());
+//        CommentGroupRepository commentGroupRepository = CommentGroupSstRepository.get(sstPathConfig.commentGroup());
+        CommentGroupRepository commentGroupRepository = CommentGroupTGRepository.get(sstPathConfig.commentGroup());
         reps.add(commentGroupRepository::shutdown);
         this.commentGroup = CommentGroup.defau1t(IdGenerator.seqInteger(idConfig.commentGroup, idRepository), IdGenerator.seqInteger(idConfig.comment, idRepository), IdGenerator.seqInteger(idConfig.reply, idRepository), commentGroupRepository, commentRepository, replyRepository);
 
@@ -179,7 +182,8 @@ public class ComponentFactory {
         this.content = Content.defau1t(contentRepository, IdGenerator.seqInteger(idConfig.content, idRepository));
 
         //
-        ActiveRepository activeRepository = ActiveSstRepository.get(sstPathConfig.active());
+//        ActiveRepository activeRepository = ActiveSstRepository.get(sstPathConfig.active());
+        ActiveRepository activeRepository = ActiveTGRepository.get(sstPathConfig.active(), 8, 10);
         reps.add(activeRepository::shutdown);
         this.active = Active.defau1t(activeRepository);
 

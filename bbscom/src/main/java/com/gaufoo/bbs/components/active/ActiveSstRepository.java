@@ -52,7 +52,7 @@ public class ActiveSstRepository implements ActiveRepository {
     }
 
     @Override
-    public Stream<String> getAllAsc(String activeGroup) {
+    public Stream<String> getAllAsc(String activeGroup, int idLen) {
         return SstUtils.waitFuture(cluster.rangeKeysAsc(
                 formatAG(activeGroup) + many('0', 28),
                 formatAG(activeGroup) + many('9', 28)).thenApply(
@@ -61,7 +61,7 @@ public class ActiveSstRepository implements ActiveRepository {
     }
 
     @Override
-    public Stream<String> getAllDes(String activeGroup) {
+    public Stream<String> getAllDes(String activeGroup, int idLen) {
         return SstUtils.waitFuture(cluster.rangeKeysDes(
                 formatAG(activeGroup) + many('9', 28),
                 formatAG(activeGroup) + many('0', 28)

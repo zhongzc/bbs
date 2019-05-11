@@ -202,8 +202,8 @@ public class AppEntertainment {
 
     private static Stream<EntertainmentId> selectEntertainments(Commons.SortedBy sortedBy) {
         switch (sortedBy) {
-            case ActiveTimeAsc: return componentFactory.active.getAllAsc(postGroupId).map(EntertainmentId::of);
-            case ActiveTimeDes: return componentFactory.active.getAllDes(postGroupId).map(EntertainmentId::of);
+            case ActiveTimeAsc: return componentFactory.active.getAllAsc(postGroupId, 8).map(EntertainmentId::of);
+            case ActiveTimeDes: return componentFactory.active.getAllDes(postGroupId, 8).map(EntertainmentId::of);
             case HeatAsc: return componentFactory.heat.getAllAsc(postGroupId).map(EntertainmentId::of);
             case HeatDes: return componentFactory.heat.getAllDes(postGroupId).map(EntertainmentId::of);
             case NatureAsc: return componentFactory.entertainment.allPosts(false);

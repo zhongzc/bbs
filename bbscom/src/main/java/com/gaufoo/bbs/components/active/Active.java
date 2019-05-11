@@ -14,9 +14,9 @@ public interface Active {
 
     boolean remove(String activeGroup, String itemId);
 
-    Stream<String> getAllAsc(String activeGroup);
+    Stream<String> getAllAsc(String activeGroup, int idLen);
 
-    Stream<String> getAllDes(String activeGroup);
+    Stream<String> getAllDes(String activeGroup, int idLen);
 
     boolean removeAll(String activeGroup);
 

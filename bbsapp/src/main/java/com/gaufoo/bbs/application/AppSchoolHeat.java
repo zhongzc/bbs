@@ -75,21 +75,13 @@ public class AppSchoolHeat {
         final long fSkip = skip == null ? 0L : skip;
         final long fFirst = first == null ? Long.MAX_VALUE : first;
 
-        return new SchoolHeat.MultiSchoolHeats() {
-            private final ArrayList<SchoolHeat.SchoolHeatInfo> ls = new ArrayList<>();
-            private long count = 0;
-            {
-                long tail = fFirst + fSkip;
-                componentFactory.schoolHeat.allPostsByAuthor(userId).forEach(id -> {
-                    if (fSkip <= count && count < tail) {
-                        ls.add(consSchoolHeatInfoRet(id, LazyVal.with(fetchSchoolHeatInfoAndUnwrap(id, warnNil))));
-                    }
-                    count = count + 1;
-                });
-            }
-            public Long getTotalCount()                             { return count; }
-            public List<SchoolHeat.SchoolHeatInfo> getSchoolHeats() { return ls; }
-        };
+        Supplier<Long> totalCount = () -> componentFactory.schoolHeat.allPostsCountByAuthor(userId);
+
+        Stream<SchoolHeat.SchoolHeatInfo> infoStream = componentFactory.schoolHeat.allPostsByAuthor(userId)
+                .map(id -> Tuple.of(id, LazyVal.of(() -> fetchSchoolHeatInfoAndUnwrap(id, warnNil))))
+                .map(idInfoTup -> consSchoolHeatInfoRet(idInfoTup.left, idInfoTup.right));
+
+        return consMultiSchoolHeats(totalCount, infoStream, fSkip, fFirst);
     }
 
     public static SchoolHeat.CreateSchoolHeatResult createSchoolHeat(SchoolHeat.SchoolHeatInput input, String loginToken) {
@@ -100,14 +92,6 @@ public class AppSchoolHeat {
             SchoolHeatId schoolHeatId;     Void put(SchoolHeatId id)   { this.schoolHeatId = id;   return null; }
             SchoolHeatInfo schoolHeatInfo; Void put(SchoolHeatInfo i)  { this.schoolHeatInfo = i;  return null; }
         } Ctx ctx = new Ctx();
-//
-//        CommentGroup commentGroup = componentFactory.commentGroup;
-//        Heat heat = componentFactory.heat;
-//        Active active = componentFactory.active;
-//        ErrorCode e = ErrorCode.CreatePostFailed;
-//        String shg = Commons.getGroupId(Commons.PostType.SchoolHeat);
-//        String aTimeWindow = Commons.currentActiveTimeWindow();
-//        String hTimeWindow = Commons.currentHeatTimeWindow();
 
         return Commons.fetchUserId(UserToken.of(loginToken)).mapR(ctx::put)
                 .then(__ -> AppContent.storeContentInput(input.content)).mapR(ctx::put)
@@ -116,19 +100,6 @@ public class AppSchoolHeat {
                 .then(__ -> publishSchoolHeat(ctx.schoolHeatInfo)).mapR(ctx::put)
                 .then(__ -> AppHeatActive.createActiveAndHeat(ctx.schoolHeatId, ctx.userId))
                 .reduce(Error::of, __ -> consSchoolHeatInfoAfterCreate(ctx.schoolHeatId, input, ctx.contentId, ctx.userId, ctx.schoolHeatInfo));
-
-//        return Commons.fetchUserId(UserToken.of(loginToken))
-//        /* 构造评论句柄     */ .then(userId -> fromOptional(commentGroup.cons(), e)
-//        /* 构造内容信息     */ .then(cgId   -> AppContent.consContent(input.content)
-//        /* 构造内容句柄     */ .then(ctInfo -> fromOptional(componentFactory.content.cons(ctInfo),                                  e, () -> commentGroup.removeComments(cgId))
-//        /* 构造帖子        */ .then(ctId   -> Result.of(SchoolHeatInfo.of(input.title, ctId.value, userId.value, cgId.value),         () -> componentFactory.content.remove(ctId)))
-//        /* 发表帖子        */ .then(ptInfo -> fromOptional(componentFactory.schoolHeat.publishPost(ptInfo),                        e)
-//        /* 构造热度        */ .then(ptId   -> fromOptional(heat.increase(shg, ptId.value, 1),                          e, () -> componentFactory.schoolHeat.removePost(ptId))
-//        /* 构造最热        */ .then(ht     -> fromOptional(heat.increase(hTimeWindow, shg + ptId.value, 1),            e, () -> heat.remove(shg, ptId.value))
-//        /* 构造活跃        */ .then(__     -> fromOptional(active.touch(shg, ptId.value, null),                e, () -> heat.remove(hTimeWindow, shg + ptId.value)))
-//        /* 构造最新        */ .then(at     -> fromOptional(active.touch(aTimeWindow, shg + ptId.value, userId.value),  e, () -> active.remove(shg, ptId.value))
-//        /* 构造最终返回值   */ .then(__     -> Result.of(consSH(ptInfo, ptId, ht, at, ctInfo, cgId),                                   () -> active.remove(aTimeWindow, shg + ptId.value))))))))))
-//                            .reduce(Error::of, i -> i);
     }
 
     public static SchoolHeat.DeleteSchoolHeatResult deleteSchoolHeat(String id, String token) {
@@ -263,8 +234,8 @@ public class AppSchoolHeat {
 
     private static Stream<SchoolHeatId> selectSchoolHeats(Commons.SortedBy sortedBy) {
         switch (sortedBy) {
-            case ActiveTimeAsc: return componentFactory.active.getAllAsc(postGroupId).map(SchoolHeatId::of);
-            case ActiveTimeDes: return componentFactory.active.getAllDes(postGroupId).map(SchoolHeatId::of);
+            case ActiveTimeAsc: return componentFactory.active.getAllAsc(postGroupId, 8).map(SchoolHeatId::of);
+            case ActiveTimeDes: return componentFactory.active.getAllDes(postGroupId, 8).map(SchoolHeatId::of);
             case HeatAsc: return componentFactory.heat.getAllAsc(postGroupId).map(SchoolHeatId::of);
             case HeatDes: return componentFactory.heat.getAllDes(postGroupId).map(SchoolHeatId::of);
             case NatureAsc: return componentFactory.schoolHeat.allPosts(false);

@@ -28,6 +28,8 @@ public interface SchoolHeat {
 
     Long allPostsCount();
 
+    Long allPostsCountByAuthor(String authorId);
+
     static SchoolHeat defau1t(SchoolHeatRepository repository, IdGenerator idGenerator) {
         return new SchoolHeatImpl(repository, idGenerator);
     }

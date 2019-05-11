@@ -80,6 +80,11 @@ public class SchoolHeatSstRepository implements SchoolHeatRepository {
     }
 
     @Override
+    public Long countByAuthor(String authorId) {
+        return null;
+    }
+
+    @Override
     public void shutdown() {
         SstUtils.waitAllFuturesPar(idToInfo.shutdown(), authorIndex.shutdown());
     }

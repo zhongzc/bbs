@@ -12,7 +12,7 @@ public class AppLatestAndHots {
      */
     public static Latest.LatestsResult latests() {
         String lastTimeWin = Commons.lastActiveTimeWindow();
-        return (Latest.Latests) () -> componentFactory.active.getAllDes(lastTimeWin)
+        return (Latest.Latests) () -> componentFactory.active.getAllDes(lastTimeWin, 10)
                 .map(AppLatestAndHots::fetchLatest).limit(10L).collect(Collectors.toList());
     }
 

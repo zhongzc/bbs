@@ -53,4 +53,9 @@ public class SchoolHeatImpl implements SchoolHeat {
     public Long allPostsCount() {
         return repository.count();
     }
+
+    @Override
+    public Long allPostsCountByAuthor(String authorId) {
+        return repository.countByAuthor(authorId);
+    }
 }

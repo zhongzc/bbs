@@ -39,6 +39,13 @@ public class SstUtils {
         return kvMap.set(key, value).thenApply(value::equals);
     }
 
+    public static CompletionStage<Boolean> updateEntryAsync(SST kvMap, String key, Function<String, String> updateFunc, String defaultVal) {
+        return kvMap.get(key).thenCompose(os -> {
+            String newVal = os.map(updateFunc).orElse(defaultVal);
+            return kvMap.set(key, newVal);
+        }).thenApply(__ -> true);
+    }
+
     public static CompletionStage<Boolean> removeEntryAsync(SST kvMap, String key) {
         return kvMap.delete(key).thenApply(Optional::isPresent);
     }
