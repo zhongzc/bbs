@@ -82,8 +82,12 @@ public class Commons {
     }
 
     public static TaskChain.Procedure<ErrorCode, FileId> storeBase64File(FileFactory fileFactory, String base64File) {
-        byte[] file = Base64.getDecoder().decode(base64File);
-        return TaskChain.Procedure.fromOptional(fileFactory.createFile(file), ErrorCode.SaveFileFailed)
+        int index = base64File.indexOf(" ");
+        String suffix = index == -1 ? "" : base64File.substring(0, index);
+        String base64 = base64File.substring(index + 1);
+
+        byte[] file = Base64.getDecoder().decode(base64);
+        return TaskChain.Procedure.fromOptional(fileFactory.createFile(file, suffix), ErrorCode.SaveFileFailed)
                 .then(fileId -> TaskChain.Result.of(fileId, () -> fileFactory.remove(fileId)));
     }
 

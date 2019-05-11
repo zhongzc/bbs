@@ -1,6 +1,7 @@
 package com.gaufoo.bbs.components.file;
 
 import com.gaufoo.bbs.components.file.common.FileId;
+import com.gaufoo.db.TenGoKV;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
@@ -9,78 +10,67 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class FileFactoryFileSystemRepository implements FileFactoryRepository {
-    private static final String STATE_FILE_NAME = "state.json";
-    private final Gson gson = new Gson();
     private final Path directory;
-    private final Map<String, String> idToFilename = new ConcurrentHashMap<>();
+    private final TenGoKV<FileId, String> db;
 
     public FileFactoryFileSystemRepository(Path directory) {
         this.directory = directory;
-
-        rebuildMap();
-    }
-
-    private void rebuildMap() {
-        Path stateFilePath = directory.resolve(STATE_FILE_NAME);
-        if (stateFilePath.toFile().exists()) {
-            try {
-                String json = new String(Files.readAllBytes(stateFilePath), StandardCharsets.UTF_8);
-                Map<String, String> tmpMap = gson.fromJson(json, new TypeToken<HashMap<String, String>>() {
-                }.getType());
-                idToFilename.putAll(tmpMap);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
+        this.db = TenGoKV.TenGoKVBuilder.<FileId, String>get()
+                .withPath(directory.resolve(".fileInfo"))
+                .keySerializer(i -> i.value, 8)
+                .valueSerializer(i -> i)
+                .keyShaper(FileId::of)
+                .valueShaper(i -> i)
+                .withAggregate(Collections.emptyList())
+                .build();
     }
 
     @Override
     public boolean saveFile(FileId fileId, byte[] file, String filename) {
-        if (idToFilename.containsKey(fileId.value)) return false;
-        Path filepath = directory.resolve(fileId.value);
+        if (this.db.getValue(fileId) != null) return false;
+        Path filepath = directory.resolve(filename);
         try {
             Files.write(filepath, file, StandardOpenOption.CREATE_NEW);
-            updateStateFile();
-            idToFilename.put(fileId.value, filename);
-            return true;
+            return this.db.saveValue(fileId, filename);
         } catch (IOException e) {
             e.printStackTrace();
             return false;
         }
     }
 
-    private void updateStateFile() {
-        Path stateFilePath = directory.resolve(STATE_FILE_NAME);
-        try {
-            Files.write(stateFilePath, gson.toJson(idToFilename).getBytes(StandardCharsets.UTF_8));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
     @Override
     public String getFilename(FileId fileId) {
-        return idToFilename.get(fileId.value);
+        return this.db.getValue(fileId);
     }
 
     @Override
     public String getURI(FileId fileId) {
-        return directory.resolve(fileId.value).toUri().toString();
+        return directory.resolve(getFilename(fileId)).toUri().toString();
     }
 
     @Override
-    public void delete(FileId id) {
+    public boolean delete(FileId id) {
         try {
-            idToFilename.remove(id.value);
-            Files.delete(directory.resolve(id.value));
-            updateStateFile();
+            String filename = getFilename(id);
+            if (this.db.deleteValue(id)) {
+                Files.delete(directory.resolve(filename));
+                return true;
+            } else return false;
         } catch (IOException ignored) {
+            return false;
         }
+    }
+
+    @Override
+    public void shutdown() {
+        this.db.shutdown();
     }
 
     public static FileFactoryRepository get(Path directory) {

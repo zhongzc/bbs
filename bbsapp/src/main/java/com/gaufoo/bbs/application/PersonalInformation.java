@@ -143,14 +143,12 @@ public class PersonalInformation {
     }
 
     private static Procedure<ErrorCode, FileId> updateImage(UserId userId, String newPicBase64, String oldPicId) {
-        byte[] image = Base64.getDecoder().decode(newPicBase64);
-
-        Optional<FileId> res = componentFactory.userProfiles.createFile(image, UUID.randomUUID().toString())
-                .map(fileId -> componentFactory.user.changeProfilePicIdentifier(userId, fileId.toString()) ? fileId : null);
-        return Procedure.fromOptional(res, ErrorCode.ChangeImageFailed).then(fileId -> {
-            componentFactory.userProfiles.remove(FileId.of(oldPicId));
-            return Result.of(fileId);
-        });
+        return Commons.storeBase64File(componentFactory.userProfiles, newPicBase64)
+                .mapR(fileId -> componentFactory.user.changeProfilePicIdentifier(userId, fileId.toString()) ? fileId : null)
+                .then(fileId -> {
+                    componentFactory.userProfiles.remove(FileId.of(oldPicId));
+                    return Result.of(fileId);
+                });
     }
 
     private static PersonalInfo modOldPersonInfo(UserId userId, UserInfo oldUserInfo, PersonInfoInput in, FileId nullableUpdatedId) {

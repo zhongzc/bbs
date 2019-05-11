@@ -9,7 +9,7 @@ public interface FileFactoryRepository {
 
     String getURI(FileId fileId);
 
-    void delete(FileId id);
+    boolean delete(FileId id);
 
     default void shutdown() {}
 }

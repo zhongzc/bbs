@@ -15,9 +15,9 @@ public class FileFactoryImpl implements FileFactory {
     }
 
     @Override
-    public Optional<FileId> createFile(byte[] file, String filename) {
+    public Optional<FileId> createFile(byte[] file, String suffix) {
         FileId id = FileId.of(idGenerator.generateId());
-        if (repository.saveFile(id, file, filename)) {
+        if (repository.saveFile(id, file, id.value + "." + suffix)) {
             return Optional.of(id);
         }
         return Optional.empty();
@@ -43,8 +43,8 @@ public class FileFactoryImpl implements FileFactory {
     }
 
     @Override
-    public void remove(FileId id) {
-        repository.delete(id);
+    public boolean remove(FileId id) {
+        return repository.delete(id);
     }
 
 }

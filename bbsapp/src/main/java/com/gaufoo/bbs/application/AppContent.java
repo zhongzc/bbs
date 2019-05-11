@@ -45,8 +45,7 @@ public class AppContent {
     public static TaskChain.Procedure<ErrorCode, ContentInfo> consContent(Content.ContentInput contentInput) {
         Stream<TaskChain.Procedure<ErrorCode, ContentElem>> items = contentInput.elems.stream().map(i -> {
             if (i.type == Content.ElemType.Picture) {
-                Optional<FileId> fileId = componentFactory.contentImages.createFile(Base64.getDecoder().decode(i.str));
-                return TaskChain.Procedure.fromOptional(fileId, ErrorCode.SaveFileFailed)
+                return Commons.storeBase64File(componentFactory.contentImages, i.str)
                         .then(fid -> TaskChain.Result.of(ContentFig.of(fid.value), () -> componentFactory.contentImages.remove(fid)));
             } else if (i.type == Content.ElemType.Text) {
                 return TaskChain.Result.of(ContentParag.of(i.str));

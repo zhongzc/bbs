@@ -148,9 +148,7 @@ public class AppFound {
 
     private static Procedure<ErrorCode, Optional<FileId>> addPictureIfNecessary(String nullablePictureBase64) {
         if (nullablePictureBase64 == null) return Result.of(Optional.empty());
-        byte[] image = Base64.getDecoder().decode(nullablePictureBase64);
-        Optional<FileId> newPicId = componentFactory.lostFoundImages.createFile(image);
-        return Procedure.fromOptional(newPicId, ErrorCode.CreateFoundImageFailed)
+        return Commons.storeBase64File(componentFactory.lostFoundImages, nullablePictureBase64)
                 .then(fileId -> Result.of(Optional.of(fileId), () -> componentFactory.lostFoundImages.remove(fileId)));
     }
 

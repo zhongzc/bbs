@@ -109,7 +109,7 @@ public class AppNews {
 
     private static Procedure<ErrorCode, NewsInfo> consNewsInfo(News.NewsInput input) {
         return AppContent.storeContentInput(input.content)
-                .then(contentId -> Commons.storeBase64File(componentFactory.contentImages, input.pictureBase64)
+                .then(contentId -> Commons.storeBase64File(componentFactory.newsImages, input.pictureBase64)
                 .mapR(fileId -> NewsInfo.of(input.title, contentId.value, fileId.value)));
     }
 

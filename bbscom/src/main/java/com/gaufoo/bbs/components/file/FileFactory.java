@@ -6,7 +6,7 @@ import com.gaufoo.bbs.components.idGenerator.IdGenerator;
 import java.util.Optional;
 
 public interface FileFactory {
-    Optional<FileId> createFile(byte[] file, String filename);
+    Optional<FileId> createFile(byte[] file, String suffix);
 
     Optional<FileId> createFile(byte[] file);
 
@@ -14,7 +14,7 @@ public interface FileFactory {
 
     Optional<String> fileURI(FileId id);
 
-    void remove(FileId id);
+    boolean remove(FileId id);
 
     static FileFactory defau1t(FileFactoryRepository repository, IdGenerator idGenerator) {
         return new FileFactoryImpl(repository, idGenerator);

@@ -36,8 +36,9 @@ public class FileFactoryMemoryRepository implements FileFactoryRepository {
     }
 
     @Override
-    public void delete(FileId id) {
+    public boolean delete(FileId id) {
         map.remove(id.value);
+        return true;
     }
 
     public static FileFactoryRepository get(String repositoryName) {
