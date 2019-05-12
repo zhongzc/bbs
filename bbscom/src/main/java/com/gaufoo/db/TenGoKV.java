@@ -6,7 +6,6 @@ import com.gaufoo.db.common.Index;
 import com.gaufoo.sst.SST;
 
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.CompletionStage;
 import java.util.function.BiFunction;
