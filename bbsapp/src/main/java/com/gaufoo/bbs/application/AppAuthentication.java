@@ -12,7 +12,7 @@ import static com.gaufoo.bbs.application.types.Authentication.*;
 import static com.gaufoo.bbs.util.TaskChain.Procedure;
 import static com.gaufoo.bbs.util.TaskChain.Result;
 
-public class Authentication {
+public class AppAuthentication {
     public static CurrentUserResult currentUser(String userToken) {
         return Commons.fetchUserId(UserToken.of(userToken))
                 .then(Commons::fetchPersonalInfo)

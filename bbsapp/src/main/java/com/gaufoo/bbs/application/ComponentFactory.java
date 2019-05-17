@@ -50,6 +50,9 @@ import com.gaufoo.bbs.components.news.NewsSstRepository;
 import com.gaufoo.bbs.components.schoolHeat.*;
 import com.gaufoo.bbs.components.scutCourse.CourseFactory;
 import com.gaufoo.bbs.components.scutMajor.MajorFactory;
+import com.gaufoo.bbs.components.search.Search;
+import com.gaufoo.bbs.components.search.SearchRepository;
+import com.gaufoo.bbs.components.search.SearchTGRepository;
 import com.gaufoo.bbs.components.tokenGenerator.TokenGenerator;
 import com.gaufoo.bbs.components.tokenGenerator.TokenGeneratorRepository;
 import com.gaufoo.bbs.components.tokenGenerator.TokenGeneratorSstRepository;
@@ -92,6 +95,7 @@ public class ComponentFactory {
     public final FileFactory contentImages;
     public final FileFactory learningResourceAttachFiles;
     public final FileFactory newsImages;
+    public final Search search;
 
     public StaticResourceConfig staticResourceConfig;
 
@@ -191,6 +195,10 @@ public class ComponentFactory {
         HeatRepository heatRepository = HeatSstRepository.get(sstPathConfig.heat());
         reps.add(heatRepository::shutdown);
         this.heat = Heat.defau1t(heatRepository);
+
+        SearchRepository searchRepository = SearchTGRepository.get(sstPathConfig.search());
+        reps.add(searchRepository::shutdown);
+        this.search = Search.defau1t(searchRepository);
 
         //
         FileFactoryRepository lostFoundImagesRepository = FileFactoryFileSystemRepository.get(staticResourceConfig.folderPathOf(StaticResourceConfig.FileType.LostFoundImage));

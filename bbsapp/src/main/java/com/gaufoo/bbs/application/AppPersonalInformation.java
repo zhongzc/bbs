@@ -23,7 +23,7 @@ import static com.gaufoo.bbs.application.Commons.fetchPersonalInfo;
 import static com.gaufoo.bbs.application.ComponentFactory.componentFactory;
 import static com.gaufoo.bbs.application.types.PersonalInformation.*;
 
-public class PersonalInformation {
+public class AppPersonalInformation {
     public static PersonInfoResult personInfo(String id) {
         return fetchPersonalInfo(UserId.of(id))
                 .reduce(Error::of, r -> r);

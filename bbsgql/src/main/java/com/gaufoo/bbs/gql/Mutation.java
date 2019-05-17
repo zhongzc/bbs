@@ -2,14 +2,13 @@ package com.gaufoo.bbs.gql;
 
 import com.coxautodev.graphql.tools.GraphQLMutationResolver;
 import com.gaufoo.bbs.application.*;
-import com.gaufoo.bbs.application.AccountAndPassword;
-import com.gaufoo.bbs.application.Authentication;
-import com.gaufoo.bbs.application.PersonalInformation;
+import com.gaufoo.bbs.application.AppAccountAndPassword;
+import com.gaufoo.bbs.application.AppAuthentication;
+import com.gaufoo.bbs.application.AppPersonalInformation;
 import com.gaufoo.bbs.application.error.Error;
 import com.gaufoo.bbs.application.error.ErrorCode;
 import com.gaufoo.bbs.application.types.*;
 import com.gaufoo.bbs.gql.util.Utils;
-import com.gaufoo.bbs.util.Util;
 import graphql.schema.DataFetchingEnvironment;
 
 import static com.gaufoo.bbs.application.types.AccountAndPassword.ChangePasswordResult;
@@ -33,33 +32,33 @@ public class Mutation implements GraphQLMutationResolver {
 
     public EditPersonInfoResult editPersonInfo(PersonInfoInput input, DataFetchingEnvironment env) {
         return Utils.getAuthToken(env).map(
-                userToken -> PersonalInformation.editPersonInfo(input, userToken)
+                userToken -> AppPersonalInformation.editPersonInfo(input, userToken)
         ).orElse(authError);
     }
 
     public SignupResult signup(SignupInput input) {
-        return Authentication.signup(input);
+        return AppAuthentication.signup(input);
     }
 
     public LoginResult login(LoginInput input) {
-        return Authentication.login(input);
+        return AppAuthentication.login(input);
     }
 
     public LogoutResult logout(DataFetchingEnvironment env) {
         return Utils.getAuthToken(env).map(
-                Authentication::logout
+                AppAuthentication::logout
         ).orElse(authError);
     }
 
     public ConfirmPasswordResult confirmPassword(LoginInput input, DataFetchingEnvironment env) {
         return Utils.getAuthToken(env).map(
-                tkn -> AccountAndPassword.confirmPassword(input, tkn)
+                tkn -> AppAccountAndPassword.confirmPassword(input, tkn)
         ).orElse(authError);
     }
 
     public ChangePasswordResult changePassword(String newPassword, String resetToken, DataFetchingEnvironment env) {
         return Utils.getAuthToken(env).map(
-                tkn -> AccountAndPassword.changePassword(newPassword, resetToken)
+                tkn -> AppAccountAndPassword.changePassword(newPassword, resetToken)
         ).orElse(authError);
     }
 

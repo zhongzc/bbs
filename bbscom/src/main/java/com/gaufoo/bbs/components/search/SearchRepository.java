@@ -17,4 +17,6 @@ public interface SearchRepository {
     long totalDocumentCounts(String postType);
     long documentOccursCount(String term);
     long documentOccursCount(String term, String postType);
+
+    default void shutdown() { }
 }

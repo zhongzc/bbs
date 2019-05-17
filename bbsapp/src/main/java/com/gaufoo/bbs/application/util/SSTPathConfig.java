@@ -24,8 +24,9 @@ public class SSTPathConfig {
     private final String heat;
     private final String news;
     private final String commentGroup;
+    private final String search;
 
-    private SSTPathConfig(Path baseDir, String authenticator, String authenticatorTokenGenerator, String userFactory, String lost, String found, String entertainment, String lecture, String learningResource, String schoolHeat, String comment, String reply, String id, String content, String active, String heat, String news, String commentGroup) {
+    private SSTPathConfig(Path baseDir, String authenticator, String authenticatorTokenGenerator, String userFactory, String lost, String found, String entertainment, String lecture, String learningResource, String schoolHeat, String comment, String reply, String id, String content, String active, String heat, String news, String commentGroup, String search) {
         this.baseDir = baseDir;
         this.authenticator = authenticator;
         this.authenticatorTokenGenerator = authenticatorTokenGenerator;
@@ -44,6 +45,7 @@ public class SSTPathConfig {
         this.heat = heat;
         this.news = news;
         this.commentGroup = commentGroup;
+        this.search = search;
     }
     public Path baseDir() {
         return baseDir;
@@ -117,6 +119,10 @@ public class SSTPathConfig {
         return baseDir.resolve(commentGroup);
     }
 
+    public Path search() {
+        return baseDir.resolve(search);
+    }
+
     public List<Path> allSSTPaths() {
         Path[] paths = new Path[]{
                 auth(),
@@ -133,7 +139,8 @@ public class SSTPathConfig {
                 reply(),
                 content(),
                 active(),
-                heat()
+                heat(),
+                search(),
         };
         return Arrays.asList(paths);
     }
@@ -154,7 +161,7 @@ public class SSTPathConfig {
                 "schoolHeat",
                 "comment",
                 "reply",
-                "id", "content", "active", "heat", "news", "commentGroup");
+                "id", "content", "active", "heat", "news", "commentGroup", "search");
     }
 
 }

@@ -20,7 +20,7 @@ import java.util.Base64;
 import java.util.function.Consumer;
 
 import static com.gaufoo.bbs.application.ComponentFactory.componentFactory;
-import static com.gaufoo.bbs.application.PersonalInformation.consPersonalInfo;
+import static com.gaufoo.bbs.application.AppPersonalInformation.consPersonalInfo;
 
 public class Commons {
     public static UserId fetchUserIdAndUnwrap(UserToken userToken, Consumer<ErrorCode> nilCallBack) {

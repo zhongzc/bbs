@@ -10,7 +10,7 @@ import static com.gaufoo.bbs.application.types.Authentication.LoginInput;
 import static com.gaufoo.bbs.application.types.AccountAndPassword.*;
 import static com.gaufoo.bbs.application.ComponentFactory.componentFactory;
 
-public class AccountAndPassword {
+public class AppAccountAndPassword {
     public static ConfirmPasswordResult confirmPassword(LoginInput input, String userToken) {
         if (!componentFactory.authenticator.isAuthenticated(input.username, input.password)) {
             return Error.of(ErrorCode.AuthenticateFailed);

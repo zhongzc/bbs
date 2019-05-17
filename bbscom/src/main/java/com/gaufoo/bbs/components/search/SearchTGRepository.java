@@ -126,6 +126,12 @@ public class SearchTGRepository implements SearchRepository {
         return db.getAllKeysAsc(hd, hd.getGroupChain().group(term).endGroup()).filter(searchKey -> searchKey.postType.equals(postType)).count();
     }
 
+    @Override
+    public void shutdown() {
+        db.shutdown();
+        docIdToCount.shutdown();
+    }
+
     private boolean addTerm(DocumentId documentId, String term, int offset) {
         SearchKey key = SearchKey.of(term, documentId.postType, documentId.postId);
         SearchInfo info = db.getValue(key);
@@ -192,5 +198,9 @@ public class SearchTGRepository implements SearchRepository {
         public static SearchInfo of(List<Integer> offsets) {
             return new SearchInfo(offsets);
         }
+    }
+
+    public static SearchTGRepository get(Path storingPath) {
+        return new SearchTGRepository(storingPath, 50);
     }
 }

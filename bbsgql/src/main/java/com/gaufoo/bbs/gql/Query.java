@@ -2,8 +2,8 @@ package com.gaufoo.bbs.gql;
 
 import com.coxautodev.graphql.tools.GraphQLQueryResolver;
 import com.gaufoo.bbs.application.*;
-import com.gaufoo.bbs.application.Authentication;
-import com.gaufoo.bbs.application.PersonalInformation;
+import com.gaufoo.bbs.application.AppAuthentication;
+import com.gaufoo.bbs.application.AppPersonalInformation;
 import com.gaufoo.bbs.application.error.Error;
 import com.gaufoo.bbs.application.error.ErrorCode;
 import com.gaufoo.bbs.application.types.*;
@@ -20,28 +20,28 @@ import static com.gaufoo.bbs.application.types.Lost.*;
 
 public class Query implements GraphQLQueryResolver {
     public PersonInfoResult personInfo(String id) {
-        return PersonalInformation.personInfo(id);
+        return AppPersonalInformation.personInfo(id);
     }
 
     public List<String> allMajors() {
-        return PersonalInformation.allMajors();
+        return AppPersonalInformation.allMajors();
     }
 
     public List<String> allSchools() {
-        return PersonalInformation.allSchools();
+        return AppPersonalInformation.allSchools();
     }
 
     public List<String> allCourses() {
-        return PersonalInformation.allCourses();
+        return AppPersonalInformation.allCourses();
     }
 
     public List<String> majorsIn(String school) {
-        return PersonalInformation.majorsIn(school);
+        return AppPersonalInformation.majorsIn(school);
     }
 
     public CurrentUserResult currentUser(DataFetchingEnvironment env) {
         return Utils.getAuthToken(env).map(
-                Authentication::currentUser
+                AppAuthentication::currentUser
         ).orElse(authError);
     }
 
