@@ -52,7 +52,8 @@ public class FileFactoryFileSystemRepository implements FileFactoryRepository {
 
     @Override
     public String getURI(FileId fileId) {
-        return directory.resolve(getFilename(fileId)).toUri().toString();
+        String s = directory.resolve(getFilename(fileId)).toUri().toString();
+        return s;
     }
 
     @Override

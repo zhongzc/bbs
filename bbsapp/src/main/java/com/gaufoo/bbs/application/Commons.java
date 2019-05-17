@@ -59,7 +59,7 @@ public class Commons {
             return null;
         }, i -> i);
     }
-    public static TaskChain.Procedure<ErrorCode, PersonalInformation.PersonalInfo> fetchPersonalInfo(UserId userId) {
+    public static TaskChain.Procedure<ErrorCode, PersonalInformation.PersonalInfo>  fetchPersonalInfo(UserId userId) {
         return TaskChain.Procedure.fromOptional(componentFactory.user.userInfo(userId), ErrorCode.UserNonExist)
                 .then(userInfo -> TaskChain.Result.of(consPersonalInfo(userId, userInfo))
         );
@@ -92,7 +92,9 @@ public class Commons {
     }
 
     public static String lastHeatTimeWindow() {
-        return heatTimeWindow(Instant.now().minus(5, ChronoUnit.HOURS));
+//        return heatTimeWindow(Instant.now().minus(5, ChronoUnit.HOURS));
+        // FIXME: JUST FOR PRESENTATION!
+        return heatTimeWindow(Instant.now());
     }
 
     public static String currentHeatTimeWindow() {
@@ -106,7 +108,9 @@ public class Commons {
     }
 
     public static String lastActiveTimeWindow() {
-        return activeTimeWindow(Instant.now().minus(1, ChronoUnit.HOURS));
+//        return activeTimeWindow(Instant.now().minus(1, ChronoUnit.HOURS));
+        // FIXME: JUST FOR PRESENTATION!
+        return activeTimeWindow(Instant.now());
     }
 
     public static String currentActiveTimeWindow() {

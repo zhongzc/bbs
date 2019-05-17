@@ -22,7 +22,8 @@ public class AppHeatActive {
         return componentFactory.heat.getHeat(Commons.getGroupId(Commons.PostType.SchoolHeat), schoolHeatId.value).orElse(0L);
     }
     public static Long getHeat(EntertainmentId entertainmentId) {
-        return componentFactory.heat.getHeat(Commons.getGroupId(Commons.PostType.Entertainment), entertainmentId.value).orElse(0L);
+        Long aLong = componentFactory.heat.getHeat(Commons.getGroupId(Commons.PostType.Entertainment), entertainmentId.value).orElse(0L);
+        return aLong;
     }
 
     public static ActiveInfo fetchActiveInfoAndUnwrap(LearningResourceId learningResourceId) {

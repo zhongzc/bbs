@@ -1,10 +1,12 @@
 package com.gaufoo.bbs.gql;
 
 import com.coxautodev.graphql.tools.SchemaParserDictionary;
+import com.gaufoo.bbs.application.AppAuthentication;
 import com.gaufoo.bbs.application.ComponentFactory;
 import com.gaufoo.bbs.application.error.Error;
 import com.gaufoo.bbs.application.error.ErrorCode;
 import com.gaufoo.bbs.application.error.Ok;
+import com.gaufoo.bbs.application.test.AccountGenerator;
 import com.gaufoo.bbs.application.types.*;
 import com.gaufoo.bbs.application.util.StaticResourceConfig;
 import com.gaufoo.bbs.components.authenticator.Authenticator;
@@ -102,7 +104,7 @@ public class Application implements WebMvcConfigurer {
                 .addMapping(StaticResourceConfig.FileType.NewsImages, newsImagesMapping).build();
 
         ComponentFactory.componentFactory = new ComponentFactory(config);
-        addAdminUser();
+        String admin = addAdminUser();
 
         List<String> allUrlPrefixes = new LinkedList<>();
         List<String> allFolderPaths = new LinkedList<>();
@@ -115,6 +117,16 @@ public class Application implements WebMvcConfigurer {
 
         registry.addResourceHandler(allUrlPrefixes.toArray(new String[0]))
                 .addResourceLocations(allFolderPaths.toArray(new String[0]));
+
+        List<String> accounts = AccountGenerator.createAccounts(20);
+        AccountGenerator.createFound(100, accounts);
+        AccountGenerator.createLost(100, accounts);
+        AccountGenerator.createLectures(100, admin);
+        AccountGenerator.createLearnResource(5000, accounts);
+        AccountGenerator.createSchoolHeats(5000, accounts);
+        AccountGenerator.createEntertainment(5000, accounts);
+        AccountGenerator.createNews(admin);
+        log.info("GO!");
     }
 
     @PostConstruct
@@ -131,7 +143,7 @@ public class Application implements WebMvcConfigurer {
         log.debug("added shutdown hook");
     }
 
-    private void addAdminUser() {
+    private String addAdminUser() {
         String username = "admin";
         String password = "letmein";  // fixme: insecure
         String nickname = "admin";
@@ -144,8 +156,14 @@ public class Application implements WebMvcConfigurer {
                         .then(userId -> attachable.attach(Permission.of(userId.value, Authenticator.Role.ADMIN))
                                 .mapF(ErrorCode::fromAuthError)))
                 .reduce(e -> false, i -> i);
-        if (!success) log.warn("unable to create super user");
-        else log.debug("created super user: " + username);
+        if (!success) {
+            log.warn("unable to create super user");
+            return null;
+        }
+        else {
+            log.debug("created super user: " + username);
+            return ComponentFactory.componentFactory.authenticator.login(username, password).reduce(e -> null, i -> i.value);
+        }
     }
 
     @Bean

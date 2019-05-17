@@ -144,9 +144,11 @@ public class AppPersonalInformation {
 
     private static Procedure<ErrorCode, FileId> updateImage(UserId userId, String newPicBase64, String oldPicId) {
         return Commons.storeBase64File(componentFactory.userProfiles, newPicBase64)
-                .mapR(fileId -> componentFactory.user.changeProfilePicIdentifier(userId, fileId.toString()) ? fileId : null)
+                .mapR(fileId -> componentFactory.user.changeProfilePicIdentifier(userId, fileId.value) ? fileId : null)
                 .then(fileId -> {
-                    componentFactory.userProfiles.remove(FileId.of(oldPicId));
+                    if (oldPicId != null) {
+                        componentFactory.userProfiles.remove(FileId.of(oldPicId));
+                    }
                     return Result.of(fileId);
                 });
     }
