@@ -122,7 +122,7 @@ public class Application implements WebMvcConfigurer {
         AccountGenerator.createFound(100, accounts);
         AccountGenerator.createLost(100, accounts);
         AccountGenerator.createLectures(100, admin);
-        AccountGenerator.createLearnResource(200, accounts);
+//        AccountGenerator.createLearnResource(200, accounts);
         AccountGenerator.createSchoolHeats(200, accounts);
         AccountGenerator.createEntertainment(200, accounts);
         AccountGenerator.createNews(admin);
