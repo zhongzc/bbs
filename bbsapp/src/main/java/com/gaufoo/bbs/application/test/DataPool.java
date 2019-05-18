@@ -96,21 +96,22 @@ public class DataPool {
 
     private static List<String> locs = Stream.of("模拟法庭", "B3-213", "音乐厅", "B3-213", "A1-203", "A4-202", "A2-302", "A4-204").collect(Collectors.toList());
     private static List<Long> times = Stream.of(1512039600000L, 1509361200000L, 1527939000000L, 1545201000000L, 1542627000000L, 1538134200000L, 1542970800000L, 1529631000000L, 1523444400000L, 1544511600000L).collect(Collectors.toList());
+    private static List<String> inames = Stream.of("饭卡", "水杯", "雨伞", "手机", "钥匙", "女朋友", "课本").collect(Collectors.toList());
     public static List<Lost.LostInput> generateLostInput(int number) {
         List<Lost.LostInput> inputs = new LinkedList<>();
         for (int i = 0; i < number; i++) {
             Lost.LostInput input = new Lost.LostInput();
             input.contact = "1391234567";
             input.description = postContents.get(random.nextInt(postContents.size()));
-            input.itemName = "item" + lostItemCount++;
+            input.itemName = inames.get(random.nextInt(inames.size()));
             input.position = locs.get(random.nextInt(locs.size()));
             input.lostTime = times.get(random.nextInt(times.size()));
             input.pictureBase64 = photos.get(random.nextInt(photos.size()));
+            inputs.add(input);
         }
         return inputs;
     }
 
-    private static List<String> inames = Stream.of("饭卡", "水杯", "雨伞", "手机", "钥匙", "女朋友", "课本").collect(Collectors.toList());
     public static List<Found.FoundInput> generateFoundInput(int number) {
         List<Found.FoundInput> inputs = new LinkedList<>();
         for (int i = 0; i < number; i++) {
@@ -156,7 +157,8 @@ public class DataPool {
     public static List<Lecture.LectureInput> generateLectureInput(int number) {
         List<Lecture.LectureInput> inputs = new LinkedList<>();
         for (int i = 0; i < number; i++) {
-            inputs.add(lectures.get(random.nextInt(lectures.size())));
+            Lecture.LectureInput e = lectures.get(random.nextInt(lectures.size()));
+            inputs.add(e);
         }
         return inputs;
     }
