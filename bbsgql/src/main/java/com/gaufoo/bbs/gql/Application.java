@@ -106,17 +106,22 @@ public class Application implements WebMvcConfigurer {
         ComponentFactory.componentFactory = new ComponentFactory(config);
         String admin = addAdminUser();
 
-        List<String> allUrlPrefixes = new LinkedList<>();
-        List<String> allFolderPaths = new LinkedList<>();
-        config.allFileTypes().forEach(fileType -> {
-            log.info("mapped url: " + config.urlPrefixOf(fileType) + "/**");
-            log.info("mapped folder: " + config.folderPathOf(fileType).toString());
-            allUrlPrefixes.add(config.urlPrefixOf(fileType) + "/**");
-            allFolderPaths.add(config.folderPathOf(fileType).toUri().toString());
-        });
+//        List<String> allUrlPrefixes = new LinkedList<>();
+//        List<String> allFolderPaths = new LinkedList<>();
+//        config.allFileTypes().forEach(fileType -> {
+//            log.info("mapped url: " + config.urlPrefixOf(fileType) + "/**");
+//            log.info("mapped folder: " + config.folderPathOf(fileType).toString());
+//            allUrlPrefixes.add(config.urlPrefixOf(fileType) + "/**");
+//            allFolderPaths.add(config.folderPathOf(fileType).toUri().toString());
+//        });
+//
+//        registry.addResourceHandler(allUrlPrefixes.toArray(new String[0]))
+//                .addResourceLocations(allFolderPaths.toArray(new String[0]));
 
-        registry.addResourceHandler(allUrlPrefixes.toArray(new String[0]))
-                .addResourceLocations(allFolderPaths.toArray(new String[0]));
+        config.allFileTypes().forEach(fileType -> {
+            registry.addResourceHandler(config.urlPrefixOf(fileType) + "/**")
+                    .addResourceLocations(config.folderPathOf(fileType).toUri().toString());
+        });
 
         List<String> accounts = AccountGenerator.createAccounts(20);
         AccountGenerator.createFound(100, accounts);
