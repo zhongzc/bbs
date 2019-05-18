@@ -142,22 +142,15 @@ public class DataPool {
         input.content = cip;
         return input;
     }
-    private static List<Lecture.LectureInput> lectures = Stream.of(
-            clec("不忘初心，不负新时代", "吴顺民董事长", "模拟法庭", 1512039600000L),
-            clec("城市数据可视化", "阿里云", "B3-213", 1509361200000L),
-            clec("“音为友你”班级音乐会", "15级音乐表演", "音乐厅", 1527939000000L),
-            clec("Microsoft创新杯", "香江集团", "B3-213", 1545201000000L),
-            clec("拥抱智能，对话未来", "微软俱乐部", "A1-203", 1542627000000L),
-            clec("网络安全漫谈", "何军辉教授", "A4-202", 1538134200000L),
-            clec("百度高校技术会", "李轩涯博士", "模拟法庭", 1542970800000L),
-            clec("因果建模与机器学习", "Prof.KunZhang", "A2-302", 1529631000000L),
-            clec("微信小程序大赛发布会", "荔枝微课", "音乐厅", 1523444400000L),
-            clec("音频领域的机遇和挑战", "方老师", "A4-204", 1544511600000L)
-    ).collect(Collectors.toList());
+    private static List<String> lectitles = Stream.of("不忘初心，不负新时代", "城市数据可视化", "“音为友你”班级音乐会", "Microsoft创新杯", "拥抱智能，对话未来", "网络安全漫谈", "百度高校技术会", "因果建模与机器学习", "微信小程序大赛发布会", "微信小程序大赛发布会", "音频领域的机遇和挑战").collect(Collectors.toList());
+    private static List<String> lecnames = Stream.of("吴顺民董事长", "阿里云", "15级音乐表演", "香江集团", "微软俱乐部", "何军辉教授", "李轩涯博士", "Prof.KunZhang", "荔枝微课", "方老师").collect(Collectors.toList());
     public static List<Lecture.LectureInput> generateLectureInput(int number) {
         List<Lecture.LectureInput> inputs = new LinkedList<>();
         for (int i = 0; i < number; i++) {
-            Lecture.LectureInput e = lectures.get(random.nextInt(lectures.size()));
+            Lecture.LectureInput e = clec(lectitles.get(random.nextInt(lectitles.size())),
+                    lecnames.get(random.nextInt(lecnames.size())),
+                    locs.get(random.nextInt(locs.size())),
+                    times.get(random.nextInt(times.size())));
             inputs.add(e);
         }
         return inputs;
